@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { TransactionForm, Transaction } from "@/components/TransactionForm";
 import { TransactionList } from "@/components/TransactionList";
+import { EditTransactionDialog } from "@/components/EditTransactionDialog";
 import { StatsCards } from "@/components/StatsCards";
 import heroImage from "@/assets/hero-dashboard.jpg";
 import { PieChart, BarChart3, TrendingUp } from "lucide-react";
@@ -33,12 +34,30 @@ const Index = () => {
     }
   ]);
 
+  const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
+  const [showEditDialog, setShowEditDialog] = useState(false);
+
   const handleAddTransaction = (newTransaction: Omit<Transaction, "id">) => {
     const transaction = {
       ...newTransaction,
       id: Date.now().toString()
     };
     setTransactions(prev => [transaction, ...prev]);
+  };
+
+  const handleEditTransaction = (transaction: Transaction) => {
+    setEditingTransaction(transaction);
+    setShowEditDialog(true);
+  };
+
+  const handleUpdateTransaction = (updatedTransaction: Transaction) => {
+    setTransactions(prev => 
+      prev.map(t => t.id === updatedTransaction.id ? updatedTransaction : t)
+    );
+  };
+
+  const handleDeleteTransaction = (id: string) => {
+    setTransactions(prev => prev.filter(t => t.id !== id));
   };
 
   return (
@@ -99,10 +118,22 @@ const Index = () => {
 
           {/* Transaction List */}
           <div className="lg:col-span-2">
-            <TransactionList transactions={transactions} />
+            <TransactionList 
+              transactions={transactions} 
+              onEditTransaction={handleEditTransaction}
+            />
           </div>
         </div>
       </main>
+
+      {/* Edit Transaction Dialog */}
+      <EditTransactionDialog
+        transaction={editingTransaction}
+        open={showEditDialog}
+        onOpenChange={setShowEditDialog}
+        onSave={handleUpdateTransaction}
+        onDelete={handleDeleteTransaction}
+      />
 
       {/* Footer */}
       <footer className="bg-card border-t mt-12">

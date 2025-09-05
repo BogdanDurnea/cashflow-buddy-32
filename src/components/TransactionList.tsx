@@ -2,14 +2,16 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { TrendingUp, TrendingDown, Calendar, Tag } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { TrendingUp, TrendingDown, Calendar, Tag, Edit2 } from "lucide-react";
 import { Transaction } from "./TransactionForm";
 
 interface TransactionListProps {
   transactions: Transaction[];
+  onEditTransaction: (transaction: Transaction) => void;
 }
 
-export function TransactionList({ transactions }: TransactionListProps) {
+export function TransactionList({ transactions, onEditTransaction }: TransactionListProps) {
   const sortedTransactions = transactions.sort((a, b) => 
     new Date(b.date).getTime() - new Date(a.date).getTime()
   );
@@ -46,7 +48,7 @@ export function TransactionList({ transactions }: TransactionListProps) {
               {sortedTransactions.map((transaction) => (
                 <div key={transaction.id} className="p-4 hover:bg-muted/50 transition-smooth">
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-3">
+                    <div className="flex items-center space-x-3 flex-1">
                       <div className={`p-2 rounded-full ${
                         transaction.type === "income" 
                           ? "bg-success-light text-success" 
@@ -76,11 +78,21 @@ export function TransactionList({ transactions }: TransactionListProps) {
                         </div>
                       </div>
                     </div>
-                    <div className={`font-semibold ${
-                      transaction.type === "income" ? "text-success" : "text-danger"
-                    }`}>
-                      {transaction.type === "income" ? "+" : "-"}
-                      {formatAmount(transaction.amount)}
+                    <div className="flex items-center gap-2">
+                      <div className={`font-semibold ${
+                        transaction.type === "income" ? "text-success" : "text-danger"
+                      }`}>
+                        {transaction.type === "income" ? "+" : "-"}
+                        {formatAmount(transaction.amount)}
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => onEditTransaction(transaction)}
+                        className="h-8 w-8 p-0"
+                      >
+                        <Edit2 className="h-4 w-4" />
+                      </Button>
                     </div>
                   </div>
                   <Separator className="mt-4" />
