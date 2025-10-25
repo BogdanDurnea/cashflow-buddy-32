@@ -6,6 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Transaction } from "./TransactionForm";
+import { incomeCategories, expenseCategories } from "@/lib/categoryConfig";
 
 interface EditTransactionDialogProps {
   transaction: Transaction | null;
@@ -15,25 +16,6 @@ interface EditTransactionDialogProps {
   onDelete: (id: string) => void;
 }
 
-const incomeCategories = [
-  "Salariu",
-  "Freelancing",
-  "Investiții",
-  "Vânzări",
-  "Altele"
-];
-
-const expenseCategories = [
-  "Mâncare",
-  "Transport",
-  "Utilități",
-  "Închiriere",
-  "Distracție",
-  "Sănătate",
-  "Shopping",
-  "Educație",
-  "Altele"
-];
 
 export function EditTransactionDialog({ 
   transaction, 
@@ -123,11 +105,25 @@ export function EditTransactionDialog({
                   <SelectValue placeholder="Selectează categoria" />
                 </SelectTrigger>
                 <SelectContent>
-                  {categories.map((cat) => (
-                    <SelectItem key={cat} value={cat}>
-                      {cat}
-                    </SelectItem>
-                  ))}
+                  {categories.map((cat) => {
+                    const Icon = cat.icon;
+                    return (
+                      <SelectItem key={cat.name} value={cat.name}>
+                        <div className="flex items-center gap-2">
+                          <div 
+                            className="p-1 rounded"
+                            style={{ 
+                              backgroundColor: cat.lightColor,
+                              color: cat.color
+                            }}
+                          >
+                            <Icon className="h-3 w-3" />
+                          </div>
+                          <span>{cat.name}</span>
+                        </div>
+                      </SelectItem>
+                    );
+                  })}
                 </SelectContent>
               </Select>
             </div>

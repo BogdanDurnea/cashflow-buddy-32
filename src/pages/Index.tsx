@@ -1,8 +1,10 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { TransactionForm, Transaction } from "@/components/TransactionForm";
 import { TransactionList } from "@/components/TransactionList";
 import { EditTransactionDialog } from "@/components/EditTransactionDialog";
 import { StatsCards } from "@/components/StatsCards";
+import { TransactionFilters } from "@/components/TransactionFilters";
+import { TransactionCharts } from "@/components/TransactionCharts";
 import heroImage from "@/assets/hero-dashboard.jpg";
 import { PieChart, BarChart3, TrendingUp } from "lucide-react";
 
@@ -36,6 +38,61 @@ const Index = () => {
 
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
   const [showEditDialog, setShowEditDialog] = useState(false);
+
+  // Filter states
+  const [filterType, setFilterType] = useState<"all" | "income" | "expense">("all");
+  const [filterCategory, setFilterCategory] = useState<string>("all");
+  const [filterPeriod, setFilterPeriod] = useState<string>("all");
+
+  // Apply filters
+  const filteredTransactions = useMemo(() => {
+    return transactions.filter(transaction => {
+      // Filter by type
+      if (filterType !== "all" && transaction.type !== filterType) {
+        return false;
+      }
+
+      // Filter by category
+      if (filterCategory !== "all" && transaction.category !== filterCategory) {
+        return false;
+      }
+
+      // Filter by period
+      if (filterPeriod !== "all") {
+        const now = new Date();
+        const transactionDate = new Date(transaction.date);
+        
+        switch (filterPeriod) {
+          case "today":
+            if (transactionDate.toDateString() !== now.toDateString()) return false;
+            break;
+          case "week":
+            const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+            if (transactionDate < weekAgo) return false;
+            break;
+          case "month":
+            if (transactionDate.getMonth() !== now.getMonth() || 
+                transactionDate.getFullYear() !== now.getFullYear()) return false;
+            break;
+          case "3months":
+            const threeMonthsAgo = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
+            if (transactionDate < threeMonthsAgo) return false;
+            break;
+          case "year":
+            if (transactionDate.getFullYear() !== now.getFullYear()) return false;
+            break;
+        }
+      }
+
+      return true;
+    });
+  }, [transactions, filterType, filterCategory, filterPeriod]);
+
+  const resetFilters = () => {
+    setFilterType("all");
+    setFilterCategory("all");
+    setFilterPeriod("all");
+  };
 
   const handleAddTransaction = (newTransaction: Omit<Transaction, "id">) => {
     const transaction = {
@@ -103,11 +160,23 @@ const Index = () => {
       </section>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
         {/* Stats Section */}
-        <div className="mb-8">
-          <StatsCards transactions={transactions} />
-        </div>
+        <StatsCards transactions={transactions} />
+
+        {/* Filters Section */}
+        <TransactionFilters
+          selectedType={filterType}
+          selectedCategory={filterCategory}
+          selectedPeriod={filterPeriod}
+          onTypeChange={setFilterType}
+          onCategoryChange={setFilterCategory}
+          onPeriodChange={setFilterPeriod}
+          onReset={resetFilters}
+        />
+
+        {/* Charts Section */}
+        <TransactionCharts transactions={filteredTransactions} />
 
         {/* Dashboard Grid */}
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -119,7 +188,7 @@ const Index = () => {
           {/* Transaction List */}
           <div className="lg:col-span-2">
             <TransactionList 
-              transactions={transactions} 
+              transactions={filteredTransactions} 
               onEditTransaction={handleEditTransaction}
             />
           </div>

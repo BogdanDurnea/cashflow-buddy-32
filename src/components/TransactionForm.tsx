@@ -6,6 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { PlusCircle } from "lucide-react";
+import { incomeCategories, expenseCategories } from "@/lib/categoryConfig";
 
 export interface Transaction {
   id: string;
@@ -20,25 +21,6 @@ interface TransactionFormProps {
   onAddTransaction: (transaction: Omit<Transaction, "id">) => void;
 }
 
-const incomeCategories = [
-  "Salariu",
-  "Freelancing",
-  "Investiții",
-  "Vânzări",
-  "Altele"
-];
-
-const expenseCategories = [
-  "Mâncare",
-  "Transport",
-  "Utilități",
-  "Închiriere",
-  "Distracție",
-  "Sănătate",
-  "Shopping",
-  "Educație",
-  "Altele"
-];
 
 export function TransactionForm({ onAddTransaction }: TransactionFormProps) {
   const [type, setType] = useState<"income" | "expense">("expense");
@@ -65,6 +47,7 @@ export function TransactionForm({ onAddTransaction }: TransactionFormProps) {
   };
 
   const categories = type === "income" ? incomeCategories : expenseCategories;
+  const categoryNames = categories.map(c => c.name);
 
   return (
     <Card className="shadow-card">
@@ -110,11 +93,25 @@ export function TransactionForm({ onAddTransaction }: TransactionFormProps) {
                 <SelectValue placeholder="Selectează categoria" />
               </SelectTrigger>
               <SelectContent>
-                {categories.map((cat) => (
-                  <SelectItem key={cat} value={cat}>
-                    {cat}
-                  </SelectItem>
-                ))}
+                {categories.map((cat) => {
+                  const Icon = cat.icon;
+                  return (
+                    <SelectItem key={cat.name} value={cat.name}>
+                      <div className="flex items-center gap-2">
+                        <div 
+                          className="p-1 rounded"
+                          style={{ 
+                            backgroundColor: cat.lightColor,
+                            color: cat.color
+                          }}
+                        >
+                          <Icon className="h-3 w-3" />
+                        </div>
+                        <span>{cat.name}</span>
+                      </div>
+                    </SelectItem>
+                  );
+                })}
               </SelectContent>
             </Select>
           </div>

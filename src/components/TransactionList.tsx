@@ -3,8 +3,9 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
-import { TrendingUp, TrendingDown, Calendar, Tag, Edit2 } from "lucide-react";
+import { TrendingUp, TrendingDown, Calendar, Edit2 } from "lucide-react";
 import { Transaction } from "./TransactionForm";
+import { getCategoryConfig } from "@/lib/categoryConfig";
 
 interface TransactionListProps {
   transactions: Transaction[];
@@ -45,28 +46,37 @@ export function TransactionList({ transactions, onEditTransaction }: Transaction
             </div>
           ) : (
             <div className="space-y-1">
-              {sortedTransactions.map((transaction) => (
-                <div key={transaction.id} className="p-4 hover:bg-muted/50 transition-smooth">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-3 flex-1">
-                      <div className={`p-2 rounded-full ${
-                        transaction.type === "income" 
-                          ? "bg-success-light text-success" 
-                          : "bg-danger-light text-danger"
-                      }`}>
-                        {transaction.type === "income" ? (
-                          <TrendingUp className="h-4 w-4" />
-                        ) : (
-                          <TrendingDown className="h-4 w-4" />
-                        )}
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <Badge variant="outline" className="text-xs">
-                            <Tag className="h-3 w-3 mr-1" />
-                            {transaction.category}
-                          </Badge>
+              {sortedTransactions.map((transaction) => {
+                const categoryConfig = getCategoryConfig(transaction.category, transaction.type);
+                const CategoryIcon = categoryConfig.icon;
+                
+                return (
+                  <div key={transaction.id} className="p-4 hover:bg-muted/50 transition-smooth">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-3 flex-1">
+                        <div 
+                          className="p-2 rounded-full"
+                          style={{
+                            backgroundColor: categoryConfig.lightColor,
+                            color: categoryConfig.color
+                          }}
+                        >
+                          <CategoryIcon className="h-4 w-4" />
                         </div>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium">{transaction.category}</span>
+                            <Badge 
+                              variant="outline" 
+                              className={`text-xs ${
+                                transaction.type === "income" 
+                                  ? "border-success text-success" 
+                                  : "border-danger text-danger"
+                              }`}
+                            >
+                              {transaction.type === "income" ? "Venit" : "Cheltuială"}
+                            </Badge>
+                          </div>
                         {transaction.description && (
                           <p className="text-sm text-muted-foreground mt-1">
                             {transaction.description}
@@ -94,10 +104,11 @@ export function TransactionList({ transactions, onEditTransaction }: Transaction
                         <Edit2 className="h-4 w-4" />
                       </Button>
                     </div>
+                    </div>
+                    <Separator className="mt-4" />
                   </div>
-                  <Separator className="mt-4" />
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </ScrollArea>
