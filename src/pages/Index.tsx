@@ -5,6 +5,9 @@ import { EditTransactionDialog } from "@/components/EditTransactionDialog";
 import { StatsCards } from "@/components/StatsCards";
 import { TransactionFilters } from "@/components/TransactionFilters";
 import { TransactionCharts } from "@/components/TransactionCharts";
+import { BudgetManager } from "@/components/BudgetManager";
+import { ReportsSection } from "@/components/ReportsSection";
+import { ExportData } from "@/components/ExportData";
 import heroImage from "@/assets/hero-dashboard.jpg";
 import { PieChart, BarChart3, TrendingUp } from "lucide-react";
 
@@ -164,6 +167,12 @@ const Index = () => {
         {/* Stats Section */}
         <StatsCards transactions={transactions} />
 
+        {/* Budget and Export Section */}
+        <div className="grid gap-6 md:grid-cols-2">
+          <BudgetManager transactions={transactions} />
+          <ExportData transactions={transactions} />
+        </div>
+
         {/* Filters Section */}
         <TransactionFilters
           selectedType={filterType}
@@ -177,6 +186,9 @@ const Index = () => {
 
         {/* Charts Section */}
         <TransactionCharts transactions={filteredTransactions} />
+
+        {/* Reports Section */}
+        <ReportsSection transactions={transactions} />
 
         {/* Dashboard Grid */}
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
