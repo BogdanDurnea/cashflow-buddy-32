@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { TransactionForm, Transaction } from "@/components/TransactionForm";
 import { TransactionList } from "@/components/TransactionList";
 import { EditTransactionDialog } from "@/components/EditTransactionDialog";
@@ -8,36 +8,55 @@ import { TransactionCharts } from "@/components/TransactionCharts";
 import { BudgetManager } from "@/components/BudgetManager";
 import { ReportsSection } from "@/components/ReportsSection";
 import { ExportData } from "@/components/ExportData";
+import { RecurringTransactions, RecurringTransaction } from "@/components/RecurringTransactions";
+import { toast } from "sonner";
 import heroImage from "@/assets/hero-dashboard.jpg";
 import { PieChart, BarChart3, TrendingUp } from "lucide-react";
 
 const Index = () => {
-  const [transactions, setTransactions] = useState<Transaction[]>([
-    {
-      id: "1",
-      type: "income",
-      amount: 3500,
-      category: "Salariu",
-      description: "Salariu lunar",
-      date: new Date(2024, 11, 1)
-    },
-    {
-      id: "2", 
-      type: "expense",
-      amount: 1200,
-      category: "Închiriere",
-      description: "Chirie apartament",
-      date: new Date(2024, 11, 3)
-    },
-    {
-      id: "3",
-      type: "expense", 
-      amount: 350,
-      category: "Mâncare",
-      description: "Cumpărături săptămânale",
-      date: new Date(2024, 11, 5)
+  const [transactions, setTransactions] = useState<Transaction[]>(() => {
+    const saved = localStorage.getItem("transactions");
+    if (saved) {
+      return JSON.parse(saved, (key, value) => {
+        if (key === "date") return new Date(value);
+        return value;
+      });
     }
-  ]);
+    return [
+      {
+        id: "1",
+        type: "income",
+        amount: 3500,
+        category: "Salariu",
+        description: "Salariu lunar",
+        date: new Date(2024, 11, 1)
+      },
+      {
+        id: "2", 
+        type: "expense",
+        amount: 1200,
+        category: "Închiriere",
+        description: "Chirie apartament",
+        date: new Date(2024, 11, 3)
+      },
+      {
+        id: "3",
+        type: "expense", 
+        amount: 350,
+        category: "Mâncare",
+        description: "Cumpărături săptămânale",
+        date: new Date(2024, 11, 5)
+      }
+    ];
+  });
+
+  const [recurringTransactions, setRecurringTransactions] = useState<RecurringTransaction[]>(() => {
+    const saved = localStorage.getItem("recurringTransactions");
+    return saved ? JSON.parse(saved, (key, value) => {
+      if (key === "nextDate") return new Date(value);
+      return value;
+    }) : [];
+  });
 
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
   const [showEditDialog, setShowEditDialog] = useState(false);
@@ -46,6 +65,76 @@ const Index = () => {
   const [filterType, setFilterType] = useState<"all" | "income" | "expense">("all");
   const [filterCategory, setFilterCategory] = useState<string>("all");
   const [filterPeriod, setFilterPeriod] = useState<string>("all");
+
+  // Save transactions to localStorage
+  useEffect(() => {
+    localStorage.setItem("transactions", JSON.stringify(transactions));
+  }, [transactions]);
+
+  // Save recurring transactions to localStorage
+  useEffect(() => {
+    localStorage.setItem("recurringTransactions", JSON.stringify(recurringTransactions));
+  }, [recurringTransactions]);
+
+  // Check and process recurring transactions
+  useEffect(() => {
+    const checkRecurring = () => {
+      const now = new Date();
+      const updated: RecurringTransaction[] = [];
+      let hasNewTransactions = false;
+
+      recurringTransactions.forEach(recurring => {
+        if (!recurring.isActive) {
+          updated.push(recurring);
+          return;
+        }
+
+        const nextDate = new Date(recurring.nextDate);
+        if (nextDate <= now) {
+          // Add transaction
+          const newTransaction: Transaction = {
+            id: Date.now().toString() + Math.random().toString(),
+            type: recurring.type,
+            amount: recurring.amount,
+            category: recurring.category,
+            description: recurring.description + " (Recurent)",
+            date: new Date(),
+          };
+          
+          setTransactions(prev => [newTransaction, ...prev]);
+          hasNewTransactions = true;
+
+          // Calculate next date
+          const newNextDate = new Date(nextDate);
+          if (recurring.frequency === "daily") {
+            newNextDate.setDate(newNextDate.getDate() + 1);
+          } else if (recurring.frequency === "weekly") {
+            newNextDate.setDate(newNextDate.getDate() + 7);
+          } else if (recurring.frequency === "monthly") {
+            newNextDate.setMonth(newNextDate.getMonth() + 1);
+          }
+
+          updated.push({
+            ...recurring,
+            nextDate: newNextDate,
+          });
+        } else {
+          updated.push(recurring);
+        }
+      });
+
+      if (hasNewTransactions) {
+        setRecurringTransactions(updated);
+        toast.success("Tranzacții recurente procesate!");
+      }
+    };
+
+    // Check every minute
+    const interval = setInterval(checkRecurring, 60000);
+    checkRecurring(); // Check immediately on mount
+
+    return () => clearInterval(interval);
+  }, [recurringTransactions]);
 
   // Apply filters
   const filteredTransactions = useMemo(() => {
@@ -120,6 +209,30 @@ const Index = () => {
     setTransactions(prev => prev.filter(t => t.id !== id));
   };
 
+  const handleAddRecurring = (recurring: Omit<RecurringTransaction, "id" | "nextDate" | "isActive">) => {
+    const newRecurring: RecurringTransaction = {
+      ...recurring,
+      id: Date.now().toString(),
+      nextDate: new Date(),
+      isActive: true,
+    };
+    setRecurringTransactions([...recurringTransactions, newRecurring]);
+  };
+
+  const handleDeleteRecurring = (id: string) => {
+    setRecurringTransactions(recurringTransactions.filter(r => r.id !== id));
+    toast.success("Tranzacție recurentă ștearsă!");
+  };
+
+  const handleToggleRecurring = (id: string) => {
+    setRecurringTransactions(
+      recurringTransactions.map(r =>
+        r.id === id ? { ...r, isActive: !r.isActive } : r
+      )
+    );
+    toast.success("Stare tranzacție recurentă actualizată!");
+  };
+
   return (
     <div className="min-h-screen bg-gradient-subtle">
       {/* Header */}
@@ -167,9 +280,15 @@ const Index = () => {
         {/* Stats Section */}
         <StatsCards transactions={transactions} />
 
-        {/* Budget and Export Section */}
-        <div className="grid gap-6 md:grid-cols-2">
+        {/* Budget, Recurring and Export Section */}
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           <BudgetManager transactions={transactions} />
+          <RecurringTransactions
+            recurringTransactions={recurringTransactions}
+            onAddRecurring={handleAddRecurring}
+            onDeleteRecurring={handleDeleteRecurring}
+            onToggleRecurring={handleToggleRecurring}
+          />
           <ExportData transactions={transactions} />
         </div>
 
