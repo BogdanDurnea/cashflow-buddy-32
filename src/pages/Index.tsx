@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import { TransactionForm, Transaction } from "@/components/TransactionForm";
 import { TransactionList } from "@/components/TransactionList";
 import { EditTransactionDialog } from "@/components/EditTransactionDialog";
@@ -9,147 +10,110 @@ import { BudgetManager } from "@/components/BudgetManager";
 import { ReportsSection } from "@/components/ReportsSection";
 import { ExportData } from "@/components/ExportData";
 import { RecurringTransactions, RecurringTransaction } from "@/components/RecurringTransactions";
+import { Button } from "@/components/ui/button";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import heroImage from "@/assets/hero-dashboard.jpg";
-import { PieChart, BarChart3, TrendingUp } from "lucide-react";
+import { PieChart, BarChart3, TrendingUp, LogOut, Loader2 } from "lucide-react";
 
 const Index = () => {
-  const [transactions, setTransactions] = useState<Transaction[]>(() => {
-    const saved = localStorage.getItem("transactions");
-    if (saved) {
-      return JSON.parse(saved, (key, value) => {
-        if (key === "date") return new Date(value);
-        return value;
-      });
-    }
-    return [
-      {
-        id: "1",
-        type: "income",
-        amount: 3500,
-        category: "Salariu",
-        description: "Salariu lunar",
-        date: new Date(2024, 11, 1)
-      },
-      {
-        id: "2", 
-        type: "expense",
-        amount: 1200,
-        category: "Închiriere",
-        description: "Chirie apartament",
-        date: new Date(2024, 11, 3)
-      },
-      {
-        id: "3",
-        type: "expense", 
-        amount: 350,
-        category: "Mâncare",
-        description: "Cumpărături săptămânale",
-        date: new Date(2024, 11, 5)
-      }
-    ];
-  });
-
-  const [recurringTransactions, setRecurringTransactions] = useState<RecurringTransaction[]>(() => {
-    const saved = localStorage.getItem("recurringTransactions");
-    return saved ? JSON.parse(saved, (key, value) => {
-      if (key === "nextDate") return new Date(value);
-      return value;
-    }) : [];
-  });
-
+  const navigate = useNavigate();
+  const { user, loading: authLoading, signOut } = useAuth();
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [recurringTransactions, setRecurringTransactions] = useState<RecurringTransaction[]>([]);
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
   const [showEditDialog, setShowEditDialog] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   // Filter states
   const [filterType, setFilterType] = useState<"all" | "income" | "expense">("all");
   const [filterCategory, setFilterCategory] = useState<string>("all");
   const [filterPeriod, setFilterPeriod] = useState<string>("all");
 
-  // Save transactions to localStorage
+  // Redirect to auth if not logged in
   useEffect(() => {
-    localStorage.setItem("transactions", JSON.stringify(transactions));
-  }, [transactions]);
+    if (!authLoading && !user) {
+      navigate("/auth");
+    }
+  }, [user, authLoading, navigate]);
 
-  // Save recurring transactions to localStorage
+  // Load transactions from database
   useEffect(() => {
-    localStorage.setItem("recurringTransactions", JSON.stringify(recurringTransactions));
-  }, [recurringTransactions]);
+    if (!user) return;
 
-  // Check and process recurring transactions
-  useEffect(() => {
-    const checkRecurring = () => {
-      const now = new Date();
-      const updated: RecurringTransaction[] = [];
-      let hasNewTransactions = false;
+    const loadTransactions = async () => {
+      try {
+        const { data, error } = await supabase
+          .from("transactions")
+          .select("*")
+          .eq("user_id", user.id)
+          .order("date", { ascending: false });
 
-      recurringTransactions.forEach(recurring => {
-        if (!recurring.isActive) {
-          updated.push(recurring);
-          return;
-        }
+        if (error) throw error;
 
-        const nextDate = new Date(recurring.nextDate);
-        if (nextDate <= now) {
-          // Add transaction
-          const newTransaction: Transaction = {
-            id: Date.now().toString() + Math.random().toString(),
-            type: recurring.type,
-            amount: recurring.amount,
-            category: recurring.category,
-            description: recurring.description + " (Recurent)",
-            date: new Date(),
-          };
-          
-          setTransactions(prev => [newTransaction, ...prev]);
-          hasNewTransactions = true;
+        const formattedTransactions = data.map(t => ({
+          id: t.id,
+          type: t.type as "income" | "expense",
+          amount: Number(t.amount),
+          category: t.category,
+          description: t.description || "",
+          date: new Date(t.date),
+        }));
 
-          // Calculate next date
-          const newNextDate = new Date(nextDate);
-          if (recurring.frequency === "daily") {
-            newNextDate.setDate(newNextDate.getDate() + 1);
-          } else if (recurring.frequency === "weekly") {
-            newNextDate.setDate(newNextDate.getDate() + 7);
-          } else if (recurring.frequency === "monthly") {
-            newNextDate.setMonth(newNextDate.getMonth() + 1);
-          }
-
-          updated.push({
-            ...recurring,
-            nextDate: newNextDate,
-          });
-        } else {
-          updated.push(recurring);
-        }
-      });
-
-      if (hasNewTransactions) {
-        setRecurringTransactions(updated);
-        toast.success("Tranzacții recurente procesate!");
+        setTransactions(formattedTransactions);
+      } catch (error: any) {
+        toast.error("Eroare la încărcarea tranzacțiilor");
+        console.error(error);
+      } finally {
+        setLoading(false);
       }
     };
 
-    // Check every minute
-    const interval = setInterval(checkRecurring, 60000);
-    checkRecurring(); // Check immediately on mount
+    loadTransactions();
+  }, [user]);
 
-    return () => clearInterval(interval);
-  }, [recurringTransactions]);
+  // Load recurring transactions from database
+  useEffect(() => {
+    if (!user) return;
+
+    const loadRecurring = async () => {
+      try {
+        const { data, error } = await supabase
+          .from("recurring_transactions")
+          .select("*")
+          .eq("user_id", user.id)
+          .order("created_at", { ascending: false });
+
+        if (error) throw error;
+
+        const formattedRecurring = data.map(r => ({
+          id: r.id,
+          type: r.type as "income" | "expense",
+          amount: Number(r.amount),
+          category: r.category,
+          description: r.description || "",
+          frequency: r.frequency as "daily" | "weekly" | "monthly",
+          isActive: r.is_active,
+          nextDate: r.last_processed ? new Date(r.last_processed) : new Date(),
+        }));
+
+        setRecurringTransactions(formattedRecurring);
+      } catch (error: any) {
+        toast.error("Eroare la încărcarea tranzacțiilor recurente");
+        console.error(error);
+      }
+    };
+
+    loadRecurring();
+  }, [user]);
 
   // Apply filters
   const filteredTransactions = useMemo(() => {
     return transactions.filter(transaction => {
-      // Filter by type
-      if (filterType !== "all" && transaction.type !== filterType) {
-        return false;
-      }
+      if (filterType !== "all" && transaction.type !== filterType) return false;
+      if (filterCategory !== "all" && transaction.category !== filterCategory) return false;
 
-      // Filter by category
-      if (filterCategory !== "all" && transaction.category !== filterCategory) {
-        return false;
-      }
-
-      // Filter by period
       if (filterPeriod !== "all") {
         const now = new Date();
         const transactionDate = new Date(transaction.date);
@@ -186,12 +150,40 @@ const Index = () => {
     setFilterPeriod("all");
   };
 
-  const handleAddTransaction = (newTransaction: Omit<Transaction, "id">) => {
-    const transaction = {
-      ...newTransaction,
-      id: Date.now().toString()
-    };
-    setTransactions(prev => [transaction, ...prev]);
+  const handleAddTransaction = async (newTransaction: Omit<Transaction, "id">) => {
+    if (!user) return;
+
+    try {
+      const { data, error } = await supabase
+        .from("transactions")
+        .insert([{
+          user_id: user.id,
+          type: newTransaction.type,
+          amount: newTransaction.amount,
+          category: newTransaction.category,
+          description: newTransaction.description,
+          date: newTransaction.date.toISOString().split('T')[0],
+        }])
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      const formattedTransaction: Transaction = {
+        id: data.id,
+        type: data.type as "income" | "expense",
+        amount: Number(data.amount),
+        category: data.category,
+        description: data.description || "",
+        date: new Date(data.date),
+      };
+
+      setTransactions(prev => [formattedTransaction, ...prev]);
+      toast.success("Tranzacție adăugată!");
+    } catch (error: any) {
+      toast.error("Eroare la adăugarea tranzacției");
+      console.error(error);
+    }
   };
 
   const handleEditTransaction = (transaction: Transaction) => {
@@ -199,39 +191,156 @@ const Index = () => {
     setShowEditDialog(true);
   };
 
-  const handleUpdateTransaction = (updatedTransaction: Transaction) => {
-    setTransactions(prev => 
-      prev.map(t => t.id === updatedTransaction.id ? updatedTransaction : t)
+  const handleUpdateTransaction = async (updatedTransaction: Transaction) => {
+    if (!user) return;
+
+    try {
+      const { error } = await supabase
+        .from("transactions")
+        .update({
+          type: updatedTransaction.type,
+          amount: updatedTransaction.amount,
+          category: updatedTransaction.category,
+          description: updatedTransaction.description,
+          date: updatedTransaction.date.toISOString().split('T')[0],
+        })
+        .eq("id", updatedTransaction.id)
+        .eq("user_id", user.id);
+
+      if (error) throw error;
+
+      setTransactions(prev => 
+        prev.map(t => t.id === updatedTransaction.id ? updatedTransaction : t)
+      );
+      toast.success("Tranzacție actualizată!");
+    } catch (error: any) {
+      toast.error("Eroare la actualizarea tranzacției");
+      console.error(error);
+    }
+  };
+
+  const handleDeleteTransaction = async (id: string) => {
+    if (!user) return;
+
+    try {
+      const { error } = await supabase
+        .from("transactions")
+        .delete()
+        .eq("id", id)
+        .eq("user_id", user.id);
+
+      if (error) throw error;
+
+      setTransactions(prev => prev.filter(t => t.id !== id));
+      toast.success("Tranzacție ștearsă!");
+    } catch (error: any) {
+      toast.error("Eroare la ștergerea tranzacției");
+      console.error(error);
+    }
+  };
+
+  const handleAddRecurring = async (recurring: Omit<RecurringTransaction, "id" | "nextDate" | "isActive">) => {
+    if (!user) return;
+
+    try {
+      const { data, error } = await supabase
+        .from("recurring_transactions")
+        .insert([{
+          user_id: user.id,
+          type: recurring.type,
+          amount: recurring.amount,
+          category: recurring.category,
+          description: recurring.description,
+          frequency: recurring.frequency,
+          is_active: true,
+          last_processed: new Date().toISOString().split('T')[0],
+        }])
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      const newRecurring: RecurringTransaction = {
+        id: data.id,
+        type: data.type as "income" | "expense",
+        amount: Number(data.amount),
+        category: data.category,
+        description: data.description || "",
+        frequency: data.frequency as "daily" | "weekly" | "monthly",
+        isActive: data.is_active,
+        nextDate: new Date(data.last_processed),
+      };
+
+      setRecurringTransactions([...recurringTransactions, newRecurring]);
+      toast.success("Tranzacție recurentă adăugată!");
+    } catch (error: any) {
+      toast.error("Eroare la adăugarea tranzacției recurente");
+      console.error(error);
+    }
+  };
+
+  const handleDeleteRecurring = async (id: string) => {
+    if (!user) return;
+
+    try {
+      const { error } = await supabase
+        .from("recurring_transactions")
+        .delete()
+        .eq("id", id)
+        .eq("user_id", user.id);
+
+      if (error) throw error;
+
+      setRecurringTransactions(recurringTransactions.filter(r => r.id !== id));
+      toast.success("Tranzacție recurentă ștearsă!");
+    } catch (error: any) {
+      toast.error("Eroare la ștergerea tranzacției recurente");
+      console.error(error);
+    }
+  };
+
+  const handleToggleRecurring = async (id: string) => {
+    if (!user) return;
+
+    const recurring = recurringTransactions.find(r => r.id === id);
+    if (!recurring) return;
+
+    try {
+      const { error } = await supabase
+        .from("recurring_transactions")
+        .update({ is_active: !recurring.isActive })
+        .eq("id", id)
+        .eq("user_id", user.id);
+
+      if (error) throw error;
+
+      setRecurringTransactions(
+        recurringTransactions.map(r =>
+          r.id === id ? { ...r, isActive: !r.isActive } : r
+        )
+      );
+      toast.success("Stare tranzacție recurentă actualizată!");
+    } catch (error: any) {
+      toast.error("Eroare la actualizarea stării");
+      console.error(error);
+    }
+  };
+
+  const handleLogout = async () => {
+    await signOut();
+    navigate("/auth");
+    toast.success("Deconectat cu succes!");
+  };
+
+  if (authLoading || loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
     );
-  };
+  }
 
-  const handleDeleteTransaction = (id: string) => {
-    setTransactions(prev => prev.filter(t => t.id !== id));
-  };
-
-  const handleAddRecurring = (recurring: Omit<RecurringTransaction, "id" | "nextDate" | "isActive">) => {
-    const newRecurring: RecurringTransaction = {
-      ...recurring,
-      id: Date.now().toString(),
-      nextDate: new Date(),
-      isActive: true,
-    };
-    setRecurringTransactions([...recurringTransactions, newRecurring]);
-  };
-
-  const handleDeleteRecurring = (id: string) => {
-    setRecurringTransactions(recurringTransactions.filter(r => r.id !== id));
-    toast.success("Tranzacție recurentă ștearsă!");
-  };
-
-  const handleToggleRecurring = (id: string) => {
-    setRecurringTransactions(
-      recurringTransactions.map(r =>
-        r.id === id ? { ...r, isActive: !r.isActive } : r
-      )
-    );
-    toast.success("Stare tranzacție recurentă actualizată!");
-  };
+  if (!user) return null;
 
   return (
     <div className="min-h-screen bg-gradient-subtle">
@@ -255,6 +364,10 @@ const Index = () => {
               <div className="p-2 bg-primary/10 rounded-lg">
                 <BarChart3 className="h-5 w-5 text-primary" />
               </div>
+              <Button variant="outline" size="sm" onClick={handleLogout}>
+                <LogOut className="h-4 w-4 mr-2" />
+                Ieșire
+              </Button>
             </div>
           </div>
         </div>
