@@ -1,21 +1,49 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Wallet, Edit, Check, X, AlertTriangle } from "lucide-react";
+import { Wallet, Edit, Check, X, AlertTriangle, Target } from "lucide-react";
 import { Transaction } from "@/components/TransactionForm";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 interface BudgetManagerProps {
   transactions: Transaction[];
+  userId: string;
 }
 
-export function BudgetManager({ transactions }: BudgetManagerProps) {
+export function BudgetManager({ transactions, userId }: BudgetManagerProps) {
   const [monthlyBudget, setMonthlyBudget] = useState<number>(5000);
   const [isEditing, setIsEditing] = useState(false);
   const [tempBudget, setTempBudget] = useState<string>("");
+  const [loading, setLoading] = useState(true);
+
+  // Load budget from Supabase
+  useEffect(() => {
+    const loadBudget = async () => {
+      const now = new Date();
+      const month = now.getMonth() + 1;
+      const year = now.getFullYear();
+
+      const { data, error } = await supabase
+        .from("budgets")
+        .select("amount")
+        .eq("user_id", userId)
+        .eq("month", month)
+        .eq("year", year)
+        .single();
+
+      if (data) {
+        setMonthlyBudget(Number(data.amount));
+      }
+      setLoading(false);
+    };
+
+    loadBudget();
+  }, [userId]);
 
   // Calculate current month expenses
   const currentMonthExpenses = transactions
@@ -32,11 +60,32 @@ export function BudgetManager({ transactions }: BudgetManagerProps) {
   const remainingBudget = monthlyBudget - currentMonthExpenses;
   const isOverBudget = currentMonthExpenses > monthlyBudget;
 
-  const handleSaveBudget = () => {
+  const handleSaveBudget = async () => {
     const newBudget = parseFloat(tempBudget);
     if (newBudget > 0) {
-      setMonthlyBudget(newBudget);
-      setIsEditing(false);
+      const now = new Date();
+      const month = now.getMonth() + 1;
+      const year = now.getFullYear();
+
+      const { error } = await supabase
+        .from("budgets")
+        .upsert({
+          user_id: userId,
+          month,
+          year,
+          amount: newBudget
+        }, {
+          onConflict: "user_id,month,year"
+        });
+
+      if (error) {
+        toast.error("Eroare la salvarea bugetului");
+        console.error(error);
+      } else {
+        setMonthlyBudget(newBudget);
+        setIsEditing(false);
+        toast.success("Budget salvat cu succes");
+      }
     }
   };
 
@@ -45,13 +94,25 @@ export function BudgetManager({ transactions }: BudgetManagerProps) {
     setTempBudget("");
   };
 
+  if (loading) {
+    return (
+      <Card className="shadow-card">
+        <CardContent className="pt-6">
+          <div className="flex items-center justify-center h-32">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <Card className="shadow-card">
       <CardHeader>
         <CardTitle className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Wallet className="h-5 w-5 text-primary" />
-            <span>Budget Lunar</span>
+            <Target className="h-5 w-5 text-primary" />
+            <span>Obiectiv Buget Lunar</span>
           </div>
           {!isEditing && (
             <Button

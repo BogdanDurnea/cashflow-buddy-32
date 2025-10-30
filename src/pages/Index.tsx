@@ -7,6 +7,7 @@ import { StatsCards } from "@/components/StatsCards";
 import { TransactionFilters } from "@/components/TransactionFilters";
 import { TransactionCharts } from "@/components/TransactionCharts";
 import { BudgetManager } from "@/components/BudgetManager";
+import { CategoryBudgets } from "@/components/CategoryBudgets";
 import { ReportsSection } from "@/components/ReportsSection";
 import { ExportData } from "@/components/ExportData";
 import { RecurringTransactions, RecurringTransaction } from "@/components/RecurringTransactions";
@@ -393,9 +394,14 @@ const Index = () => {
         {/* Stats Section */}
         <StatsCards transactions={transactions} />
 
-        {/* Budget, Recurring and Export Section */}
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          <BudgetManager transactions={transactions} />
+        {/* Budget Section */}
+        <div className="grid gap-6 md:grid-cols-2">
+          <BudgetManager transactions={transactions} userId={user!.id} />
+          <CategoryBudgets transactions={transactions} />
+        </div>
+
+        {/* Recurring and Export Section */}
+        <div className="grid gap-6 md:grid-cols-2">
           <RecurringTransactions
             recurringTransactions={recurringTransactions}
             onAddRecurring={handleAddRecurring}
