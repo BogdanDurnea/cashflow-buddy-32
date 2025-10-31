@@ -3,7 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
-import { TrendingUp, TrendingDown, Calendar, Edit2 } from "lucide-react";
+import { TrendingUp, TrendingDown, Calendar, Edit2, Paperclip, ExternalLink } from "lucide-react";
 import { Transaction } from "./TransactionForm";
 import { getCategoryConfig } from "@/lib/categoryConfig";
 
@@ -26,11 +26,17 @@ export function TransactionList({ transactions, onEditTransaction }: Transaction
     }).format(date);
   };
 
-  const formatAmount = (amount: number) => {
-    return new Intl.NumberFormat('ro-RO', {
+  const formatAmount = (amount: number, currency: string = 'RON', exchangeRate: number = 1) => {
+    const ronAmount = amount * exchangeRate;
+    const formatted = new Intl.NumberFormat('ro-RO', {
       style: 'currency',
       currency: 'RON'
-    }).format(amount);
+    }).format(ronAmount);
+
+    if (currency !== 'RON') {
+      return `${formatted} (${amount.toFixed(2)} ${currency})`;
+    }
+    return formatted;
   };
 
   return (
@@ -85,6 +91,22 @@ export function TransactionList({ transactions, onEditTransaction }: Transaction
                         <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
                           <Calendar className="h-3 w-3" />
                           {formatDate(transaction.date)}
+                          {transaction.attachment_url && (
+                            <>
+                              <span className="mx-1">•</span>
+                              <Paperclip className="h-3 w-3" />
+                              <a 
+                                href={transaction.attachment_url} 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                className="hover:underline flex items-center gap-1"
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                Chitanță
+                                <ExternalLink className="h-2 w-2" />
+                              </a>
+                            </>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -93,7 +115,11 @@ export function TransactionList({ transactions, onEditTransaction }: Transaction
                         transaction.type === "income" ? "text-success" : "text-danger"
                       }`}>
                         {transaction.type === "income" ? "+" : "-"}
-                        {formatAmount(transaction.amount)}
+                        {formatAmount(
+                          transaction.amount, 
+                          transaction.currency, 
+                          transaction.exchange_rate
+                        )}
                       </div>
                       <Button
                         variant="ghost"

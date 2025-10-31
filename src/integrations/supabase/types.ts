@@ -44,6 +44,39 @@ export type Database = {
         }
         Relationships: []
       }
+      custom_categories: {
+        Row: {
+          color: string | null
+          created_at: string
+          icon: string
+          id: string
+          name: string
+          type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string
+          icon: string
+          id?: string
+          name: string
+          type: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          color?: string | null
+          created_at?: string
+          icon?: string
+          id?: string
+          name?: string
+          type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string | null
@@ -110,10 +143,13 @@ export type Database = {
       transactions: {
         Row: {
           amount: number
+          attachment_url: string | null
           category: string
           created_at: string | null
+          currency: string | null
           date: string
           description: string | null
+          exchange_rate: number | null
           id: string
           type: string
           updated_at: string | null
@@ -121,10 +157,13 @@ export type Database = {
         }
         Insert: {
           amount: number
+          attachment_url?: string | null
           category: string
           created_at?: string | null
+          currency?: string | null
           date?: string
           description?: string | null
+          exchange_rate?: number | null
           id?: string
           type: string
           updated_at?: string | null
@@ -132,10 +171,13 @@ export type Database = {
         }
         Update: {
           amount?: number
+          attachment_url?: string | null
           category?: string
           created_at?: string | null
+          currency?: string | null
           date?: string
           description?: string | null
+          exchange_rate?: number | null
           id?: string
           type?: string
           updated_at?: string | null

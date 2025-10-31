@@ -14,6 +14,7 @@ import { RecurringTransactions, RecurringTransaction } from "@/components/Recurr
 import { DateRangeFilter } from "@/components/DateRangeFilter";
 import { BudgetVsActualChart } from "@/components/BudgetVsActualChart";
 import { CategoryTrendChart } from "@/components/CategoryTrendChart";
+import { CustomCategoriesManager } from "@/components/CustomCategoriesManager";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
@@ -74,6 +75,9 @@ const Index = () => {
           category: t.category,
           description: t.description || "",
           date: new Date(t.date),
+          currency: t.currency || 'RON',
+          exchange_rate: Number(t.exchange_rate) || 1,
+          attachment_url: t.attachment_url || undefined,
         }));
 
         setTransactions(formattedTransactions);
@@ -190,6 +194,9 @@ const Index = () => {
           category: newTransaction.category,
           description: newTransaction.description,
           date: newTransaction.date.toISOString().split('T')[0],
+          currency: newTransaction.currency || 'RON',
+          exchange_rate: newTransaction.exchange_rate || 1,
+          attachment_url: newTransaction.attachment_url || null,
         }])
         .select()
         .single();
@@ -203,6 +210,9 @@ const Index = () => {
         category: data.category,
         description: data.description || "",
         date: new Date(data.date),
+        currency: data.currency || 'RON',
+        exchange_rate: Number(data.exchange_rate) || 1,
+        attachment_url: data.attachment_url || undefined,
       };
 
       setTransactions(prev => [formattedTransaction, ...prev]);
@@ -230,6 +240,9 @@ const Index = () => {
           category: updatedTransaction.category,
           description: updatedTransaction.description,
           date: updatedTransaction.date.toISOString().split('T')[0],
+          currency: updatedTransaction.currency || 'RON',
+          exchange_rate: updatedTransaction.exchange_rate || 1,
+          attachment_url: updatedTransaction.attachment_url || null,
         })
         .eq("id", updatedTransaction.id)
         .eq("user_id", user.id);
@@ -441,6 +454,9 @@ const Index = () => {
           <BudgetManager transactions={transactions} userId={user!.id} />
           <CategoryBudgets transactions={transactions} />
         </div>
+
+        {/* Custom Categories */}
+        <CustomCategoriesManager />
 
         {/* Recurring and Export Section */}
         <div className="grid gap-6 md:grid-cols-2">
