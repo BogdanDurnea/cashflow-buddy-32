@@ -417,6 +417,22 @@ const Index = () => {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+        {/* Dashboard Grid */}
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {/* Transaction Form */}
+          <div className="lg:col-span-1">
+            <TransactionForm onAddTransaction={handleAddTransaction} />
+          </div>
+
+          {/* Transaction List */}
+          <div className="lg:col-span-2">
+            <TransactionList 
+              transactions={filteredTransactions} 
+              onEditTransaction={handleEditTransaction}
+            />
+          </div>
+        </div>
+
         {/* Stats Section */}
         <StatsCards transactions={transactions} />
 
@@ -470,22 +486,6 @@ const Index = () => {
 
         {/* Reports Section */}
         <ReportsSection transactions={transactions} />
-
-        {/* Dashboard Grid */}
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {/* Transaction Form */}
-          <div className="lg:col-span-1">
-            <TransactionForm onAddTransaction={handleAddTransaction} />
-          </div>
-
-          {/* Transaction List */}
-          <div className="lg:col-span-2">
-            <TransactionList 
-              transactions={filteredTransactions} 
-              onEditTransaction={handleEditTransaction}
-            />
-          </div>
-        </div>
       </main>
 
       {/* Edit Transaction Dialog */}
