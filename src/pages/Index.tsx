@@ -11,6 +11,9 @@ import { CategoryBudgets } from "@/components/CategoryBudgets";
 import { ReportsSection } from "@/components/ReportsSection";
 import { ExportData } from "@/components/ExportData";
 import { RecurringTransactions, RecurringTransaction } from "@/components/RecurringTransactions";
+import { DateRangeFilter } from "@/components/DateRangeFilter";
+import { BudgetVsActualChart } from "@/components/BudgetVsActualChart";
+import { CategoryTrendChart } from "@/components/CategoryTrendChart";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
@@ -31,6 +34,17 @@ const Index = () => {
   const [filterType, setFilterType] = useState<"all" | "income" | "expense">("all");
   const [filterCategory, setFilterCategory] = useState<string>("all");
   const [filterPeriod, setFilterPeriod] = useState<string>("all");
+  const [dateRangeStart, setDateRangeStart] = useState<Date | null>(null);
+  const [dateRangeEnd, setDateRangeEnd] = useState<Date | null>(null);
+  const [categoryBudgets, setCategoryBudgets] = useState<Array<{ category: string; limit: number }>>([]);
+
+  // Load category budgets from localStorage
+  useEffect(() => {
+    const savedBudgets = localStorage.getItem("categoryBudgets");
+    if (savedBudgets) {
+      setCategoryBudgets(JSON.parse(savedBudgets));
+    }
+  }, []);
 
   // Redirect to auth if not logged in
   useEffect(() => {
@@ -109,13 +123,23 @@ const Index = () => {
     loadRecurring();
   }, [user]);
 
+  // Handle date range change
+  const handleDateRangeChange = (startDate: Date | null, endDate: Date | null) => {
+    setDateRangeStart(startDate);
+    setDateRangeEnd(endDate);
+  };
+
   // Apply filters
   const filteredTransactions = useMemo(() => {
     return transactions.filter(transaction => {
       if (filterType !== "all" && transaction.type !== filterType) return false;
       if (filterCategory !== "all" && transaction.category !== filterCategory) return false;
 
-      if (filterPeriod !== "all") {
+      // Date range filter takes precedence over period filter
+      if (dateRangeStart && dateRangeEnd) {
+        const transactionDate = new Date(transaction.date);
+        if (transactionDate < dateRangeStart || transactionDate > dateRangeEnd) return false;
+      } else if (filterPeriod !== "all") {
         const now = new Date();
         const transactionDate = new Date(transaction.date);
         
@@ -143,12 +167,14 @@ const Index = () => {
 
       return true;
     });
-  }, [transactions, filterType, filterCategory, filterPeriod]);
+  }, [transactions, filterType, filterCategory, filterPeriod, dateRangeStart, dateRangeEnd]);
 
   const resetFilters = () => {
     setFilterType("all");
     setFilterCategory("all");
     setFilterPeriod("all");
+    setDateRangeStart(null);
+    setDateRangeEnd(null);
   };
 
   const handleAddTransaction = async (newTransaction: Omit<Transaction, "id">) => {
@@ -422,8 +448,25 @@ const Index = () => {
           onReset={resetFilters}
         />
 
-        {/* Charts Section */}
-        <TransactionCharts transactions={filteredTransactions} />
+        {/* Advanced Analytics Section */}
+        <section className="space-y-6">
+          <h2 className="text-2xl font-bold">Analiză Avansată</h2>
+          
+          {/* Date Range Filter */}
+          <DateRangeFilter onDateRangeChange={handleDateRangeChange} />
+          
+          {/* Budget vs Actual */}
+          <BudgetVsActualChart 
+            transactions={transactions} 
+            categoryBudgets={categoryBudgets}
+          />
+          
+          {/* Category Trends */}
+          <CategoryTrendChart transactions={filteredTransactions} />
+          
+          {/* Original Charts */}
+          <TransactionCharts transactions={filteredTransactions} />
+        </section>
 
         {/* Reports Section */}
         <ReportsSection transactions={transactions} />
