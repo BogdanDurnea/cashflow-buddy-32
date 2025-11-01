@@ -386,27 +386,34 @@ const Index = () => {
     <div className="min-h-screen bg-gradient-subtle">
       {/* Header */}
       <header className="bg-card/80 backdrop-blur-sm border-b shadow-card sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-2 sm:py-3 md:py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <div className="gradient-primary p-2 rounded-lg">
-                <TrendingUp className="h-6 w-6 text-primary-foreground" />
+            <div className="flex items-center space-x-2 sm:space-x-3 min-w-0 flex-1">
+              <div className="gradient-primary p-1.5 sm:p-2 rounded-lg shrink-0">
+                <TrendingUp className="h-5 w-5 sm:h-6 sm:w-6 text-primary-foreground" />
               </div>
-              <div>
-                <h1 className="text-2xl font-bold">MoneyTracker</h1>
-                <p className="text-sm text-muted-foreground">Monitorizează-ți finanțele</p>
+              <div className="min-w-0">
+                <h1 className="text-lg sm:text-xl md:text-2xl font-bold truncate">MoneyTracker</h1>
+                <p className="text-xs sm:text-sm text-muted-foreground hidden sm:block">Monitorizează-ți finanțele</p>
               </div>
             </div>
-            <div className="flex items-center space-x-2">
-              <div className="p-2 bg-primary/10 rounded-lg">
-                <PieChart className="h-5 w-5 text-primary" />
+            <div className="flex items-center space-x-1.5 sm:space-x-2 shrink-0">
+              <div className="hidden md:flex items-center space-x-2">
+                <div className="p-2 bg-primary/10 rounded-lg">
+                  <PieChart className="h-5 w-5 text-primary" />
+                </div>
+                <div className="p-2 bg-primary/10 rounded-lg">
+                  <BarChart3 className="h-5 w-5 text-primary" />
+                </div>
               </div>
-              <div className="p-2 bg-primary/10 rounded-lg">
-                <BarChart3 className="h-5 w-5 text-primary" />
-              </div>
-              <Button variant="outline" size="sm" onClick={handleLogout}>
-                <LogOut className="h-4 w-4 mr-2" />
-                Ieșire
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={handleLogout}
+                className="h-8 sm:h-9 active:scale-95 transition-smooth"
+              >
+                <LogOut className="h-4 w-4 sm:mr-2" />
+                <span className="hidden sm:inline">Ieșire</span>
               </Button>
             </div>
           </div>
@@ -417,21 +424,21 @@ const Index = () => {
       <section className="relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-primary opacity-90"></div>
         <div 
-          className="h-48 bg-cover bg-center bg-no-repeat"
+          className="h-32 sm:h-40 md:h-48 bg-cover bg-center bg-no-repeat"
           style={{ backgroundImage: `url(${heroImage})` }}
         />
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="text-center text-primary-foreground">
-            <h2 className="text-4xl font-bold mb-2">Controlează-ți finanțele</h2>
-            <p className="text-xl opacity-90">Monitorizează venituri și cheltuieli cu ușurință</p>
+        <div className="absolute inset-0 flex items-center justify-center px-4">
+          <div className="text-center text-primary-foreground max-w-3xl">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-1 sm:mb-2">Controlează-ți finanțele</h2>
+            <p className="text-sm sm:text-base md:text-xl opacity-90">Monitorizează venituri și cheltuieli cu ușurință</p>
           </div>
         </div>
       </section>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+      <main className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6 md:py-8 space-y-6 sm:space-y-8">
         {/* Dashboard Grid */}
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 sm:gap-6 lg:grid-cols-3">
           {/* Transaction Form */}
           <div className="lg:col-span-1">
             <TransactionForm onAddTransaction={handleAddTransaction} />
@@ -450,7 +457,7 @@ const Index = () => {
         <StatsCards transactions={transactions} />
 
         {/* Budget Section */}
-        <div className="grid gap-6 md:grid-cols-2">
+        <div className="grid gap-4 sm:gap-6 lg:grid-cols-2">
           <BudgetManager transactions={transactions} userId={user!.id} />
           <CategoryBudgets transactions={transactions} />
         </div>
@@ -459,7 +466,7 @@ const Index = () => {
         <CustomCategoriesManager />
 
         {/* Recurring and Export Section */}
-        <div className="grid gap-6 md:grid-cols-2">
+        <div className="grid gap-4 sm:gap-6 lg:grid-cols-2">
           <RecurringTransactions
             recurringTransactions={recurringTransactions}
             onAddRecurring={handleAddRecurring}
@@ -481,8 +488,8 @@ const Index = () => {
         />
 
         {/* Advanced Analytics Section */}
-        <section className="space-y-6">
-          <h2 className="text-2xl font-bold">Analiză Avansată</h2>
+        <section className="space-y-4 sm:space-y-6">
+          <h2 className="text-xl sm:text-2xl font-bold">Analiză Avansată</h2>
           
           {/* Date Range Filter */}
           <DateRangeFilter onDateRangeChange={handleDateRangeChange} />
@@ -514,10 +521,10 @@ const Index = () => {
       />
 
       {/* Footer */}
-      <footer className="bg-card border-t mt-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <footer className="bg-card border-t mt-8 sm:mt-12">
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6">
           <div className="text-center text-muted-foreground">
-            <p>&copy; 2024 MoneyTracker. O aplicație pentru gestionarea finanțelor personale.</p>
+            <p className="text-xs sm:text-sm">&copy; 2024 MoneyTracker. O aplicație pentru gestionarea finanțelor personale.</p>
           </div>
         </div>
       </footer>

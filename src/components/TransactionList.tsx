@@ -40,14 +40,14 @@ export function TransactionList({ transactions, onEditTransaction }: Transaction
   };
 
   return (
-    <Card className="shadow-card">
-      <CardHeader>
-        <CardTitle>Tranzacții recente</CardTitle>
+    <Card className="shadow-card transition-smooth">
+      <CardHeader className="p-4 sm:p-6">
+        <CardTitle className="text-base sm:text-lg">Tranzacții recente</CardTitle>
       </CardHeader>
       <CardContent className="p-0">
-        <ScrollArea className="h-[400px]">
+        <ScrollArea className="h-[400px] sm:h-[450px]">
           {sortedTransactions.length === 0 ? (
-            <div className="p-6 text-center text-muted-foreground">
+            <div className="p-6 text-center text-muted-foreground text-sm sm:text-base">
               Nu există tranzacții încă. Adaugă prima ta tranzacție!
             </div>
           ) : (
@@ -57,24 +57,24 @@ export function TransactionList({ transactions, onEditTransaction }: Transaction
                 const CategoryIcon = categoryConfig.icon;
                 
                 return (
-                  <div key={transaction.id} className="p-4 hover:bg-muted/50 transition-smooth">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-3 flex-1">
+                  <div key={transaction.id} className="p-3 sm:p-4 hover:bg-muted/50 transition-smooth active:bg-muted/70">
+                    <div className="flex items-start sm:items-center justify-between gap-3">
+                      <div className="flex items-start sm:items-center space-x-2 sm:space-x-3 flex-1 min-w-0">
                         <div 
-                          className="p-2 rounded-full"
+                          className="p-1.5 sm:p-2 rounded-full shrink-0"
                           style={{
                             backgroundColor: categoryConfig.lightColor,
                             color: categoryConfig.color
                           }}
                         >
-                          <CategoryIcon className="h-4 w-4" />
+                          <CategoryIcon className="h-4 w-4 sm:h-5 sm:w-5" />
                         </div>
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <span className="font-medium">{transaction.category}</span>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="font-medium text-sm sm:text-base truncate">{transaction.category}</span>
                             <Badge 
                               variant="outline" 
-                              className={`text-xs ${
+                              className={`text-xs shrink-0 ${
                                 transaction.type === "income" 
                                   ? "border-success text-success" 
                                   : "border-danger text-danger"
@@ -84,22 +84,24 @@ export function TransactionList({ transactions, onEditTransaction }: Transaction
                             </Badge>
                           </div>
                         {transaction.description && (
-                          <p className="text-sm text-muted-foreground mt-1">
+                          <p className="text-xs sm:text-sm text-muted-foreground mt-1 line-clamp-2">
                             {transaction.description}
                           </p>
                         )}
-                        <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
-                          <Calendar className="h-3 w-3" />
-                          {formatDate(transaction.date)}
+                        <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1 flex-wrap">
+                          <div className="flex items-center gap-1">
+                            <Calendar className="h-3 w-3 shrink-0" />
+                            <span>{formatDate(transaction.date)}</span>
+                          </div>
                           {transaction.attachment_url && (
                             <>
                               <span className="mx-1">•</span>
-                              <Paperclip className="h-3 w-3" />
+                              <Paperclip className="h-3 w-3 shrink-0" />
                               <a 
                                 href={transaction.attachment_url} 
                                 target="_blank" 
                                 rel="noopener noreferrer"
-                                className="hover:underline flex items-center gap-1"
+                                className="hover:underline flex items-center gap-1 active:scale-95 transition-smooth"
                                 onClick={(e) => e.stopPropagation()}
                               >
                                 Chitanță
@@ -110,8 +112,8 @@ export function TransactionList({ transactions, onEditTransaction }: Transaction
                         </div>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <div className={`font-semibold ${
+                    <div className="flex items-center gap-2 shrink-0">
+                      <div className={`font-semibold text-sm sm:text-base whitespace-nowrap ${
                         transaction.type === "income" ? "text-success" : "text-danger"
                       }`}>
                         {transaction.type === "income" ? "+" : "-"}
@@ -125,13 +127,13 @@ export function TransactionList({ transactions, onEditTransaction }: Transaction
                         variant="ghost"
                         size="sm"
                         onClick={() => onEditTransaction(transaction)}
-                        className="h-8 w-8 p-0"
+                        className="h-9 w-9 sm:h-8 sm:w-8 p-0 active:scale-95 transition-smooth shrink-0"
                       >
                         <Edit2 className="h-4 w-4" />
                       </Button>
                     </div>
                     </div>
-                    <Separator className="mt-4" />
+                    <Separator className="mt-3 sm:mt-4" />
                   </div>
                 );
               })}

@@ -102,26 +102,26 @@ export function StatsCards({ transactions }: StatsCardsProps) {
   ];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
       {stats.map((stat, index) => {
         const Icon = stat.icon;
         return (
-          <Card key={index} className="shadow-card">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
+          <Card key={index} className="shadow-card transition-smooth hover:shadow-lg active:scale-[0.98]">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-4 sm:p-6">
+              <CardTitle className="text-xs sm:text-sm font-medium">
                 {stat.title}
               </CardTitle>
-              <Icon className="h-4 w-4 text-muted-foreground" />
+              <Icon className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground shrink-0" />
             </CardHeader>
-            <CardContent>
-              <div className={`text-2xl font-bold ${
+            <CardContent className="p-4 pt-0 sm:p-6 sm:pt-0">
+              <div className={`text-xl sm:text-2xl font-bold break-words ${
                 stat.trend === "positive" ? "text-success" :
                 stat.trend === "negative" ? "text-danger" :
                 "text-foreground"
               }`}>
                 {stat.value}
               </div>
-              <p className="text-xs text-muted-foreground mt-1">
+              <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
                 {stat.description}
               </p>
             </CardContent>

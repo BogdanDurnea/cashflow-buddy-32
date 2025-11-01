@@ -173,4 +173,30 @@ All colors MUST be HSL.
   .transition-spring {
     transition: var(--transition-spring);
   }
+
+  /* Mobile-optimized touch interactions */
+  @media (hover: none) and (pointer: coarse) {
+    .hover\:scale-105:hover {
+      transform: none;
+    }
+    
+    .active\:scale-95:active,
+    .active\:scale-\[0\.98\]:active {
+      transition-duration: 0.1s;
+    }
+  }
+
+  /* Prevent text selection on touch targets */
+  button, [role="button"] {
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    user-select: none;
+  }
+
+  /* Smooth scrolling for mobile */
+  @media (max-width: 768px) {
+    * {
+      -webkit-overflow-scrolling: touch;
+    }
+  }
 }

@@ -151,34 +151,34 @@ export function TransactionForm({ onAddTransaction }: TransactionFormProps) {
   ];
 
   return (
-    <Card className="shadow-card">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <PlusCircle className="h-5 w-5" />
-          Adaugă tranzacție nouă
+    <Card className="shadow-card transition-smooth">
+      <CardHeader className="p-4 sm:p-6">
+        <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+          <PlusCircle className="h-5 w-5 shrink-0" />
+          <span className="truncate">Adaugă tranzacție nouă</span>
         </CardTitle>
       </CardHeader>
-      <CardContent>
+      <CardContent className="p-4 sm:p-6 pt-0 sm:pt-0">
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <Label htmlFor="type">Tip tranzacție</Label>
+            <Label htmlFor="type" className="text-sm sm:text-base">Tip tranzacție</Label>
             <Select value={type} onValueChange={(value: "income" | "expense") => {
               setType(value);
               setCategory(""); // Reset category when type changes
             }}>
-              <SelectTrigger id="type">
+              <SelectTrigger id="type" className="h-11 text-base">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="income">Venit</SelectItem>
-                <SelectItem value="expense">Cheltuială</SelectItem>
+                <SelectItem value="income" className="text-base py-3">Venit</SelectItem>
+                <SelectItem value="expense" className="text-base py-3">Cheltuială</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="amount">Sumă</Label>
+              <Label htmlFor="amount" className="text-sm sm:text-base">Sumă</Label>
               <Input
                 id="amount"
                 type="number"
@@ -186,18 +186,19 @@ export function TransactionForm({ onAddTransaction }: TransactionFormProps) {
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
                 placeholder="0.00"
+                className="h-11 text-base"
                 required
               />
             </div>
             <div>
-              <Label htmlFor="currency">Valută</Label>
+              <Label htmlFor="currency" className="text-sm sm:text-base">Valută</Label>
               <Select value={currency} onValueChange={setCurrency}>
-                <SelectTrigger id="currency">
+                <SelectTrigger id="currency" className="h-11 text-base">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   {CURRENCIES.map((curr) => (
-                    <SelectItem key={curr.code} value={curr.code}>
+                    <SelectItem key={curr.code} value={curr.code} className="text-base py-3">
                       {curr.symbol} {curr.code}
                     </SelectItem>
                   ))}
@@ -207,9 +208,9 @@ export function TransactionForm({ onAddTransaction }: TransactionFormProps) {
           </div>
 
           <div>
-            <Label htmlFor="category">Categorie</Label>
+            <Label htmlFor="category" className="text-sm sm:text-base">Categorie</Label>
             <Select value={category} onValueChange={setCategory}>
-              <SelectTrigger id="category">
+              <SelectTrigger id="category" className="h-11 text-base">
                 <SelectValue placeholder="Selectează categoria" />
               </SelectTrigger>
               <SelectContent>
@@ -220,18 +221,18 @@ export function TransactionForm({ onAddTransaction }: TransactionFormProps) {
                     : cat.icon;
                   
                   return (
-                    <SelectItem key={cat.name} value={cat.name}>
+                    <SelectItem key={cat.name} value={cat.name} className="py-3">
                       <div className="flex items-center gap-2">
                         <div 
-                          className="p-1 rounded"
+                          className="p-1.5 rounded"
                           style={{ 
                             backgroundColor: cat.lightColor,
                             color: cat.color
                           }}
                         >
-                          <IconComponent className="h-3 w-3" />
+                          <IconComponent className="h-4 w-4" />
                         </div>
-                        <span>{cat.name}</span>
+                        <span className="text-base">{cat.name}</span>
                       </div>
                     </SelectItem>
                   );
@@ -241,18 +242,19 @@ export function TransactionForm({ onAddTransaction }: TransactionFormProps) {
           </div>
 
           <div>
-            <Label htmlFor="description">Descriere (opțional)</Label>
+            <Label htmlFor="description" className="text-sm sm:text-base">Descriere (opțional)</Label>
             <Textarea
               id="description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Descriere tranzacție..."
               rows={2}
+              className="text-base resize-none"
             />
           </div>
 
           <div>
-            <Label htmlFor="attachment">Atașament (opțional)</Label>
+            <Label htmlFor="attachment" className="text-sm sm:text-base">Atașament (opțional)</Label>
             <div className="flex gap-2">
               <Input
                 ref={fileInputRef}
@@ -265,17 +267,18 @@ export function TransactionForm({ onAddTransaction }: TransactionFormProps) {
               <Button
                 type="button"
                 variant="outline"
-                className="flex-1"
+                className="flex-1 h-11 text-base active:scale-95 transition-smooth"
                 onClick={() => fileInputRef.current?.click()}
               >
-                <Paperclip className="h-4 w-4 mr-2" />
-                {attachmentFile ? attachmentFile.name : "Adaugă chitanță"}
+                <Paperclip className="h-4 w-4 mr-2 shrink-0" />
+                <span className="truncate">{attachmentFile ? attachmentFile.name : "Adaugă chitanță"}</span>
               </Button>
               {attachmentFile && (
                 <Button
                   type="button"
                   variant="ghost"
                   size="icon"
+                  className="h-11 w-11 shrink-0 active:scale-95 transition-smooth"
                   onClick={() => {
                     setAttachmentFile(null);
                     if (fileInputRef.current) {
@@ -283,7 +286,7 @@ export function TransactionForm({ onAddTransaction }: TransactionFormProps) {
                     }
                   }}
                 >
-                  <X className="h-4 w-4" />
+                  <X className="h-5 w-5" />
                 </Button>
               )}
             </div>
@@ -291,7 +294,7 @@ export function TransactionForm({ onAddTransaction }: TransactionFormProps) {
 
           <Button
             type="submit"
-            className="w-full transition-spring"
+            className="w-full h-12 text-base transition-spring active:scale-[0.98]"
             variant={type === "income" ? "success" : "danger"}
             disabled={isUploading}
           >
