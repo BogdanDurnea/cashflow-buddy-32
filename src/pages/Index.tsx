@@ -17,10 +17,11 @@ import { CategoryTrendChart } from "@/components/CategoryTrendChart";
 import { CustomCategoriesManager } from "@/components/CustomCategoriesManager";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
+import { useBudgetAlerts } from "@/hooks/useBudgetAlerts";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import heroImage from "@/assets/hero-dashboard.jpg";
-import { PieChart, BarChart3, TrendingUp, LogOut, Loader2 } from "lucide-react";
+import { PieChart, BarChart3, TrendingUp, LogOut, Loader2, Bell } from "lucide-react";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -38,6 +39,14 @@ const Index = () => {
   const [dateRangeStart, setDateRangeStart] = useState<Date | null>(null);
   const [dateRangeEnd, setDateRangeEnd] = useState<Date | null>(null);
   const [categoryBudgets, setCategoryBudgets] = useState<Array<{ category: string; limit: number }>>([]);
+  const [monthlyBudget, setMonthlyBudget] = useState<number>(5000);
+
+  // Budget alerts hook
+  const { requestNotificationPermission } = useBudgetAlerts({
+    transactions,
+    monthlyBudget,
+    categoryBudgets
+  });
 
   // Load category budgets from localStorage
   useEffect(() => {
@@ -46,6 +55,31 @@ const Index = () => {
       setCategoryBudgets(JSON.parse(savedBudgets));
     }
   }, []);
+
+  // Load monthly budget from database
+  useEffect(() => {
+    if (!user) return;
+
+    const loadMonthlyBudget = async () => {
+      const now = new Date();
+      const month = now.getMonth() + 1;
+      const year = now.getFullYear();
+
+      const { data } = await supabase
+        .from("budgets")
+        .select("amount")
+        .eq("user_id", user.id)
+        .eq("month", month)
+        .eq("year", year)
+        .single();
+
+      if (data) {
+        setMonthlyBudget(Number(data.amount));
+      }
+    };
+
+    loadMonthlyBudget();
+  }, [user]);
 
   // Redirect to auth if not logged in
   useEffect(() => {
@@ -406,6 +440,15 @@ const Index = () => {
                   <BarChart3 className="h-5 w-5 text-primary" />
                 </div>
               </div>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={requestNotificationPermission}
+                className="h-8 sm:h-9 active:scale-95 transition-smooth"
+                title="Activează notificările pentru alerte de buget"
+              >
+                <Bell className="h-4 w-4" />
+              </Button>
               <Button 
                 variant="outline" 
                 size="sm" 
