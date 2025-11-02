@@ -30,7 +30,7 @@ export function TransactionFilters({
   const hasActiveFilters = selectedType !== "all" || selectedCategory !== "all" || selectedPeriod !== "all";
 
   return (
-    <Card className="shadow-card">
+    <Card className="shadow-card animate-slide-up">
       <CardContent className="pt-6">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
@@ -42,7 +42,7 @@ export function TransactionFilters({
               variant="ghost"
               size="sm"
               onClick={onReset}
-              className="h-8 px-2 text-xs"
+              className="h-8 px-2 text-xs transition-spring hover:scale-105"
             >
               <X className="h-3 w-3 mr-1" />
               Resetează
@@ -51,10 +51,10 @@ export function TransactionFilters({
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div>
+          <div className="animate-fade-in" style={{ animationDelay: '50ms' }}>
             <Label htmlFor="filter-type" className="text-xs">Tip</Label>
             <Select value={selectedType} onValueChange={onTypeChange}>
-              <SelectTrigger id="filter-type" className="h-9">
+              <SelectTrigger id="filter-type" className="h-9 transition-smooth">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -65,10 +65,10 @@ export function TransactionFilters({
             </Select>
           </div>
 
-          <div>
+          <div className="animate-fade-in" style={{ animationDelay: '100ms' }}>
             <Label htmlFor="filter-category" className="text-xs">Categorie</Label>
             <Select value={selectedCategory} onValueChange={onCategoryChange}>
-              <SelectTrigger id="filter-category" className="h-9">
+              <SelectTrigger id="filter-category" className="h-9 transition-smooth">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -82,10 +82,10 @@ export function TransactionFilters({
             </Select>
           </div>
 
-          <div>
+          <div className="animate-fade-in" style={{ animationDelay: '150ms' }}>
             <Label htmlFor="filter-period" className="text-xs">Perioadă</Label>
             <Select value={selectedPeriod} onValueChange={onPeriodChange}>
-              <SelectTrigger id="filter-period" className="h-9">
+              <SelectTrigger id="filter-period" className="h-9 transition-smooth">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>

@@ -16,6 +16,9 @@ import { BudgetVsActualChart } from "@/components/BudgetVsActualChart";
 import { CategoryTrendChart } from "@/components/CategoryTrendChart";
 import { CustomCategoriesManager } from "@/components/CustomCategoriesManager";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { UserSettings } from "@/components/UserSettings";
+import { ImportData } from "@/components/ImportData";
+import { ShareReport } from "@/components/ShareReport";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { useBudgetAlerts } from "@/hooks/useBudgetAlerts";
@@ -510,8 +513,16 @@ const Index = () => {
         {/* Custom Categories */}
         <CustomCategoriesManager />
 
-        {/* Recurring and Export Section */}
+        {/* User Settings and Import Section */}
         <div className="grid gap-4 sm:gap-6 lg:grid-cols-2">
+          <UserSettings />
+          <ImportData onImport={(imported) => {
+            imported.forEach(t => handleAddTransaction(t));
+          }} />
+        </div>
+
+        {/* Recurring and Export Section */}
+        <div className="grid gap-4 sm:gap-6 lg:grid-cols-3">
           <RecurringTransactions
             recurringTransactions={recurringTransactions}
             onAddRecurring={handleAddRecurring}
@@ -519,6 +530,7 @@ const Index = () => {
             onToggleRecurring={handleToggleRecurring}
           />
           <ExportData transactions={transactions} />
+          <ShareReport transactions={transactions} />
         </div>
 
         {/* Filters Section */}

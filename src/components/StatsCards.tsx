@@ -106,7 +106,11 @@ export function StatsCards({ transactions }: StatsCardsProps) {
       {stats.map((stat, index) => {
         const Icon = stat.icon;
         return (
-          <Card key={index} className="shadow-card transition-smooth hover:shadow-lg active:scale-[0.98]">
+          <Card 
+            key={index} 
+            className="shadow-card transition-smooth hover:shadow-lg active:scale-[0.98] animate-fade-in"
+            style={{ animationDelay: `${index * 50}ms` }}
+          >
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-4 sm:p-6">
               <CardTitle className="text-xs sm:text-sm font-medium">
                 {stat.title}
