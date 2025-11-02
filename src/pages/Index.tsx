@@ -15,6 +15,7 @@ import { DateRangeFilter } from "@/components/DateRangeFilter";
 import { BudgetVsActualChart } from "@/components/BudgetVsActualChart";
 import { CategoryTrendChart } from "@/components/CategoryTrendChart";
 import { CustomCategoriesManager } from "@/components/CustomCategoriesManager";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { useBudgetAlerts } from "@/hooks/useBudgetAlerts";
@@ -449,6 +450,7 @@ const Index = () => {
               >
                 <Bell className="h-4 w-4" />
               </Button>
+              <ThemeToggle />
               <Button 
                 variant="outline" 
                 size="sm" 
