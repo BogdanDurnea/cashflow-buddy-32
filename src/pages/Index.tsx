@@ -19,6 +19,7 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { UserSettings } from "@/components/UserSettings";
 import { ImportData } from "@/components/ImportData";
 import { ShareReport } from "@/components/ShareReport";
+import { AIInsights } from "@/components/AIInsights";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { useBudgetAlerts } from "@/hooks/useBudgetAlerts";
@@ -542,6 +543,13 @@ const Index = () => {
           onCategoryChange={setFilterCategory}
           onPeriodChange={setFilterPeriod}
           onReset={resetFilters}
+        />
+
+        {/* AI Insights Section */}
+        <AIInsights 
+          transactions={transactions}
+          categoryBudgets={Object.fromEntries(categoryBudgets.map(b => [b.category, b.limit]))}
+          monthlyBudget={monthlyBudget}
         />
 
         {/* Advanced Analytics Section */}
