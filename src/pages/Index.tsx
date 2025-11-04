@@ -22,6 +22,8 @@ import { ShareReport } from "@/components/ShareReport";
 import { ShareReportPublic } from "@/components/ShareReportPublic";
 import { SharedBudgetsManager } from "@/components/SharedBudgetsManager";
 import { AIInsights } from "@/components/AIInsights";
+import { ZapierIntegration } from "@/components/ZapierIntegration";
+import { APIExport } from "@/components/APIExport";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { useBudgetAlerts } from "@/hooks/useBudgetAlerts";
@@ -543,6 +545,31 @@ const Index = () => {
             title="Raport Financiar MoneyTracker"
           />
         </div>
+
+        {/* Integrations Section */}
+        <section className="space-y-4 sm:space-y-6">
+          <h2 className="text-2xl font-bold">Integrations</h2>
+          <div className="grid gap-4 sm:gap-6 lg:grid-cols-2">
+            <ZapierIntegration 
+              transactions={transactions}
+              budgets={categoryBudgets.map(cb => ({
+                category: cb.category,
+                amount: cb.limit,
+                month: new Date().getMonth() + 1,
+                year: new Date().getFullYear()
+              }))}
+            />
+            <APIExport 
+              transactions={transactions}
+              budgets={categoryBudgets.map(cb => ({
+                category: cb.category,
+                amount: cb.limit,
+                month: new Date().getMonth() + 1,
+                year: new Date().getFullYear()
+              }))}
+            />
+          </div>
+        </section>
 
         {/* Shared Budgets Section */}
         <div className="mt-6">
