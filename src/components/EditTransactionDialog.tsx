@@ -7,6 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Textarea } from "@/components/ui/textarea";
 import { Transaction } from "./TransactionForm";
 import { incomeCategories, expenseCategories } from "@/lib/categoryConfig";
+import { TransactionComments } from "./TransactionComments";
 
 interface EditTransactionDialogProps {
   transaction: Transaction | null;
@@ -164,6 +165,12 @@ export function EditTransactionDialog({
             </div>
           </DialogFooter>
         </form>
+
+        {transaction && (
+          <div className="mt-4 border-t pt-4">
+            <TransactionComments transactionId={transaction.id} />
+          </div>
+        )}
       </DialogContent>
     </Dialog>
   );

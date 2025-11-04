@@ -19,6 +19,8 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { UserSettings } from "@/components/UserSettings";
 import { ImportData } from "@/components/ImportData";
 import { ShareReport } from "@/components/ShareReport";
+import { ShareReportPublic } from "@/components/ShareReportPublic";
+import { SharedBudgetsManager } from "@/components/SharedBudgetsManager";
 import { AIInsights } from "@/components/AIInsights";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
@@ -532,6 +534,19 @@ const Index = () => {
           />
           <ExportData transactions={transactions} />
           <ShareReport transactions={transactions} />
+          <ShareReportPublic 
+            reportData={{ 
+              transactions: filteredTransactions,
+              income: filteredTransactions.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0),
+              expenses: filteredTransactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0)
+            }}
+            title="Raport Financiar MoneyTracker"
+          />
+        </div>
+
+        {/* Shared Budgets Section */}
+        <div className="mt-6">
+          <SharedBudgetsManager />
         </div>
 
         {/* Filters Section */}

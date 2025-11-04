@@ -140,6 +140,142 @@ export type Database = {
         }
         Relationships: []
       }
+      report_shares: {
+        Row: {
+          created_at: string
+          expires_at: string | null
+          id: string
+          report_data: Json
+          share_token: string
+          title: string
+          user_id: string
+          view_count: number | null
+        }
+        Insert: {
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          report_data: Json
+          share_token: string
+          title: string
+          user_id: string
+          view_count?: number | null
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          report_data?: Json
+          share_token?: string
+          title?: string
+          user_id?: string
+          view_count?: number | null
+        }
+        Relationships: []
+      }
+      shared_budget_members: {
+        Row: {
+          created_at: string
+          id: string
+          role: string
+          shared_budget_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role?: string
+          shared_budget_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: string
+          shared_budget_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shared_budget_members_shared_budget_id_fkey"
+            columns: ["shared_budget_id"]
+            isOneToOne: false
+            referencedRelation: "shared_budgets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      shared_budgets: {
+        Row: {
+          amount: number
+          created_at: string
+          description: string | null
+          id: string
+          month: number
+          name: string
+          owner_id: string
+          updated_at: string
+          year: number
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          month: number
+          name: string
+          owner_id: string
+          updated_at?: string
+          year: number
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          month?: number
+          name?: string
+          owner_id?: string
+          updated_at?: string
+          year?: number
+        }
+        Relationships: []
+      }
+      transaction_comments: {
+        Row: {
+          comment: string
+          created_at: string
+          id: string
+          transaction_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          comment: string
+          created_at?: string
+          id?: string
+          transaction_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          comment?: string
+          created_at?: string
+          id?: string
+          transaction_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transaction_comments_transaction_id_fkey"
+            columns: ["transaction_id"]
+            isOneToOne: false
+            referencedRelation: "transactions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       transactions: {
         Row: {
           amount: number
