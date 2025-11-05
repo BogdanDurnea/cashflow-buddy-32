@@ -24,6 +24,7 @@ import { SharedBudgetsManager } from "@/components/SharedBudgetsManager";
 import { AIInsights } from "@/components/AIInsights";
 import { ZapierIntegration } from "@/components/ZapierIntegration";
 import { APIExport } from "@/components/APIExport";
+import { MobileBottomNav } from "@/components/MobileBottomNav";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { useBudgetAlerts } from "@/hooks/useBudgetAlerts";
@@ -49,6 +50,7 @@ const Index = () => {
   const [dateRangeEnd, setDateRangeEnd] = useState<Date | null>(null);
   const [categoryBudgets, setCategoryBudgets] = useState<Array<{ category: string; limit: number }>>([]);
   const [monthlyBudget, setMonthlyBudget] = useState<number>(5000);
+  const [activeTab, setActiveTab] = useState<string>("transactions");
 
   // Budget alerts hook
   const { requestNotificationPermission } = useBudgetAlerts({
@@ -489,133 +491,148 @@ const Index = () => {
       </section>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6 md:py-8 space-y-6 sm:space-y-8">
-        {/* Dashboard Grid */}
-        <div className="grid gap-4 sm:gap-6 lg:grid-cols-3">
-          {/* Transaction Form */}
-          <div className="lg:col-span-1">
-            <TransactionForm onAddTransaction={handleAddTransaction} />
-          </div>
+      <main className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6 md:py-8 pb-20 md:pb-8 space-y-6 sm:space-y-8">
+        {/* Transactions Tab Content */}
+        {activeTab === "transactions" && (
+          <div className="space-y-6">
+            <div className="grid gap-4 sm:gap-6 lg:grid-cols-3">
+              {/* Transaction Form */}
+              <div className="lg:col-span-1">
+                <TransactionForm onAddTransaction={handleAddTransaction} />
+              </div>
 
-          {/* Transaction List */}
-          <div className="lg:col-span-2">
-            <TransactionList 
-              transactions={filteredTransactions} 
-              onEditTransaction={handleEditTransaction}
+              {/* Transaction List */}
+              <div className="lg:col-span-2">
+                <TransactionList 
+                  transactions={filteredTransactions} 
+                  onEditTransaction={handleEditTransaction}
+                />
+              </div>
+            </div>
+
+            {/* Stats Section */}
+            <StatsCards transactions={transactions} />
+
+            {/* Filters Section */}
+            <TransactionFilters
+              selectedType={filterType}
+              selectedCategory={filterCategory}
+              selectedPeriod={filterPeriod}
+              onTypeChange={setFilterType}
+              onCategoryChange={setFilterCategory}
+              onPeriodChange={setFilterPeriod}
+              onReset={resetFilters}
             />
           </div>
-        </div>
+        )}
 
-        {/* Stats Section */}
-        <StatsCards transactions={transactions} />
-
-        {/* Budget Section */}
-        <div className="grid gap-4 sm:gap-6 lg:grid-cols-2">
-          <BudgetManager transactions={transactions} userId={user!.id} />
-          <CategoryBudgets transactions={transactions} />
-        </div>
-
-        {/* Custom Categories */}
-        <CustomCategoriesManager />
-
-        {/* User Settings and Import Section */}
-        <div className="grid gap-4 sm:gap-6 lg:grid-cols-2">
-          <UserSettings />
-          <ImportData onImport={(imported) => {
-            imported.forEach(t => handleAddTransaction(t));
-          }} />
-        </div>
-
-        {/* Recurring and Export Section */}
-        <div className="grid gap-4 sm:gap-6 lg:grid-cols-3">
-          <RecurringTransactions
-            recurringTransactions={recurringTransactions}
-            onAddRecurring={handleAddRecurring}
-            onDeleteRecurring={handleDeleteRecurring}
-            onToggleRecurring={handleToggleRecurring}
-          />
-          <ExportData transactions={transactions} />
-          <ShareReport transactions={transactions} />
-          <ShareReportPublic 
-            reportData={{ 
-              transactions: filteredTransactions,
-              income: filteredTransactions.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0),
-              expenses: filteredTransactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0)
-            }}
-            title="Raport Financiar MoneyTracker"
-          />
-        </div>
-
-        {/* Integrations Section */}
-        <section className="space-y-4 sm:space-y-6">
-          <h2 className="text-2xl font-bold">Integrations</h2>
-          <div className="grid gap-4 sm:gap-6 lg:grid-cols-2">
-            <ZapierIntegration 
+        {/* Analytics Tab Content */}
+        {activeTab === "analytics" && (
+          <section className="space-y-6">
+            <h2 className="text-xl sm:text-2xl font-bold">Analiză Avansată</h2>
+            
+            {/* Date Range Filter */}
+            <DateRangeFilter onDateRangeChange={handleDateRangeChange} />
+            
+            {/* AI Insights Section */}
+            <AIInsights 
               transactions={transactions}
-              budgets={categoryBudgets.map(cb => ({
-                category: cb.category,
-                amount: cb.limit,
-                month: new Date().getMonth() + 1,
-                year: new Date().getFullYear()
-              }))}
+              categoryBudgets={Object.fromEntries(categoryBudgets.map(b => [b.category, b.limit]))}
+              monthlyBudget={monthlyBudget}
             />
-            <APIExport 
-              transactions={transactions}
-              budgets={categoryBudgets.map(cb => ({
-                category: cb.category,
-                amount: cb.limit,
-                month: new Date().getMonth() + 1,
-                year: new Date().getFullYear()
-              }))}
+            
+            {/* Budget vs Actual */}
+            <BudgetVsActualChart 
+              transactions={transactions} 
+              categoryBudgets={categoryBudgets}
+            />
+            
+            {/* Category Trends */}
+            <CategoryTrendChart transactions={filteredTransactions} />
+            
+            {/* Original Charts */}
+            <TransactionCharts transactions={filteredTransactions} />
+          </section>
+        )}
+
+        {/* Budgets Tab Content */}
+        {activeTab === "budgets" && (
+          <div className="space-y-6">
+            <div className="grid gap-4 sm:gap-6 lg:grid-cols-2">
+              <BudgetManager transactions={transactions} userId={user!.id} />
+              <CategoryBudgets transactions={transactions} />
+            </div>
+
+            <SharedBudgetsManager />
+          </div>
+        )}
+
+        {/* Reports Tab Content */}
+        {activeTab === "reports" && (
+          <div className="space-y-6">
+            <ReportsSection transactions={transactions} />
+            
+            <div className="grid gap-4 sm:gap-6 lg:grid-cols-2">
+              <ExportData transactions={transactions} />
+              <ShareReport transactions={transactions} />
+            </div>
+
+            <ShareReportPublic 
+              reportData={{ 
+                transactions: filteredTransactions,
+                income: filteredTransactions.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0),
+                expenses: filteredTransactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0)
+              }}
+              title="Raport Financiar MoneyTracker"
+            />
+
+            {/* Integrations Section */}
+            <section className="space-y-4">
+              <h2 className="text-xl sm:text-2xl font-bold">Integrations</h2>
+              <div className="grid gap-4 sm:gap-6 lg:grid-cols-2">
+                <ZapierIntegration 
+                  transactions={transactions}
+                  budgets={categoryBudgets.map(cb => ({
+                    category: cb.category,
+                    amount: cb.limit,
+                    month: new Date().getMonth() + 1,
+                    year: new Date().getFullYear()
+                  }))}
+                />
+                <APIExport 
+                  transactions={transactions}
+                  budgets={categoryBudgets.map(cb => ({
+                    category: cb.category,
+                    amount: cb.limit,
+                    month: new Date().getMonth() + 1,
+                    year: new Date().getFullYear()
+                  }))}
+                />
+              </div>
+            </section>
+          </div>
+        )}
+
+        {/* Settings Tab Content */}
+        {activeTab === "settings" && (
+          <div className="space-y-6">
+            <CustomCategoriesManager />
+
+            <div className="grid gap-4 sm:gap-6 lg:grid-cols-2">
+              <UserSettings />
+              <ImportData onImport={(imported) => {
+                imported.forEach(t => handleAddTransaction(t));
+              }} />
+            </div>
+
+            <RecurringTransactions
+              recurringTransactions={recurringTransactions}
+              onAddRecurring={handleAddRecurring}
+              onDeleteRecurring={handleDeleteRecurring}
+              onToggleRecurring={handleToggleRecurring}
             />
           </div>
-        </section>
-
-        {/* Shared Budgets Section */}
-        <div className="mt-6">
-          <SharedBudgetsManager />
-        </div>
-
-        {/* Filters Section */}
-        <TransactionFilters
-          selectedType={filterType}
-          selectedCategory={filterCategory}
-          selectedPeriod={filterPeriod}
-          onTypeChange={setFilterType}
-          onCategoryChange={setFilterCategory}
-          onPeriodChange={setFilterPeriod}
-          onReset={resetFilters}
-        />
-
-        {/* AI Insights Section */}
-        <AIInsights 
-          transactions={transactions}
-          categoryBudgets={Object.fromEntries(categoryBudgets.map(b => [b.category, b.limit]))}
-          monthlyBudget={monthlyBudget}
-        />
-
-        {/* Advanced Analytics Section */}
-        <section className="space-y-4 sm:space-y-6">
-          <h2 className="text-xl sm:text-2xl font-bold">Analiză Avansată</h2>
-          
-          {/* Date Range Filter */}
-          <DateRangeFilter onDateRangeChange={handleDateRangeChange} />
-          
-          {/* Budget vs Actual */}
-          <BudgetVsActualChart 
-            transactions={transactions} 
-            categoryBudgets={categoryBudgets}
-          />
-          
-          {/* Category Trends */}
-          <CategoryTrendChart transactions={filteredTransactions} />
-          
-          {/* Original Charts */}
-          <TransactionCharts transactions={filteredTransactions} />
-        </section>
-
-        {/* Reports Section */}
-        <ReportsSection transactions={transactions} />
+        )}
       </main>
 
       {/* Edit Transaction Dialog */}
@@ -627,8 +644,11 @@ const Index = () => {
         onDelete={handleDeleteTransaction}
       />
 
+      {/* Mobile Bottom Navigation */}
+      <MobileBottomNav activeTab={activeTab} onTabChange={setActiveTab} />
+
       {/* Footer */}
-      <footer className="bg-card border-t mt-8 sm:mt-12">
+      <footer className="bg-card border-t mt-8 sm:mt-12 mb-16 md:mb-0">
         <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6">
           <div className="text-center text-muted-foreground">
             <p className="text-xs sm:text-sm">&copy; 2024 MoneyTracker. O aplicație pentru gestionarea finanțelor personale.</p>
