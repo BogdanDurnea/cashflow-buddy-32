@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import { Transaction } from "@/components/TransactionForm";
 import { toast } from "sonner";
 import { AlertTriangle, TrendingUp } from "lucide-react";
+import { usePushNotifications } from "./usePushNotifications";
 
 interface BudgetAlert {
   type: "monthly" | "category";
@@ -20,6 +21,9 @@ interface UseBudgetAlertsProps {
 export function useBudgetAlerts({ transactions, monthlyBudget, categoryBudgets }: UseBudgetAlertsProps) {
   const previousAlerts = useRef<Set<string>>(new Set());
   const hasShownInitialAlerts = useRef(false);
+  const { sendBudgetAlert, requestPermission } = usePushNotifications();
+  
+  const requestNotificationPermission = requestPermission;
 
   useEffect(() => {
     // Skip initial mount to avoid showing alerts on page load
@@ -124,6 +128,14 @@ export function useBudgetAlerts({ transactions, monthlyBudget, categoryBudgets }
       ? "Buget Lunar" 
       : `Categorie: ${alert.category}`;
 
+    // Send push notification
+    sendBudgetAlert(
+      title,
+      alert.spent,
+      alert.limit
+    );
+
+    // Show toast notification
     if (isOverBudget) {
       toast.error(
         <div className="flex items-start gap-3">
@@ -140,14 +152,6 @@ export function useBudgetAlerts({ transactions, monthlyBudget, categoryBudgets }
           position: "top-center",
         }
       );
-
-      // Browser notification
-      if ("Notification" in window && Notification.permission === "granted") {
-        new Notification(`⚠️ ${title} - Buget Depășit!`, {
-          body: `Ai cheltuit ${alert.spent.toFixed(2)} RON din ${alert.limit.toFixed(2)} RON`,
-          icon: "/favicon.ico",
-        });
-      }
     } else {
       toast.warning(
         <div className="flex items-start gap-3">
@@ -164,13 +168,6 @@ export function useBudgetAlerts({ transactions, monthlyBudget, categoryBudgets }
           position: "top-center",
         }
       );
-    }
-  };
-
-  // Request notification permission
-  const requestNotificationPermission = async () => {
-    if ("Notification" in window && Notification.permission === "default") {
-      await Notification.requestPermission();
     }
   };
 

@@ -25,6 +25,7 @@ import { AIInsights } from "@/components/AIInsights";
 import { ZapierIntegration } from "@/components/ZapierIntegration";
 import { APIExport } from "@/components/APIExport";
 import { MobileBottomNav } from "@/components/MobileBottomNav";
+import { NotificationSettings } from "@/components/NotificationSettings";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { useBudgetAlerts } from "@/hooks/useBudgetAlerts";
@@ -616,6 +617,8 @@ const Index = () => {
         {/* Settings Tab Content */}
         {activeTab === "settings" && (
           <div className="space-y-6">
+            <NotificationSettings />
+            
             <CustomCategoriesManager />
 
             <div className="grid gap-4 sm:gap-6 lg:grid-cols-2">
