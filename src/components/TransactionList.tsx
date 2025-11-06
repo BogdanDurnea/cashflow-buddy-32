@@ -3,16 +3,18 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
-import { TrendingUp, TrendingDown, Calendar, Edit2, Paperclip, ExternalLink } from "lucide-react";
+import { TrendingUp, TrendingDown, Calendar, Edit2, Paperclip, ExternalLink, Receipt } from "lucide-react";
 import { Transaction } from "./TransactionForm";
 import { getCategoryConfig } from "@/lib/categoryConfig";
+import { EmptyState } from "./EmptyState";
+import React from "react";
 
 interface TransactionListProps {
   transactions: Transaction[];
   onEditTransaction: (transaction: Transaction) => void;
 }
 
-export function TransactionList({ transactions, onEditTransaction }: TransactionListProps) {
+export const TransactionList = React.memo(function TransactionList({ transactions, onEditTransaction }: TransactionListProps) {
   const sortedTransactions = transactions.sort((a, b) => 
     new Date(b.date).getTime() - new Date(a.date).getTime()
   );
@@ -45,12 +47,16 @@ export function TransactionList({ transactions, onEditTransaction }: Transaction
         <CardTitle className="text-base sm:text-lg">Tranzacții recente</CardTitle>
       </CardHeader>
       <CardContent className="p-0">
+        {sortedTransactions.length === 0 ? (
+          <div className="p-4">
+            <EmptyState
+              icon={Receipt}
+              title="Nicio tranzacție"
+              description="Nu ai adăugat încă nicio tranzacție. Începe prin a adăuga prima ta tranzacție pentru a urmări cheltuielile și veniturile."
+            />
+          </div>
+        ) : (
         <ScrollArea className="h-[400px] sm:h-[450px]">
-          {sortedTransactions.length === 0 ? (
-            <div className="p-6 text-center text-muted-foreground text-sm sm:text-base">
-              Nu există tranzacții încă. Adaugă prima ta tranzacție!
-            </div>
-          ) : (
             <div className="space-y-1">
               {sortedTransactions.map((transaction) => {
                 const categoryConfig = getCategoryConfig(transaction.category, transaction.type);
@@ -138,9 +144,9 @@ export function TransactionList({ transactions, onEditTransaction }: Transaction
                 );
               })}
             </div>
-          )}
         </ScrollArea>
+        )}
       </CardContent>
     </Card>
   );
-}
+});

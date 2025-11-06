@@ -1,12 +1,13 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TrendingUp, TrendingDown, DollarSign, Activity, Calendar, PiggyBank } from "lucide-react";
 import { Transaction } from "@/components/TransactionForm";
+import React from "react";
 
 interface StatsCardsProps {
   transactions: Transaction[];
 }
 
-export function StatsCards({ transactions }: StatsCardsProps) {
+export const StatsCards = React.memo(function StatsCards({ transactions }: StatsCardsProps) {
   // Calculate statistics
   const totalIncome = transactions
     .filter(t => t.type === "income")
@@ -134,4 +135,4 @@ export function StatsCards({ transactions }: StatsCardsProps) {
       })}
     </div>
   );
-}
+});
