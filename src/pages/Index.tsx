@@ -24,9 +24,16 @@ import { SharedBudgetsManager } from "@/components/SharedBudgetsManager";
 import { AIInsights } from "@/components/AIInsights";
 import { ZapierIntegration } from "@/components/ZapierIntegration";
 import { APIExport } from "@/components/APIExport";
-import { MobileBottomNav } from "@/components/MobileBottomNav";
+import { AppSidebar } from "@/components/AppSidebar";
 import { NotificationSettings } from "@/components/NotificationSettings";
 import { Button } from "@/components/ui/button";
+import { SidebarTrigger } from "@/components/ui/sidebar";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import { useAuth } from "@/hooks/useAuth";
 import { useBudgetAlerts } from "@/hooks/useBudgetAlerts";
 import { supabase } from "@/integrations/supabase/client";
@@ -51,7 +58,8 @@ const Index = () => {
   const [dateRangeEnd, setDateRangeEnd] = useState<Date | null>(null);
   const [categoryBudgets, setCategoryBudgets] = useState<Array<{ category: string; limit: number }>>([]);
   const [monthlyBudget, setMonthlyBudget] = useState<number>(5000);
-  const [activeTab, setActiveTab] = useState<string>("transactions");
+  const [activeSection, setActiveSection] = useState<string>("transactions");
+  const [expandedSections, setExpandedSections] = useState<string[]>(["transactions"]);
 
   // Budget alerts hook
   const { requestNotificationPermission } = useBudgetAlerts({
@@ -429,12 +437,16 @@ const Index = () => {
   if (!user) return null;
 
   return (
-    <div className="min-h-screen bg-gradient-subtle">
-      {/* Header */}
-      <header className="bg-card/80 backdrop-blur-sm border-b shadow-card sticky top-0 z-50">
+    <div className="flex min-h-screen w-full bg-gradient-subtle">
+      <AppSidebar activeSection={activeSection} onSectionChange={setActiveSection} />
+      
+      <div className="flex-1 flex flex-col w-full">
+        {/* Header */}
+        <header className="bg-card/80 backdrop-blur-sm border-b shadow-card sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-2 sm:py-3 md:py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2 sm:space-x-3 min-w-0 flex-1">
+              <SidebarTrigger className="shrink-0" />
               <div className="gradient-primary p-1.5 sm:p-2 rounded-lg shrink-0">
                 <TrendingUp className="h-5 w-5 sm:h-6 sm:w-6 text-primary-foreground" />
               </div>
@@ -474,190 +486,184 @@ const Index = () => {
             </div>
           </div>
         </div>
-      </header>
+        </header>
 
-      {/* Hero Section */}
-      <section className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-primary opacity-90"></div>
-        <div 
-          className="h-32 sm:h-40 md:h-48 bg-cover bg-center bg-no-repeat"
-          style={{ backgroundImage: `url(${heroImage})` }}
+        {/* Hero Section */}
+        <section className="relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-primary opacity-90"></div>
+          <div 
+            className="h-32 sm:h-40 md:h-48 bg-cover bg-center bg-no-repeat"
+            style={{ backgroundImage: `url(${heroImage})` }}
+          />
+          <div className="absolute inset-0 flex items-center justify-center px-4">
+            <div className="text-center text-primary-foreground max-w-3xl">
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-1 sm:mb-2">Controlează-ți finanțele</h2>
+              <p className="text-sm sm:text-base md:text-xl opacity-90">Monitorizează venituri și cheltuieli cu ușurință</p>
+            </div>
+          </div>
+        </section>
+
+        {/* Main Content */}
+        <main className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6 md:py-8 space-y-2">
+          <Accordion 
+            type="multiple" 
+            value={expandedSections}
+            onValueChange={setExpandedSections}
+            className="space-y-4"
+          >
+            {/* Transactions Section */}
+            <AccordionItem value="transactions" id="section-transactions" className="border rounded-lg bg-card shadow-card">
+              <AccordionTrigger className="px-4 sm:px-6 py-4 text-lg sm:text-xl font-bold hover:no-underline">
+                Tranzacții
+              </AccordionTrigger>
+              <AccordionContent className="px-4 sm:px-6 pb-4 space-y-6">
+                <div className="grid gap-4 sm:gap-6 lg:grid-cols-3">
+                  <div className="lg:col-span-1">
+                    <TransactionForm onAddTransaction={handleAddTransaction} />
+                  </div>
+                  <div className="lg:col-span-2">
+                    <TransactionList 
+                      transactions={filteredTransactions} 
+                      onEditTransaction={handleEditTransaction}
+                    />
+                  </div>
+                </div>
+                <StatsCards transactions={transactions} />
+                <TransactionFilters
+                  selectedType={filterType}
+                  selectedCategory={filterCategory}
+                  selectedPeriod={filterPeriod}
+                  onTypeChange={setFilterType}
+                  onCategoryChange={setFilterCategory}
+                  onPeriodChange={setFilterPeriod}
+                  onReset={resetFilters}
+                />
+              </AccordionContent>
+            </AccordionItem>
+
+            {/* Analytics Section */}
+            <AccordionItem value="analytics" id="section-analytics" className="border rounded-lg bg-card shadow-card">
+              <AccordionTrigger className="px-4 sm:px-6 py-4 text-lg sm:text-xl font-bold hover:no-underline">
+                Analiză Avansată
+              </AccordionTrigger>
+              <AccordionContent className="px-4 sm:px-6 pb-4 space-y-6">
+                <DateRangeFilter onDateRangeChange={handleDateRangeChange} />
+                <AIInsights 
+                  transactions={transactions}
+                  categoryBudgets={Object.fromEntries(categoryBudgets.map(b => [b.category, b.limit]))}
+                  monthlyBudget={monthlyBudget}
+                />
+                <BudgetVsActualChart 
+                  transactions={transactions} 
+                  categoryBudgets={categoryBudgets}
+                />
+                <CategoryTrendChart transactions={filteredTransactions} />
+                <TransactionCharts transactions={filteredTransactions} />
+              </AccordionContent>
+            </AccordionItem>
+
+            {/* Budgets Section */}
+            <AccordionItem value="budgets" id="section-budgets" className="border rounded-lg bg-card shadow-card">
+              <AccordionTrigger className="px-4 sm:px-6 py-4 text-lg sm:text-xl font-bold hover:no-underline">
+                Bugete
+              </AccordionTrigger>
+              <AccordionContent className="px-4 sm:px-6 pb-4 space-y-6">
+                <div className="grid gap-4 sm:gap-6 lg:grid-cols-2">
+                  <BudgetManager transactions={transactions} userId={user!.id} />
+                  <CategoryBudgets transactions={transactions} />
+                </div>
+                <SharedBudgetsManager />
+              </AccordionContent>
+            </AccordionItem>
+
+            {/* Reports Section */}
+            <AccordionItem value="reports" id="section-reports" className="border rounded-lg bg-card shadow-card">
+              <AccordionTrigger className="px-4 sm:px-6 py-4 text-lg sm:text-xl font-bold hover:no-underline">
+                Rapoarte & Integrări
+              </AccordionTrigger>
+              <AccordionContent className="px-4 sm:px-6 pb-4 space-y-6">
+                <ReportsSection transactions={transactions} />
+                <div className="grid gap-4 sm:gap-6 lg:grid-cols-2">
+                  <ExportData transactions={transactions} />
+                  <ShareReport transactions={transactions} />
+                </div>
+                <ShareReportPublic 
+                  reportData={{ 
+                    transactions: filteredTransactions,
+                    income: filteredTransactions.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0),
+                    expenses: filteredTransactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0)
+                  }}
+                  title="Raport Financiar MoneyTracker"
+                />
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold">Integrări</h3>
+                  <div className="grid gap-4 sm:gap-6 lg:grid-cols-2">
+                    <ZapierIntegration 
+                      transactions={transactions}
+                      budgets={categoryBudgets.map(cb => ({
+                        category: cb.category,
+                        amount: cb.limit,
+                        month: new Date().getMonth() + 1,
+                        year: new Date().getFullYear()
+                      }))}
+                    />
+                    <APIExport 
+                      transactions={transactions}
+                      budgets={categoryBudgets.map(cb => ({
+                        category: cb.category,
+                        amount: cb.limit,
+                        month: new Date().getMonth() + 1,
+                        year: new Date().getFullYear()
+                      }))}
+                    />
+                  </div>
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+
+            {/* Settings Section */}
+            <AccordionItem value="settings" id="section-settings" className="border rounded-lg bg-card shadow-card">
+              <AccordionTrigger className="px-4 sm:px-6 py-4 text-lg sm:text-xl font-bold hover:no-underline">
+                Setări
+              </AccordionTrigger>
+              <AccordionContent className="px-4 sm:px-6 pb-4 space-y-6">
+                <NotificationSettings />
+                <CustomCategoriesManager />
+                <div className="grid gap-4 sm:gap-6 lg:grid-cols-2">
+                  <UserSettings />
+                  <ImportData onImport={(imported) => {
+                    imported.forEach(t => handleAddTransaction(t));
+                  }} />
+                </div>
+                <RecurringTransactions
+                  recurringTransactions={recurringTransactions}
+                  onAddRecurring={handleAddRecurring}
+                  onDeleteRecurring={handleDeleteRecurring}
+                  onToggleRecurring={handleToggleRecurring}
+                />
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
+        </main>
+
+        {/* Edit Transaction Dialog */}
+        <EditTransactionDialog
+          transaction={editingTransaction}
+          open={showEditDialog}
+          onOpenChange={setShowEditDialog}
+          onSave={handleUpdateTransaction}
+          onDelete={handleDeleteTransaction}
         />
-        <div className="absolute inset-0 flex items-center justify-center px-4">
-          <div className="text-center text-primary-foreground max-w-3xl">
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-1 sm:mb-2">Controlează-ți finanțele</h2>
-            <p className="text-sm sm:text-base md:text-xl opacity-90">Monitorizează venituri și cheltuieli cu ușurință</p>
-          </div>
-        </div>
-      </section>
 
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6 md:py-8 pb-20 md:pb-8 space-y-6 sm:space-y-8">
-        {/* Transactions Tab Content */}
-        {activeTab === "transactions" && (
-          <div className="space-y-6">
-            <div className="grid gap-4 sm:gap-6 lg:grid-cols-3">
-              {/* Transaction Form */}
-              <div className="lg:col-span-1">
-                <TransactionForm onAddTransaction={handleAddTransaction} />
-              </div>
-
-              {/* Transaction List */}
-              <div className="lg:col-span-2">
-                <TransactionList 
-                  transactions={filteredTransactions} 
-                  onEditTransaction={handleEditTransaction}
-                />
-              </div>
+        {/* Footer */}
+        <footer className="bg-card border-t mt-8 sm:mt-12">
+          <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6">
+            <div className="text-center text-muted-foreground">
+              <p className="text-xs sm:text-sm">&copy; 2024 MoneyTracker. O aplicație pentru gestionarea finanțelor personale.</p>
             </div>
-
-            {/* Stats Section */}
-            <StatsCards transactions={transactions} />
-
-            {/* Filters Section */}
-            <TransactionFilters
-              selectedType={filterType}
-              selectedCategory={filterCategory}
-              selectedPeriod={filterPeriod}
-              onTypeChange={setFilterType}
-              onCategoryChange={setFilterCategory}
-              onPeriodChange={setFilterPeriod}
-              onReset={resetFilters}
-            />
           </div>
-        )}
-
-        {/* Analytics Tab Content */}
-        {activeTab === "analytics" && (
-          <section className="space-y-6">
-            <h2 className="text-xl sm:text-2xl font-bold">Analiză Avansată</h2>
-            
-            {/* Date Range Filter */}
-            <DateRangeFilter onDateRangeChange={handleDateRangeChange} />
-            
-            {/* AI Insights Section */}
-            <AIInsights 
-              transactions={transactions}
-              categoryBudgets={Object.fromEntries(categoryBudgets.map(b => [b.category, b.limit]))}
-              monthlyBudget={monthlyBudget}
-            />
-            
-            {/* Budget vs Actual */}
-            <BudgetVsActualChart 
-              transactions={transactions} 
-              categoryBudgets={categoryBudgets}
-            />
-            
-            {/* Category Trends */}
-            <CategoryTrendChart transactions={filteredTransactions} />
-            
-            {/* Original Charts */}
-            <TransactionCharts transactions={filteredTransactions} />
-          </section>
-        )}
-
-        {/* Budgets Tab Content */}
-        {activeTab === "budgets" && (
-          <div className="space-y-6">
-            <div className="grid gap-4 sm:gap-6 lg:grid-cols-2">
-              <BudgetManager transactions={transactions} userId={user!.id} />
-              <CategoryBudgets transactions={transactions} />
-            </div>
-
-            <SharedBudgetsManager />
-          </div>
-        )}
-
-        {/* Reports Tab Content */}
-        {activeTab === "reports" && (
-          <div className="space-y-6">
-            <ReportsSection transactions={transactions} />
-            
-            <div className="grid gap-4 sm:gap-6 lg:grid-cols-2">
-              <ExportData transactions={transactions} />
-              <ShareReport transactions={transactions} />
-            </div>
-
-            <ShareReportPublic 
-              reportData={{ 
-                transactions: filteredTransactions,
-                income: filteredTransactions.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0),
-                expenses: filteredTransactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0)
-              }}
-              title="Raport Financiar MoneyTracker"
-            />
-
-            {/* Integrations Section */}
-            <section className="space-y-4">
-              <h2 className="text-xl sm:text-2xl font-bold">Integrations</h2>
-              <div className="grid gap-4 sm:gap-6 lg:grid-cols-2">
-                <ZapierIntegration 
-                  transactions={transactions}
-                  budgets={categoryBudgets.map(cb => ({
-                    category: cb.category,
-                    amount: cb.limit,
-                    month: new Date().getMonth() + 1,
-                    year: new Date().getFullYear()
-                  }))}
-                />
-                <APIExport 
-                  transactions={transactions}
-                  budgets={categoryBudgets.map(cb => ({
-                    category: cb.category,
-                    amount: cb.limit,
-                    month: new Date().getMonth() + 1,
-                    year: new Date().getFullYear()
-                  }))}
-                />
-              </div>
-            </section>
-          </div>
-        )}
-
-        {/* Settings Tab Content */}
-        {activeTab === "settings" && (
-          <div className="space-y-6">
-            <NotificationSettings />
-            
-            <CustomCategoriesManager />
-
-            <div className="grid gap-4 sm:gap-6 lg:grid-cols-2">
-              <UserSettings />
-              <ImportData onImport={(imported) => {
-                imported.forEach(t => handleAddTransaction(t));
-              }} />
-            </div>
-
-            <RecurringTransactions
-              recurringTransactions={recurringTransactions}
-              onAddRecurring={handleAddRecurring}
-              onDeleteRecurring={handleDeleteRecurring}
-              onToggleRecurring={handleToggleRecurring}
-            />
-          </div>
-        )}
-      </main>
-
-      {/* Edit Transaction Dialog */}
-      <EditTransactionDialog
-        transaction={editingTransaction}
-        open={showEditDialog}
-        onOpenChange={setShowEditDialog}
-        onSave={handleUpdateTransaction}
-        onDelete={handleDeleteTransaction}
-      />
-
-      {/* Mobile Bottom Navigation */}
-      <MobileBottomNav activeTab={activeTab} onTabChange={setActiveTab} />
-
-      {/* Footer */}
-      <footer className="bg-card border-t mt-8 sm:mt-12 mb-16 md:mb-0">
-        <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6">
-          <div className="text-center text-muted-foreground">
-            <p className="text-xs sm:text-sm">&copy; 2024 MoneyTracker. O aplicație pentru gestionarea finanțelor personale.</p>
-          </div>
-        </div>
-      </footer>
+        </footer>
+      </div>
     </div>
   );
 };
