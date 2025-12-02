@@ -39,7 +39,7 @@ import { useBudgetAlerts } from "@/hooks/useBudgetAlerts";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import heroImage from "@/assets/hero-dashboard.jpg";
-import { PieChart, BarChart3, TrendingUp, LogOut, Loader2, Bell } from "lucide-react";
+import { PieChart, BarChart3, TrendingUp, LogOut, Loader2, Bell, ChevronsUpDown } from "lucide-react";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -61,6 +61,15 @@ const Index = () => {
   const [activeSection, setActiveSection] = useState<string>("transactions");
   const [expandedSections, setExpandedSections] = useState<string[]>(["transactions"]);
   const sectionRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  const allSections = ["transactions", "analytics", "budgets", "reports", "settings"];
+
+  const toggleAllSections = useCallback(() => {
+    if (expandedSections.length === allSections.length) {
+      setExpandedSections([]);
+    } else {
+      setExpandedSections(allSections);
+    }
+  }, [expandedSections.length]);
 
   // Smooth scroll to section when opened
   const handleAccordionChange = useCallback((values: string[]) => {
@@ -480,6 +489,18 @@ const Index = () => {
                   <BarChart3 className="h-5 w-5 text-primary" />
                 </div>
               </div>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={toggleAllSections}
+                className="h-8 sm:h-9 active:scale-95 transition-smooth"
+                title={expandedSections.length === allSections.length ? "Închide toate secțiunile" : "Deschide toate secțiunile"}
+              >
+                <ChevronsUpDown className="h-4 w-4" />
+                <span className="hidden md:inline ml-1">
+                  {expandedSections.length === allSections.length ? "Închide tot" : "Deschide tot"}
+                </span>
+              </Button>
               <Button 
                 variant="outline" 
                 size="sm" 

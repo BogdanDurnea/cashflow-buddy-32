@@ -31,7 +31,7 @@ const App = () => (
           <Toaster />
           <Sonner />
           <BrowserRouter>
-            <SidebarProvider>
+            <SidebarProvider defaultOpen={false}>
               <Suspense fallback={<LoadingFallback />}>
                 <Routes>
                   <Route path="/" element={<Index />} />
