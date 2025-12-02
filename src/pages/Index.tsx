@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { TransactionForm, Transaction } from "@/components/TransactionForm";
 import { TransactionList } from "@/components/TransactionList";
@@ -60,6 +60,22 @@ const Index = () => {
   const [monthlyBudget, setMonthlyBudget] = useState<number>(5000);
   const [activeSection, setActiveSection] = useState<string>("transactions");
   const [expandedSections, setExpandedSections] = useState<string[]>(["transactions"]);
+  const sectionRefs = useRef<Record<string, HTMLDivElement | null>>({});
+
+  // Smooth scroll to section when opened
+  const handleAccordionChange = useCallback((values: string[]) => {
+    const newlyOpened = values.find(v => !expandedSections.includes(v));
+    setExpandedSections(values);
+    
+    if (newlyOpened && sectionRefs.current[newlyOpened]) {
+      setTimeout(() => {
+        sectionRefs.current[newlyOpened]?.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start',
+        });
+      }, 100);
+    }
+  }, [expandedSections]);
 
   // Budget alerts hook
   const { requestNotificationPermission } = useBudgetAlerts({
@@ -508,11 +524,16 @@ const Index = () => {
           <Accordion 
             type="multiple" 
             value={expandedSections}
-            onValueChange={setExpandedSections}
+            onValueChange={handleAccordionChange}
             className="space-y-4"
           >
             {/* Transactions Section */}
-            <AccordionItem value="transactions" id="section-transactions" className="border rounded-lg bg-card shadow-card">
+            <AccordionItem 
+              value="transactions" 
+              id="section-transactions" 
+              className="border rounded-lg bg-card shadow-card transition-all duration-300 data-[state=open]:shadow-lg data-[state=open]:border-primary/20"
+              ref={(el) => { sectionRefs.current['transactions'] = el; }}
+            >
               <AccordionTrigger className="px-4 sm:px-6 py-4 text-lg sm:text-xl font-bold hover:no-underline">
                 Tranzacții
               </AccordionTrigger>
@@ -542,7 +563,12 @@ const Index = () => {
             </AccordionItem>
 
             {/* Analytics Section */}
-            <AccordionItem value="analytics" id="section-analytics" className="border rounded-lg bg-card shadow-card">
+            <AccordionItem 
+              value="analytics" 
+              id="section-analytics" 
+              className="border rounded-lg bg-card shadow-card transition-all duration-300 data-[state=open]:shadow-lg data-[state=open]:border-primary/20"
+              ref={(el) => { sectionRefs.current['analytics'] = el; }}
+            >
               <AccordionTrigger className="px-4 sm:px-6 py-4 text-lg sm:text-xl font-bold hover:no-underline">
                 Analiză Avansată
               </AccordionTrigger>
@@ -563,7 +589,12 @@ const Index = () => {
             </AccordionItem>
 
             {/* Budgets Section */}
-            <AccordionItem value="budgets" id="section-budgets" className="border rounded-lg bg-card shadow-card">
+            <AccordionItem 
+              value="budgets" 
+              id="section-budgets" 
+              className="border rounded-lg bg-card shadow-card transition-all duration-300 data-[state=open]:shadow-lg data-[state=open]:border-primary/20"
+              ref={(el) => { sectionRefs.current['budgets'] = el; }}
+            >
               <AccordionTrigger className="px-4 sm:px-6 py-4 text-lg sm:text-xl font-bold hover:no-underline">
                 Bugete
               </AccordionTrigger>
@@ -577,7 +608,12 @@ const Index = () => {
             </AccordionItem>
 
             {/* Reports Section */}
-            <AccordionItem value="reports" id="section-reports" className="border rounded-lg bg-card shadow-card">
+            <AccordionItem 
+              value="reports" 
+              id="section-reports" 
+              className="border rounded-lg bg-card shadow-card transition-all duration-300 data-[state=open]:shadow-lg data-[state=open]:border-primary/20"
+              ref={(el) => { sectionRefs.current['reports'] = el; }}
+            >
               <AccordionTrigger className="px-4 sm:px-6 py-4 text-lg sm:text-xl font-bold hover:no-underline">
                 Rapoarte & Integrări
               </AccordionTrigger>
@@ -622,7 +658,12 @@ const Index = () => {
             </AccordionItem>
 
             {/* Settings Section */}
-            <AccordionItem value="settings" id="section-settings" className="border rounded-lg bg-card shadow-card">
+            <AccordionItem 
+              value="settings" 
+              id="section-settings" 
+              className="border rounded-lg bg-card shadow-card transition-all duration-300 data-[state=open]:shadow-lg data-[state=open]:border-primary/20"
+              ref={(el) => { sectionRefs.current['settings'] = el; }}
+            >
               <AccordionTrigger className="px-4 sm:px-6 py-4 text-lg sm:text-xl font-bold hover:no-underline">
                 Setări
               </AccordionTrigger>
