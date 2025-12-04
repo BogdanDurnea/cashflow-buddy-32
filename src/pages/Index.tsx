@@ -17,6 +17,7 @@ import { CategoryTrendChart } from "@/components/CategoryTrendChart";
 import { CustomCategoriesManager } from "@/components/CustomCategoriesManager";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { UserSettings } from "@/components/UserSettings";
+import { AccountSettings } from "@/components/AccountSettings";
 import { ImportData } from "@/components/ImportData";
 import { ShareReport } from "@/components/ShareReport";
 import { ShareReportPublic } from "@/components/ShareReportPublic";
@@ -691,6 +692,7 @@ const Index = () => {
               <AccordionContent className="px-4 sm:px-6 pb-4 space-y-6">
                 <NotificationSettings />
                 <CustomCategoriesManager />
+                <AccountSettings />
                 <div className="grid gap-4 sm:gap-6 lg:grid-cols-2">
                   <UserSettings />
                   <ImportData onImport={(imported) => {
