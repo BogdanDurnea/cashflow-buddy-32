@@ -39,8 +39,9 @@ import { useAuth } from "@/hooks/useAuth";
 import { useBudgetAlerts } from "@/hooks/useBudgetAlerts";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import heroImage from "@/assets/hero-dashboard.jpg";
-import { PieChart, BarChart3, TrendingUp, LogOut, Loader2, Bell, ChevronsUpDown } from "lucide-react";
+import { PieChart, BarChart3, TrendingUp, LogOut, Loader2, Bell, ChevronsUpDown, TrendingDown } from "lucide-react";
+import { AreaChart, Area, ResponsiveContainer, Tooltip } from "recharts";
+import { subDays, format, startOfDay, isAfter } from "date-fns";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -93,6 +94,32 @@ const Index = () => {
     monthlyBudget,
     categoryBudgets
   });
+
+  // Sparkline data for last 7 days
+  const weeklySparklineData = useMemo(() => {
+    const today = startOfDay(new Date());
+    const days = [];
+    
+    for (let i = 6; i >= 0; i--) {
+      const day = subDays(today, i);
+      const dayStr = format(day, 'yyyy-MM-dd');
+      const dayExpenses = transactions
+        .filter(t => t.type === 'expense' && format(new Date(t.date), 'yyyy-MM-dd') === dayStr)
+        .reduce((sum, t) => sum + t.amount, 0);
+      
+      days.push({
+        day: format(day, 'EEE'),
+        amount: dayExpenses,
+      });
+    }
+    
+    return days;
+  }, [transactions]);
+
+  const weeklyTotal = useMemo(() => 
+    weeklySparklineData.reduce((sum, d) => sum + d.amount, 0),
+    [weeklySparklineData]
+  );
 
   // Load category budgets from localStorage
   useEffect(() => {
@@ -529,7 +556,8 @@ const Index = () => {
         {/* Hero Section */}
         <section className="relative py-6 sm:py-8 md:py-10 bg-gradient-to-r from-primary/5 via-primary/10 to-accent/5 border-b">
           <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 lg:gap-6">
+              {/* Left: Greeting */}
               <div className="flex items-center gap-4">
                 <div className="relative">
                   <div className="absolute inset-0 bg-primary/20 blur-xl rounded-full"></div>
@@ -546,6 +574,50 @@ const Index = () => {
                   </p>
                 </div>
               </div>
+
+              {/* Center: Weekly Sparkline */}
+              <div className="flex-1 w-full lg:max-w-xs">
+                <div className="p-3 rounded-xl bg-card/50 backdrop-blur border border-border/50">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-xs font-medium text-muted-foreground">Cheltuieli 7 zile</span>
+                    <div className="flex items-center gap-1 text-danger">
+                      <TrendingDown className="h-3 w-3" />
+                      <span className="text-xs font-semibold">{weeklyTotal.toLocaleString('ro-RO')} RON</span>
+                    </div>
+                  </div>
+                  <div className="h-12">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <AreaChart data={weeklySparklineData}>
+                        <defs>
+                          <linearGradient id="sparklineGradient" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stopColor="hsl(var(--danger))" stopOpacity={0.3} />
+                            <stop offset="100%" stopColor="hsl(var(--danger))" stopOpacity={0} />
+                          </linearGradient>
+                        </defs>
+                        <Tooltip 
+                          contentStyle={{ 
+                            background: 'hsl(var(--card))', 
+                            border: '1px solid hsl(var(--border))',
+                            borderRadius: '8px',
+                            fontSize: '12px'
+                          }}
+                          formatter={(value: number) => [`${value.toLocaleString('ro-RO')} RON`, 'Cheltuieli']}
+                          labelFormatter={(label) => label}
+                        />
+                        <Area 
+                          type="monotone" 
+                          dataKey="amount" 
+                          stroke="hsl(var(--danger))" 
+                          strokeWidth={2}
+                          fill="url(#sparklineGradient)"
+                        />
+                      </AreaChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
+              </div>
+
+              {/* Right: Stats badges */}
               <div className="flex items-center gap-3 text-sm">
                 <div className="px-4 py-2 rounded-full bg-success/10 text-success border border-success/20">
                   <span className="font-medium">+{transactions.filter(t => t.type === 'income').length} venituri</span>
