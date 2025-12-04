@@ -527,16 +527,33 @@ const Index = () => {
         </header>
 
         {/* Hero Section */}
-        <section className="relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-primary opacity-90"></div>
-          <div 
-            className="h-32 sm:h-40 md:h-48 bg-cover bg-center bg-no-repeat"
-            style={{ backgroundImage: `url(${heroImage})` }}
-          />
-          <div className="absolute inset-0 flex items-center justify-center px-4">
-            <div className="text-center text-primary-foreground max-w-3xl">
-              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-1 sm:mb-2">Controlează-ți finanțele</h2>
-              <p className="text-sm sm:text-base md:text-xl opacity-90">Monitorizează venituri și cheltuieli cu ușurință</p>
+        <section className="relative py-6 sm:py-8 md:py-10 bg-gradient-to-r from-primary/5 via-primary/10 to-accent/5 border-b">
+          <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="flex items-center gap-4">
+                <div className="relative">
+                  <div className="absolute inset-0 bg-primary/20 blur-xl rounded-full"></div>
+                  <div className="relative p-3 sm:p-4 bg-gradient-primary rounded-2xl shadow-glow">
+                    <TrendingUp className="h-6 w-6 sm:h-8 sm:w-8 text-primary-foreground" />
+                  </div>
+                </div>
+                <div>
+                  <h2 className="text-xl sm:text-2xl md:text-3xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text">
+                    Bună, {user?.email?.split('@')[0] || 'User'}! 👋
+                  </h2>
+                  <p className="text-sm sm:text-base text-muted-foreground">
+                    Ai <span className="font-semibold text-primary">{transactions.length}</span> tranzacții înregistrate
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3 text-sm">
+                <div className="px-4 py-2 rounded-full bg-success/10 text-success border border-success/20">
+                  <span className="font-medium">+{transactions.filter(t => t.type === 'income').length} venituri</span>
+                </div>
+                <div className="px-4 py-2 rounded-full bg-danger/10 text-danger border border-danger/20">
+                  <span className="font-medium">-{transactions.filter(t => t.type === 'expense').length} cheltuieli</span>
+                </div>
+              </div>
             </div>
           </div>
         </section>
