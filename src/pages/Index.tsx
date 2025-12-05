@@ -618,6 +618,40 @@ const Index = () => {
                 </div>
               </div>
 
+              {/* Budget Progress Indicator */}
+              {monthlyBudget > 0 && (
+                <div className="w-full lg:w-auto lg:min-w-[180px]">
+                  <div className="p-3 rounded-xl bg-card/50 backdrop-blur border border-border/50">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-xs font-medium text-muted-foreground">Buget lunar</span>
+                      <span className="text-xs font-semibold">
+                        {Math.min(Math.round((monthlyTotal / monthlyBudget) * 100), 100)}%
+                      </span>
+                    </div>
+                    <div className="relative h-2 bg-muted rounded-full overflow-hidden">
+                      <div 
+                        className={`absolute inset-y-0 left-0 rounded-full transition-all duration-500 ${
+                          monthlyTotal > monthlyBudget 
+                            ? 'bg-danger' 
+                            : monthlyTotal > monthlyBudget * 0.8 
+                              ? 'bg-warning' 
+                              : 'bg-success'
+                        }`}
+                        style={{ width: `${Math.min((monthlyTotal / monthlyBudget) * 100, 100)}%` }}
+                      />
+                    </div>
+                    <div className="flex items-center justify-between mt-2 text-xs">
+                      <span className={monthlyTotal > monthlyBudget ? 'text-danger font-medium' : 'text-muted-foreground'}>
+                        {monthlyTotal.toLocaleString('ro-RO')}
+                      </span>
+                      <span className="text-muted-foreground">
+                        / {monthlyBudget.toLocaleString('ro-RO')} RON
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {/* Right: Stats badges */}
               <div className="flex items-center gap-3 text-sm">
                 <div className="px-4 py-2 rounded-full bg-success/10 text-success border border-success/20">
