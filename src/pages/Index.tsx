@@ -618,7 +618,7 @@ const Index = () => {
                 </div>
               </div>
 
-              {/* Income & Expense Cards */}
+              {/* Income, Expense & Balance Cards */}
               <div className="flex flex-col sm:flex-row items-stretch gap-3">
                 {/* Income Card */}
                 <div className="flex-1 p-4 rounded-xl bg-success/10 border border-success/30 backdrop-blur">
@@ -627,15 +627,12 @@ const Index = () => {
                       <TrendingUp className="h-5 w-5 text-success" />
                     </div>
                     <div>
-                      <p className="text-xs text-success/80 font-medium">Venituri luna aceasta</p>
+                      <p className="text-xs text-success/80 font-medium">Venituri</p>
                       <p className="text-xl font-bold text-success">
                         +{transactions
                           .filter(t => t.type === 'income' && new Date(t.date).getMonth() === new Date().getMonth() && new Date(t.date).getFullYear() === new Date().getFullYear())
                           .reduce((sum, t) => sum + Number(t.amount), 0)
                           .toLocaleString('ro-RO')} RON
-                      </p>
-                      <p className="text-xs text-success/70 mt-0.5">
-                        {transactions.filter(t => t.type === 'income' && new Date(t.date).getMonth() === new Date().getMonth() && new Date(t.date).getFullYear() === new Date().getFullYear()).length} tranzacții
                       </p>
                     </div>
                   </div>
@@ -648,16 +645,37 @@ const Index = () => {
                       <TrendingDown className="h-5 w-5 text-danger" />
                     </div>
                     <div>
-                      <p className="text-xs text-danger/80 font-medium">Cheltuieli luna aceasta</p>
+                      <p className="text-xs text-danger/80 font-medium">Cheltuieli</p>
                       <p className="text-xl font-bold text-danger">
                         -{monthlyTotal.toLocaleString('ro-RO')} RON
-                      </p>
-                      <p className="text-xs text-danger/70 mt-0.5">
-                        {transactions.filter(t => t.type === 'expense' && new Date(t.date).getMonth() === new Date().getMonth() && new Date(t.date).getFullYear() === new Date().getFullYear()).length} tranzacții
                       </p>
                     </div>
                   </div>
                 </div>
+
+                {/* Net Balance Card */}
+                {(() => {
+                  const monthlyIncome = transactions
+                    .filter(t => t.type === 'income' && new Date(t.date).getMonth() === new Date().getMonth() && new Date(t.date).getFullYear() === new Date().getFullYear())
+                    .reduce((sum, t) => sum + Number(t.amount), 0);
+                  const netBalance = monthlyIncome - monthlyTotal;
+                  const isPositive = netBalance >= 0;
+                  return (
+                    <div className={`flex-1 p-4 rounded-xl backdrop-blur ${isPositive ? 'bg-primary/10 border border-primary/30' : 'bg-warning/10 border border-warning/30'}`}>
+                      <div className="flex items-center gap-3">
+                        <div className={`p-2.5 rounded-lg ${isPositive ? 'bg-primary/20' : 'bg-warning/20'}`}>
+                          <BarChart3 className={`h-5 w-5 ${isPositive ? 'text-primary' : 'text-warning'}`} />
+                        </div>
+                        <div>
+                          <p className={`text-xs font-medium ${isPositive ? 'text-primary/80' : 'text-warning/80'}`}>Balanță netă</p>
+                          <p className={`text-xl font-bold ${isPositive ? 'text-primary' : 'text-warning'}`}>
+                            {isPositive ? '+' : ''}{netBalance.toLocaleString('ro-RO')} RON
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })()}
               </div>
             </div>
           </div>
