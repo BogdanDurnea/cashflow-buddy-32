@@ -41,7 +41,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { PieChart, BarChart3, TrendingUp, LogOut, Loader2, Bell, ChevronsUpDown, TrendingDown } from "lucide-react";
 import { AreaChart, Area, ResponsiveContainer, Tooltip } from "recharts";
-import { subDays, format, startOfDay, isAfter } from "date-fns";
+import { startOfMonth, endOfMonth, eachDayOfInterval, format } from "date-fns";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -95,31 +95,32 @@ const Index = () => {
     categoryBudgets
   });
 
-  // Sparkline data for last 7 days
-  const weeklySparklineData = useMemo(() => {
-    const today = startOfDay(new Date());
-    const days = [];
+  // Sparkline data for current month
+  const monthlySparklineData = useMemo(() => {
+    const today = new Date();
+    const monthStart = startOfMonth(today);
+    const monthEnd = endOfMonth(today);
+    const daysInMonth = eachDayOfInterval({ start: monthStart, end: monthEnd });
     
-    for (let i = 6; i >= 0; i--) {
-      const day = subDays(today, i);
+    return daysInMonth.map(day => {
       const dayStr = format(day, 'yyyy-MM-dd');
       const dayExpenses = transactions
         .filter(t => t.type === 'expense' && format(new Date(t.date), 'yyyy-MM-dd') === dayStr)
         .reduce((sum, t) => sum + t.amount, 0);
       
-      days.push({
-        day: format(day, 'EEE'),
+      return {
+        day: format(day, 'd'),
         amount: dayExpenses,
-      });
-    }
-    
-    return days;
+      };
+    });
   }, [transactions]);
 
-  const weeklyTotal = useMemo(() => 
-    weeklySparklineData.reduce((sum, d) => sum + d.amount, 0),
-    [weeklySparklineData]
+  const monthlyTotal = useMemo(() => 
+    monthlySparklineData.reduce((sum, d) => sum + d.amount, 0),
+    [monthlySparklineData]
   );
+
+  const currentMonthName = format(new Date(), 'MMMM');
 
   // Load category budgets from localStorage
   useEffect(() => {
@@ -575,19 +576,19 @@ const Index = () => {
                 </div>
               </div>
 
-              {/* Center: Weekly Sparkline */}
-              <div className="flex-1 w-full lg:max-w-xs">
+              {/* Center: Monthly Sparkline */}
+              <div className="flex-1 w-full lg:max-w-sm">
                 <div className="p-3 rounded-xl bg-card/50 backdrop-blur border border-border/50">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-xs font-medium text-muted-foreground">Cheltuieli 7 zile</span>
+                    <span className="text-xs font-medium text-muted-foreground capitalize">Cheltuieli {currentMonthName}</span>
                     <div className="flex items-center gap-1 text-danger">
                       <TrendingDown className="h-3 w-3" />
-                      <span className="text-xs font-semibold">{weeklyTotal.toLocaleString('ro-RO')} RON</span>
+                      <span className="text-xs font-semibold">{monthlyTotal.toLocaleString('ro-RO')} RON</span>
                     </div>
                   </div>
                   <div className="h-12">
                     <ResponsiveContainer width="100%" height="100%">
-                      <AreaChart data={weeklySparklineData}>
+                      <AreaChart data={monthlySparklineData}>
                         <defs>
                           <linearGradient id="sparklineGradient" x1="0" y1="0" x2="0" y2="1">
                             <stop offset="0%" stopColor="hsl(var(--danger))" stopOpacity={0.3} />
@@ -602,7 +603,7 @@ const Index = () => {
                             fontSize: '12px'
                           }}
                           formatter={(value: number) => [`${value.toLocaleString('ro-RO')} RON`, 'Cheltuieli']}
-                          labelFormatter={(label) => label}
+                          labelFormatter={(label) => `Ziua ${label}`}
                         />
                         <Area 
                           type="monotone" 
