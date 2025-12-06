@@ -2,6 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Transaction } from "./TransactionForm";
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid } from "recharts";
 import { getCategoryConfig } from "@/lib/categoryConfig";
+import { BalanceEvolutionChart } from "./BalanceEvolutionChart";
 
 interface TransactionChartsProps {
   transactions: Transaction[];
@@ -72,6 +73,11 @@ export function TransactionCharts({ transactions }: TransactionChartsProps) {
 
   return (
     <div className="grid gap-6 md:grid-cols-2">
+      {/* Balance Evolution Chart */}
+      <div className="md:col-span-2">
+        <BalanceEvolutionChart transactions={transactions} />
+      </div>
+
       {/* Expenses by Category */}
       <Card className="shadow-card">
         <CardHeader>
