@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
 import { TransactionForm, Transaction } from "@/components/TransactionForm";
 import { TransactionList } from "@/components/TransactionList";
 import { EditTransactionDialog } from "@/components/EditTransactionDialog";
@@ -42,6 +43,37 @@ import { toast } from "sonner";
 import { PieChart, BarChart3, TrendingUp, LogOut, Loader2, Bell, ChevronsUpDown, TrendingDown } from "lucide-react";
 import { AreaChart, Area, ResponsiveContainer, Tooltip } from "recharts";
 import { startOfMonth, endOfMonth, eachDayOfInterval, format } from "date-fns";
+
+// Animation variants for staggered children
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1,
+      delayChildren: 0.05
+    }
+  }
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.4,
+      ease: "easeOut" as const
+    }
+  }
+};
+
+const fadeInUp = {
+  initial: { opacity: 0, y: 20 },
+  animate: { opacity: 1, y: 0 },
+  exit: { opacity: 0, y: -10 },
+  transition: { duration: 0.3, ease: "easeOut" as const }
+};
 
 const Index = () => {
   const navigate = useNavigate();
@@ -682,7 +714,12 @@ const Index = () => {
         </section>
 
         {/* Main Content */}
-        <main className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6 md:py-8 space-y-2">
+        <motion.main 
+          className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6 md:py-8 space-y-2"
+          initial="hidden"
+          animate="visible"
+          variants={containerVariants}
+        >
           <Accordion 
             type="multiple" 
             value={expandedSections}
@@ -690,12 +727,13 @@ const Index = () => {
             className="space-y-4"
           >
             {/* Transactions Section */}
-            <AccordionItem 
-              value="transactions" 
-              id="section-transactions" 
-              className="border rounded-lg bg-card shadow-card transition-all duration-300 data-[state=open]:shadow-lg data-[state=open]:border-primary/20"
-              ref={(el) => { sectionRefs.current['transactions'] = el; }}
-            >
+            <motion.div variants={itemVariants}>
+              <AccordionItem 
+                value="transactions" 
+                id="section-transactions" 
+                className="border rounded-lg bg-card shadow-card transition-all duration-300 data-[state=open]:shadow-lg data-[state=open]:border-primary/20"
+                ref={(el) => { sectionRefs.current['transactions'] = el; }}
+              >
               <AccordionTrigger className="px-4 sm:px-6 py-4 text-lg sm:text-xl font-bold hover:no-underline">
                 Tranzacții
               </AccordionTrigger>
@@ -722,15 +760,17 @@ const Index = () => {
                   onReset={resetFilters}
                 />
               </AccordionContent>
-            </AccordionItem>
+              </AccordionItem>
+            </motion.div>
 
             {/* Analytics Section */}
-            <AccordionItem 
-              value="analytics" 
-              id="section-analytics" 
-              className="border rounded-lg bg-card shadow-card transition-all duration-300 data-[state=open]:shadow-lg data-[state=open]:border-primary/20"
-              ref={(el) => { sectionRefs.current['analytics'] = el; }}
-            >
+            <motion.div variants={itemVariants}>
+              <AccordionItem 
+                value="analytics" 
+                id="section-analytics" 
+                className="border rounded-lg bg-card shadow-card transition-all duration-300 data-[state=open]:shadow-lg data-[state=open]:border-primary/20"
+                ref={(el) => { sectionRefs.current['analytics'] = el; }}
+              >
               <AccordionTrigger className="px-4 sm:px-6 py-4 text-lg sm:text-xl font-bold hover:no-underline">
                 Analiză Avansată
               </AccordionTrigger>
@@ -748,107 +788,114 @@ const Index = () => {
                 <CategoryTrendChart transactions={filteredTransactions} />
                 <TransactionCharts transactions={filteredTransactions} />
               </AccordionContent>
-            </AccordionItem>
+              </AccordionItem>
+            </motion.div>
 
             {/* Budgets Section */}
-            <AccordionItem 
-              value="budgets" 
-              id="section-budgets" 
-              className="border rounded-lg bg-card shadow-card transition-all duration-300 data-[state=open]:shadow-lg data-[state=open]:border-primary/20"
-              ref={(el) => { sectionRefs.current['budgets'] = el; }}
-            >
-              <AccordionTrigger className="px-4 sm:px-6 py-4 text-lg sm:text-xl font-bold hover:no-underline">
-                Bugete
-              </AccordionTrigger>
-              <AccordionContent className="px-4 sm:px-6 pb-4 space-y-6">
-                <div className="grid gap-4 sm:gap-6 lg:grid-cols-2">
-                  <BudgetManager transactions={transactions} userId={user!.id} />
-                  <CategoryBudgets transactions={transactions} />
-                </div>
-                <SharedBudgetsManager />
-              </AccordionContent>
-            </AccordionItem>
+            <motion.div variants={itemVariants}>
+              <AccordionItem 
+                value="budgets" 
+                id="section-budgets" 
+                className="border rounded-lg bg-card shadow-card transition-all duration-300 data-[state=open]:shadow-lg data-[state=open]:border-primary/20"
+                ref={(el) => { sectionRefs.current['budgets'] = el; }}
+              >
+                <AccordionTrigger className="px-4 sm:px-6 py-4 text-lg sm:text-xl font-bold hover:no-underline">
+                  Bugete
+                </AccordionTrigger>
+                <AccordionContent className="px-4 sm:px-6 pb-4 space-y-6">
+                  <div className="grid gap-4 sm:gap-6 lg:grid-cols-2">
+                    <BudgetManager transactions={transactions} userId={user!.id} />
+                    <CategoryBudgets transactions={transactions} />
+                  </div>
+                  <SharedBudgetsManager />
+                </AccordionContent>
+              </AccordionItem>
+            </motion.div>
 
             {/* Reports Section */}
-            <AccordionItem 
-              value="reports" 
-              id="section-reports" 
-              className="border rounded-lg bg-card shadow-card transition-all duration-300 data-[state=open]:shadow-lg data-[state=open]:border-primary/20"
-              ref={(el) => { sectionRefs.current['reports'] = el; }}
-            >
-              <AccordionTrigger className="px-4 sm:px-6 py-4 text-lg sm:text-xl font-bold hover:no-underline">
-                Rapoarte & Integrări
-              </AccordionTrigger>
-              <AccordionContent className="px-4 sm:px-6 pb-4 space-y-6">
-                <ReportsSection transactions={transactions} />
-                <div className="grid gap-4 sm:gap-6 lg:grid-cols-2">
-                  <ExportData transactions={transactions} />
-                  <ShareReport transactions={transactions} />
-                </div>
-                <ShareReportPublic 
-                  reportData={{ 
-                    transactions: filteredTransactions,
-                    income: filteredTransactions.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0),
-                    expenses: filteredTransactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0)
-                  }}
-                  title="Raport Financiar MoneyTracker"
-                />
-                <div className="space-y-4">
-                  <h3 className="text-lg font-semibold">Integrări</h3>
+            <motion.div variants={itemVariants}>
+              <AccordionItem 
+                value="reports" 
+                id="section-reports" 
+                className="border rounded-lg bg-card shadow-card transition-all duration-300 data-[state=open]:shadow-lg data-[state=open]:border-primary/20"
+                ref={(el) => { sectionRefs.current['reports'] = el; }}
+              >
+                <AccordionTrigger className="px-4 sm:px-6 py-4 text-lg sm:text-xl font-bold hover:no-underline">
+                  Rapoarte & Integrări
+                </AccordionTrigger>
+                <AccordionContent className="px-4 sm:px-6 pb-4 space-y-6">
+                  <ReportsSection transactions={transactions} />
                   <div className="grid gap-4 sm:gap-6 lg:grid-cols-2">
-                    <ZapierIntegration 
-                      transactions={transactions}
-                      budgets={categoryBudgets.map(cb => ({
-                        category: cb.category,
-                        amount: cb.limit,
-                        month: new Date().getMonth() + 1,
-                        year: new Date().getFullYear()
-                      }))}
-                    />
-                    <APIExport 
-                      transactions={transactions}
-                      budgets={categoryBudgets.map(cb => ({
-                        category: cb.category,
-                        amount: cb.limit,
-                        month: new Date().getMonth() + 1,
-                        year: new Date().getFullYear()
-                      }))}
-                    />
+                    <ExportData transactions={transactions} />
+                    <ShareReport transactions={transactions} />
                   </div>
-                </div>
-              </AccordionContent>
-            </AccordionItem>
+                  <ShareReportPublic 
+                    reportData={{ 
+                      transactions: filteredTransactions,
+                      income: filteredTransactions.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0),
+                      expenses: filteredTransactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0)
+                    }}
+                    title="Raport Financiar MoneyTracker"
+                  />
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-semibold">Integrări</h3>
+                    <div className="grid gap-4 sm:gap-6 lg:grid-cols-2">
+                      <ZapierIntegration 
+                        transactions={transactions}
+                        budgets={categoryBudgets.map(cb => ({
+                          category: cb.category,
+                          amount: cb.limit,
+                          month: new Date().getMonth() + 1,
+                          year: new Date().getFullYear()
+                        }))}
+                      />
+                      <APIExport 
+                        transactions={transactions}
+                        budgets={categoryBudgets.map(cb => ({
+                          category: cb.category,
+                          amount: cb.limit,
+                          month: new Date().getMonth() + 1,
+                          year: new Date().getFullYear()
+                        }))}
+                      />
+                    </div>
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+            </motion.div>
 
             {/* Settings Section */}
-            <AccordionItem 
-              value="settings" 
-              id="section-settings" 
-              className="border rounded-lg bg-card shadow-card transition-all duration-300 data-[state=open]:shadow-lg data-[state=open]:border-primary/20"
-              ref={(el) => { sectionRefs.current['settings'] = el; }}
-            >
-              <AccordionTrigger className="px-4 sm:px-6 py-4 text-lg sm:text-xl font-bold hover:no-underline">
-                Setări
-              </AccordionTrigger>
-              <AccordionContent className="px-4 sm:px-6 pb-4 space-y-6">
-                <NotificationSettings />
-                <CustomCategoriesManager />
-                <AccountSettings />
-                <div className="grid gap-4 sm:gap-6 lg:grid-cols-2">
-                  <UserSettings />
-                  <ImportData onImport={(imported) => {
-                    imported.forEach(t => handleAddTransaction(t));
-                  }} />
-                </div>
-                <RecurringTransactions
-                  recurringTransactions={recurringTransactions}
-                  onAddRecurring={handleAddRecurring}
-                  onDeleteRecurring={handleDeleteRecurring}
-                  onToggleRecurring={handleToggleRecurring}
-                />
-              </AccordionContent>
-            </AccordionItem>
+            <motion.div variants={itemVariants}>
+              <AccordionItem 
+                value="settings" 
+                id="section-settings" 
+                className="border rounded-lg bg-card shadow-card transition-all duration-300 data-[state=open]:shadow-lg data-[state=open]:border-primary/20"
+                ref={(el) => { sectionRefs.current['settings'] = el; }}
+              >
+                <AccordionTrigger className="px-4 sm:px-6 py-4 text-lg sm:text-xl font-bold hover:no-underline">
+                  Setări
+                </AccordionTrigger>
+                <AccordionContent className="px-4 sm:px-6 pb-4 space-y-6">
+                  <NotificationSettings />
+                  <CustomCategoriesManager />
+                  <AccountSettings />
+                  <div className="grid gap-4 sm:gap-6 lg:grid-cols-2">
+                    <UserSettings />
+                    <ImportData onImport={(imported) => {
+                      imported.forEach(t => handleAddTransaction(t));
+                    }} />
+                  </div>
+                  <RecurringTransactions
+                    recurringTransactions={recurringTransactions}
+                    onAddRecurring={handleAddRecurring}
+                    onDeleteRecurring={handleDeleteRecurring}
+                    onToggleRecurring={handleToggleRecurring}
+                  />
+                </AccordionContent>
+              </AccordionItem>
+            </motion.div>
           </Accordion>
-        </main>
+        </motion.main>
 
         {/* Edit Transaction Dialog */}
         <EditTransactionDialog
