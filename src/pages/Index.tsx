@@ -12,6 +12,8 @@ import { CategoryBudgets } from "@/components/CategoryBudgets";
 import { ReportsSection } from "@/components/ReportsSection";
 import { ExportData } from "@/components/ExportData";
 import { RecurringTransactions, RecurringTransaction } from "@/components/RecurringTransactions";
+import { BillReminders } from "@/components/BillReminders";
+import { useBillReminders } from "@/hooks/useBillReminders";
 import { DateRangeFilter } from "@/components/DateRangeFilter";
 import { BudgetVsActualChart } from "@/components/BudgetVsActualChart";
 import { CategoryTrendChart } from "@/components/CategoryTrendChart";
@@ -126,6 +128,14 @@ const Index = () => {
     monthlyBudget,
     categoryBudgets
   });
+
+  // Bill reminders hook
+  const { 
+    reminders: billReminders, 
+    addReminder: addBillReminder, 
+    updateReminder: updateBillReminder, 
+    deleteReminder: deleteBillReminder 
+  } = useBillReminders();
 
   // Sparkline data for current month
   const monthlySparklineData = useMemo(() => {
@@ -885,12 +895,21 @@ const Index = () => {
                       imported.forEach(t => handleAddTransaction(t));
                     }} />
                   </div>
-                  <RecurringTransactions
-                    recurringTransactions={recurringTransactions}
-                    onAddRecurring={handleAddRecurring}
-                    onDeleteRecurring={handleDeleteRecurring}
-                    onToggleRecurring={handleToggleRecurring}
-                  />
+                  <div className="grid gap-4 sm:gap-6 lg:grid-cols-2">
+                    <RecurringTransactions
+                      recurringTransactions={recurringTransactions}
+                      onAddRecurring={handleAddRecurring}
+                      onDeleteRecurring={handleDeleteRecurring}
+                      onToggleRecurring={handleToggleRecurring}
+                    />
+                    <BillReminders
+                      recurringTransactions={recurringTransactions}
+                      reminders={billReminders}
+                      onAddReminder={addBillReminder}
+                      onUpdateReminder={updateBillReminder}
+                      onDeleteReminder={deleteBillReminder}
+                    />
+                  </div>
                 </AccordionContent>
               </AccordionItem>
             </motion.div>
