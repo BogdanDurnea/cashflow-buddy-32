@@ -2,6 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TrendingUp, TrendingDown, DollarSign, Activity, Calendar, PiggyBank } from "lucide-react";
 import { Transaction } from "@/components/TransactionForm";
 import React from "react";
+import { motion } from "framer-motion";
 
 interface StatsCardsProps {
   transactions: Transaction[];
@@ -102,35 +103,53 @@ export const StatsCards = React.memo(function StatsCards({ transactions }: Stats
     },
   ];
 
+  const cardVariants = {
+    hidden: { opacity: 0, y: 20, scale: 0.95 },
+    visible: (i: number) => ({
+      opacity: 1,
+      y: 0,
+      scale: 1,
+      transition: {
+        delay: i * 0.08,
+        duration: 0.4,
+        ease: [0.25, 0.46, 0.45, 0.94] as const
+      }
+    })
+  };
+
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
       {stats.map((stat, index) => {
         const Icon = stat.icon;
         return (
-          <Card 
-            key={index} 
-            className="shadow-card transition-smooth hover:shadow-lg active:scale-[0.98] animate-fade-in"
-            style={{ animationDelay: `${index * 50}ms` }}
+          <motion.div
+            key={index}
+            custom={index}
+            initial="hidden"
+            animate="visible"
+            variants={cardVariants}
           >
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-4 sm:p-6">
-              <CardTitle className="text-xs sm:text-sm font-medium">
-                {stat.title}
-              </CardTitle>
-              <Icon className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground shrink-0" />
-            </CardHeader>
-            <CardContent className="p-4 pt-0 sm:p-6 sm:pt-0">
-              <div className={`text-xl sm:text-2xl font-bold break-words ${
-                stat.trend === "positive" ? "text-success" :
-                stat.trend === "negative" ? "text-danger" :
-                "text-foreground"
-              }`}>
-                {stat.value}
-              </div>
-              <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
-                {stat.description}
-              </p>
-            </CardContent>
-          </Card>
+            <Card className="shadow-card transition-smooth hover:shadow-lg active:scale-[0.98] h-full">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-4 sm:p-6">
+                <CardTitle className="text-xs sm:text-sm font-medium">
+                  {stat.title}
+                </CardTitle>
+                <Icon className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground shrink-0" />
+              </CardHeader>
+              <CardContent className="p-4 pt-0 sm:p-6 sm:pt-0">
+                <div className={`text-xl sm:text-2xl font-bold break-words ${
+                  stat.trend === "positive" ? "text-success" :
+                  stat.trend === "negative" ? "text-danger" :
+                  "text-foreground"
+                }`}>
+                  {stat.value}
+                </div>
+                <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
+                  {stat.description}
+                </p>
+              </CardContent>
+            </Card>
+          </motion.div>
         );
       })}
     </div>

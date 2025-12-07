@@ -3,11 +3,12 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
-import { TrendingUp, TrendingDown, Calendar, Edit2, Paperclip, ExternalLink, Receipt } from "lucide-react";
+import { Calendar, Edit2, Paperclip, ExternalLink, Receipt } from "lucide-react";
 import { Transaction } from "./TransactionForm";
 import { getCategoryConfig } from "@/lib/categoryConfig";
 import { EmptyState } from "./EmptyState";
 import React from "react";
+import { motion } from "framer-motion";
 
 interface TransactionListProps {
   transactions: Transaction[];
@@ -41,29 +42,54 @@ export const TransactionList = React.memo(function TransactionList({ transaction
     return formatted;
   };
 
+  const itemVariants = {
+    hidden: { opacity: 0, x: -20 },
+    visible: (i: number) => ({
+      opacity: 1,
+      x: 0,
+      transition: {
+        delay: i * 0.05,
+        duration: 0.3,
+        ease: [0.25, 0.46, 0.45, 0.94] as const
+      }
+    })
+  };
+
   return (
-    <Card className="shadow-card transition-smooth">
-      <CardHeader className="p-4 sm:p-6">
-        <CardTitle className="text-base sm:text-lg">Tranzacții recente</CardTitle>
-      </CardHeader>
-      <CardContent className="p-0">
-        {sortedTransactions.length === 0 ? (
-          <div className="p-4">
-            <EmptyState
-              icon={Receipt}
-              title="Nicio tranzacție"
-              description="Nu ai adăugat încă nicio tranzacție. Începe prin a adăuga prima ta tranzacție pentru a urmări cheltuielile și veniturile."
-            />
-          </div>
-        ) : (
-        <ScrollArea className="h-[400px] sm:h-[450px]">
-            <div className="space-y-1">
-              {sortedTransactions.map((transaction) => {
-                const categoryConfig = getCategoryConfig(transaction.category, transaction.type);
-                const CategoryIcon = categoryConfig.icon;
-                
-                return (
-                  <div key={transaction.id} className="p-3 sm:p-4 hover:bg-muted/50 transition-smooth active:bg-muted/70">
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, ease: "easeOut" }}
+    >
+      <Card className="shadow-card transition-smooth">
+        <CardHeader className="p-4 sm:p-6">
+          <CardTitle className="text-base sm:text-lg">Tranzacții recente</CardTitle>
+        </CardHeader>
+        <CardContent className="p-0">
+          {sortedTransactions.length === 0 ? (
+            <div className="p-4">
+              <EmptyState
+                icon={Receipt}
+                title="Nicio tranzacție"
+                description="Nu ai adăugat încă nicio tranzacție. Începe prin a adăuga prima ta tranzacție pentru a urmări cheltuielile și veniturile."
+              />
+            </div>
+          ) : (
+          <ScrollArea className="h-[400px] sm:h-[450px]">
+              <div className="space-y-1">
+                {sortedTransactions.map((transaction, index) => {
+                  const categoryConfig = getCategoryConfig(transaction.category, transaction.type);
+                  const CategoryIcon = categoryConfig.icon;
+                  
+                  return (
+                    <motion.div
+                      key={transaction.id}
+                      custom={index}
+                      initial="hidden"
+                      animate="visible"
+                      variants={itemVariants}
+                      className="p-3 sm:p-4 hover:bg-muted/50 transition-smooth active:bg-muted/70"
+                    >
                     <div className="flex items-start sm:items-center justify-between gap-3">
                       <div className="flex items-start sm:items-center space-x-2 sm:space-x-3 flex-1 min-w-0">
                         <div 
@@ -138,15 +164,16 @@ export const TransactionList = React.memo(function TransactionList({ transaction
                         <Edit2 className="h-4 w-4" />
                       </Button>
                     </div>
-                    </div>
-                    <Separator className="mt-3 sm:mt-4" />
-                  </div>
-                );
-              })}
-            </div>
-        </ScrollArea>
-        )}
-      </CardContent>
-    </Card>
+                      </div>
+                      <Separator className="mt-3 sm:mt-4" />
+                    </motion.div>
+                  );
+                })}
+              </div>
+          </ScrollArea>
+          )}
+        </CardContent>
+      </Card>
+    </motion.div>
   );
 });

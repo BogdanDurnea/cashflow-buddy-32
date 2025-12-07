@@ -3,6 +3,7 @@ import { Transaction } from "./TransactionForm";
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid } from "recharts";
 import { getCategoryConfig } from "@/lib/categoryConfig";
 import { BalanceEvolutionChart } from "./BalanceEvolutionChart";
+import { motion } from "framer-motion";
 
 interface TransactionChartsProps {
   transactions: Transaction[];
@@ -71,108 +72,150 @@ export function TransactionCharts({ transactions }: TransactionChartsProps) {
     }).format(value);
   };
 
+  const cardVariants = {
+    hidden: { opacity: 0, y: 30, scale: 0.95 },
+    visible: (i: number) => ({
+      opacity: 1,
+      y: 0,
+      scale: 1,
+      transition: {
+        delay: i * 0.15,
+        duration: 0.5,
+        ease: [0.25, 0.46, 0.45, 0.94] as const
+      }
+    })
+  };
+
   return (
     <div className="grid gap-6 md:grid-cols-2">
       {/* Balance Evolution Chart */}
-      <div className="md:col-span-2">
+      <motion.div 
+        className="md:col-span-2"
+        custom={0}
+        initial="hidden"
+        animate="visible"
+        variants={cardVariants}
+      >
         <BalanceEvolutionChart transactions={transactions} />
-      </div>
+      </motion.div>
 
       {/* Expenses by Category */}
-      <Card className="shadow-card">
-        <CardHeader>
-          <CardTitle className="text-lg">Cheltuieli pe categorii</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {expensePieData.length === 0 ? (
-            <div className="h-[300px] flex items-center justify-center text-muted-foreground text-sm">
-              Nu există cheltuieli înregistrate
-            </div>
-          ) : (
-            <ResponsiveContainer width="100%" height={300}>
-              <PieChart>
-                <Pie
-                  data={expensePieData}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                  outerRadius={80}
-                  fill="#8884d8"
-                  dataKey="value"
-                >
-                  {expensePieData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
-                </Pie>
-                <Tooltip formatter={(value) => formatCurrency(value as number)} />
-                <Legend />
-              </PieChart>
-            </ResponsiveContainer>
-          )}
-        </CardContent>
-      </Card>
+      <motion.div
+        custom={1}
+        initial="hidden"
+        animate="visible"
+        variants={cardVariants}
+      >
+        <Card className="shadow-card h-full">
+          <CardHeader>
+            <CardTitle className="text-lg">Cheltuieli pe categorii</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {expensePieData.length === 0 ? (
+              <div className="h-[300px] flex items-center justify-center text-muted-foreground text-sm">
+                Nu există cheltuieli înregistrate
+              </div>
+            ) : (
+              <ResponsiveContainer width="100%" height={300}>
+                <PieChart>
+                  <Pie
+                    data={expensePieData}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                    outerRadius={80}
+                    fill="#8884d8"
+                    dataKey="value"
+                  >
+                    {expensePieData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Pie>
+                  <Tooltip formatter={(value) => formatCurrency(value as number)} />
+                  <Legend />
+                </PieChart>
+              </ResponsiveContainer>
+            )}
+          </CardContent>
+        </Card>
+      </motion.div>
 
       {/* Income by Category */}
-      <Card className="shadow-card">
-        <CardHeader>
-          <CardTitle className="text-lg">Venituri pe categorii</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {incomePieData.length === 0 ? (
-            <div className="h-[300px] flex items-center justify-center text-muted-foreground text-sm">
-              Nu există venituri înregistrate
-            </div>
-          ) : (
-            <ResponsiveContainer width="100%" height={300}>
-              <PieChart>
-                <Pie
-                  data={incomePieData}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                  outerRadius={80}
-                  fill="#8884d8"
-                  dataKey="value"
-                >
-                  {incomePieData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
-                </Pie>
-                <Tooltip formatter={(value) => formatCurrency(value as number)} />
-                <Legend />
-              </PieChart>
-            </ResponsiveContainer>
-          )}
-        </CardContent>
-      </Card>
+      <motion.div
+        custom={2}
+        initial="hidden"
+        animate="visible"
+        variants={cardVariants}
+      >
+        <Card className="shadow-card h-full">
+          <CardHeader>
+            <CardTitle className="text-lg">Venituri pe categorii</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {incomePieData.length === 0 ? (
+              <div className="h-[300px] flex items-center justify-center text-muted-foreground text-sm">
+                Nu există venituri înregistrate
+              </div>
+            ) : (
+              <ResponsiveContainer width="100%" height={300}>
+                <PieChart>
+                  <Pie
+                    data={incomePieData}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                    outerRadius={80}
+                    fill="#8884d8"
+                    dataKey="value"
+                  >
+                    {incomePieData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Pie>
+                  <Tooltip formatter={(value) => formatCurrency(value as number)} />
+                  <Legend />
+                </PieChart>
+              </ResponsiveContainer>
+            )}
+          </CardContent>
+        </Card>
+      </motion.div>
 
       {/* Monthly Comparison Bar Chart */}
-      <Card className="shadow-card md:col-span-2">
-        <CardHeader>
-          <CardTitle className="text-lg">Comparație lunară: Venituri vs Cheltuieli</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {barData.length === 0 ? (
-            <div className="h-[300px] flex items-center justify-center text-muted-foreground text-sm">
-              Nu există date pentru afișare
-            </div>
-          ) : (
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={barData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" />
-                <YAxis stroke="hsl(var(--muted-foreground))" />
-                <Tooltip formatter={(value) => formatCurrency(value as number)} />
-                <Legend />
-                <Bar dataKey="income" name="Venituri" fill="hsl(142 76% 36%)" />
-                <Bar dataKey="expense" name="Cheltuieli" fill="hsl(0 84% 60%)" />
-              </BarChart>
-            </ResponsiveContainer>
-          )}
-        </CardContent>
-      </Card>
+      <motion.div
+        className="md:col-span-2"
+        custom={3}
+        initial="hidden"
+        animate="visible"
+        variants={cardVariants}
+      >
+        <Card className="shadow-card">
+          <CardHeader>
+            <CardTitle className="text-lg">Comparație lunară: Venituri vs Cheltuieli</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {barData.length === 0 ? (
+              <div className="h-[300px] flex items-center justify-center text-muted-foreground text-sm">
+                Nu există date pentru afișare
+              </div>
+            ) : (
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={barData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                  <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" />
+                  <YAxis stroke="hsl(var(--muted-foreground))" />
+                  <Tooltip formatter={(value) => formatCurrency(value as number)} />
+                  <Legend />
+                  <Bar dataKey="income" name="Venituri" fill="hsl(142 76% 36%)" />
+                  <Bar dataKey="expense" name="Cheltuieli" fill="hsl(0 84% 60%)" />
+                </BarChart>
+              </ResponsiveContainer>
+            )}
+          </CardContent>
+        </Card>
+      </motion.div>
     </div>
   );
 }
