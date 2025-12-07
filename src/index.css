@@ -184,7 +184,53 @@ All colors MUST be HSL.
   }
 
   .hover-glow {
-    @apply transition-smooth hover:shadow-primary/20 hover:shadow-xl;
+    @apply transition-smooth hover:shadow-xl;
+    &:hover {
+      box-shadow: 0 0 20px hsl(var(--primary) / 0.25), 0 8px 25px -5px hsl(var(--primary) / 0.15);
+    }
+  }
+
+  .hover-card-scale {
+    @apply transition-spring cursor-pointer;
+    &:hover {
+      transform: scale(1.03) translateY(-2px);
+      box-shadow: 0 12px 28px -8px hsl(var(--primary) / 0.2), 0 0 16px hsl(var(--primary) / 0.1);
+    }
+    &:active {
+      transform: scale(0.98);
+    }
+  }
+
+  .hover-glow-success {
+    @apply transition-spring;
+    &:hover {
+      transform: scale(1.03) translateY(-2px);
+      box-shadow: 0 0 20px hsl(var(--success) / 0.3), 0 8px 20px -5px hsl(var(--success) / 0.2);
+    }
+  }
+
+  .hover-glow-danger {
+    @apply transition-spring;
+    &:hover {
+      transform: scale(1.03) translateY(-2px);
+      box-shadow: 0 0 20px hsl(var(--danger) / 0.3), 0 8px 20px -5px hsl(var(--danger) / 0.2);
+    }
+  }
+
+  .hover-glow-primary {
+    @apply transition-spring;
+    &:hover {
+      transform: scale(1.03) translateY(-2px);
+      box-shadow: 0 0 20px hsl(var(--primary) / 0.3), 0 8px 20px -5px hsl(var(--primary) / 0.2);
+    }
+  }
+
+  .hover-glow-warning {
+    @apply transition-spring;
+    &:hover {
+      transform: scale(1.03) translateY(-2px);
+      box-shadow: 0 0 20px hsl(var(--warning) / 0.3), 0 8px 20px -5px hsl(var(--warning) / 0.2);
+    }
   }
 
   /* Mobile-optimized touch interactions */

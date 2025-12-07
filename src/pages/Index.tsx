@@ -610,7 +610,7 @@ const Index = () => {
 
               {/* Center: Monthly Sparkline */}
               <div className="flex-1 w-full lg:max-w-sm">
-                <div className="p-3 rounded-xl bg-card/50 backdrop-blur border border-border/50">
+                <div className="p-3 rounded-xl bg-card/50 backdrop-blur border border-border/50 hover-card-scale">
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-xs font-medium text-muted-foreground capitalize">Cheltuieli {currentMonthName}</span>
                     <div className="flex items-center gap-1 text-danger">
@@ -653,7 +653,7 @@ const Index = () => {
               {/* Income, Expense & Balance Cards */}
               <div className="flex flex-col sm:flex-row items-stretch gap-3">
                 {/* Income Card */}
-                <div className="flex-1 p-4 rounded-xl bg-success/10 border border-success/30 backdrop-blur">
+                <div className="flex-1 p-4 rounded-xl bg-success/10 border border-success/30 backdrop-blur hover-glow-success cursor-pointer">
                   <div className="flex items-center gap-3">
                     <div className="p-2.5 rounded-lg bg-success/20">
                       <TrendingUp className="h-5 w-5 text-success" />
@@ -671,7 +671,7 @@ const Index = () => {
                 </div>
 
                 {/* Expense Card */}
-                <div className="flex-1 p-4 rounded-xl bg-danger/10 border border-danger/30 backdrop-blur">
+                <div className="flex-1 p-4 rounded-xl bg-danger/10 border border-danger/30 backdrop-blur hover-glow-danger cursor-pointer">
                   <div className="flex items-center gap-3">
                     <div className="p-2.5 rounded-lg bg-danger/20">
                       <TrendingDown className="h-5 w-5 text-danger" />
@@ -693,7 +693,7 @@ const Index = () => {
                   const netBalance = monthlyIncome - monthlyTotal;
                   const isPositive = netBalance >= 0;
                   return (
-                    <div className={`flex-1 p-4 rounded-xl backdrop-blur ${isPositive ? 'bg-primary/10 border border-primary/30' : 'bg-warning/10 border border-warning/30'}`}>
+                    <div className={`flex-1 p-4 rounded-xl backdrop-blur cursor-pointer ${isPositive ? 'bg-primary/10 border border-primary/30 hover-glow-primary' : 'bg-warning/10 border border-warning/30 hover-glow-warning'}`}>
                       <div className="flex items-center gap-3">
                         <div className={`p-2.5 rounded-lg ${isPositive ? 'bg-primary/20' : 'bg-warning/20'}`}>
                           <BarChart3 className={`h-5 w-5 ${isPositive ? 'text-primary' : 'text-warning'}`} />
