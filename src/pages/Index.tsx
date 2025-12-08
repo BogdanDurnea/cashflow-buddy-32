@@ -14,6 +14,8 @@ import { ExportData } from "@/components/ExportData";
 import { RecurringTransactions, RecurringTransaction } from "@/components/RecurringTransactions";
 import { BillReminders } from "@/components/BillReminders";
 import { useBillReminders } from "@/hooks/useBillReminders";
+import { SavingsGoals } from "@/components/SavingsGoals";
+import { useSavingsGoals } from "@/hooks/useSavingsGoals";
 import { DateRangeFilter } from "@/components/DateRangeFilter";
 import { BudgetVsActualChart } from "@/components/BudgetVsActualChart";
 import { CategoryTrendChart } from "@/components/CategoryTrendChart";
@@ -137,6 +139,15 @@ const Index = () => {
     deleteReminder: deleteBillReminder,
     markAsPaid: markBillAsPaid
   } = useBillReminders();
+
+  // Savings goals hook
+  const {
+    goals: savingsGoals,
+    addGoal: addSavingsGoal,
+    updateGoal: updateSavingsGoal,
+    deleteGoal: deleteSavingsGoal,
+    addToGoal: addToSavingsGoal,
+  } = useSavingsGoals();
 
   // Sparkline data for current month
   const monthlySparklineData = useMemo(() => {
@@ -912,6 +923,13 @@ const Index = () => {
                       onMarkAsPaid={markBillAsPaid}
                     />
                   </div>
+                  <SavingsGoals
+                    goals={savingsGoals}
+                    onAddGoal={addSavingsGoal}
+                    onUpdateGoal={updateSavingsGoal}
+                    onDeleteGoal={deleteSavingsGoal}
+                    onAddToGoal={addToSavingsGoal}
+                  />
                 </AccordionContent>
               </AccordionItem>
             </motion.div>
