@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { BillReminder } from "@/components/BillReminders";
+import { BillReminder, PaymentRecord } from "@/components/BillReminders";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 
@@ -26,6 +26,10 @@ export function useBillReminders() {
         setReminders(parsed.map((r: any) => ({
           ...r,
           lastNotified: r.lastNotified ? new Date(r.lastNotified) : undefined,
+          paymentHistory: (r.paymentHistory || []).map((p: any) => ({
+            ...p,
+            paidAt: new Date(p.paidAt),
+          })),
         })));
       } catch (error) {
         console.error("Error parsing bill reminders:", error);
@@ -46,6 +50,7 @@ export function useBillReminders() {
     const newReminder: BillReminder = {
       ...reminder,
       id: crypto.randomUUID(),
+      paymentHistory: reminder.paymentHistory || [],
     };
     setReminders(prev => [...prev, newReminder]);
   }, []);
@@ -60,6 +65,25 @@ export function useBillReminders() {
     setReminders(prev => prev.filter(r => r.id !== id));
   }, []);
 
+  const markAsPaid = useCallback((reminderId: string, payment: Omit<PaymentRecord, "id">) => {
+    const newPayment: PaymentRecord = {
+      ...payment,
+      id: crypto.randomUUID(),
+    };
+    
+    setReminders(prev => 
+      prev.map(r => {
+        if (r.id === reminderId) {
+          return {
+            ...r,
+            paymentHistory: [...(r.paymentHistory || []), newPayment],
+          };
+        }
+        return r;
+      })
+    );
+  }, []);
+
   const getRemindersForTransaction = useCallback((transactionId: string) => {
     return reminders.filter(r => r.recurringTransactionId === transactionId);
   }, [reminders]);
@@ -70,6 +94,7 @@ export function useBillReminders() {
     addReminder,
     updateReminder,
     deleteReminder,
+    markAsPaid,
     getRemindersForTransaction,
   };
 }

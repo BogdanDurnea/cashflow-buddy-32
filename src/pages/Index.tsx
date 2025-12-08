@@ -134,7 +134,8 @@ const Index = () => {
     reminders: billReminders, 
     addReminder: addBillReminder, 
     updateReminder: updateBillReminder, 
-    deleteReminder: deleteBillReminder 
+    deleteReminder: deleteBillReminder,
+    markAsPaid: markBillAsPaid
   } = useBillReminders();
 
   // Sparkline data for current month
@@ -908,6 +909,7 @@ const Index = () => {
                       onAddReminder={addBillReminder}
                       onUpdateReminder={updateBillReminder}
                       onDeleteReminder={deleteBillReminder}
+                      onMarkAsPaid={markBillAsPaid}
                     />
                   </div>
                 </AccordionContent>
