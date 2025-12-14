@@ -34,12 +34,7 @@ import { AppSidebar } from "@/components/AppSidebar";
 import { NotificationSettings } from "@/components/NotificationSettings";
 import { Button } from "@/components/ui/button";
 import { SidebarTrigger } from "@/components/ui/sidebar";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { useAuth } from "@/hooks/useAuth";
 import { useBudgetAlerts } from "@/hooks/useBudgetAlerts";
 import { supabase } from "@/integrations/supabase/client";
@@ -50,7 +45,9 @@ import { startOfMonth, endOfMonth, eachDayOfInterval, format } from "date-fns";
 
 // Animation variants for staggered children
 const containerVariants = {
-  hidden: { opacity: 0 },
+  hidden: {
+    opacity: 0
+  },
   visible: {
     opacity: 1,
     transition: {
@@ -59,9 +56,11 @@ const containerVariants = {
     }
   }
 };
-
 const itemVariants = {
-  hidden: { opacity: 0, y: 20 },
+  hidden: {
+    opacity: 0,
+    y: 20
+  },
   visible: {
     opacity: 1,
     y: 0,
@@ -71,17 +70,31 @@ const itemVariants = {
     }
   }
 };
-
 const fadeInUp = {
-  initial: { opacity: 0, y: 20 },
-  animate: { opacity: 1, y: 0 },
-  exit: { opacity: 0, y: -10 },
-  transition: { duration: 0.3, ease: "easeOut" as const }
+  initial: {
+    opacity: 0,
+    y: 20
+  },
+  animate: {
+    opacity: 1,
+    y: 0
+  },
+  exit: {
+    opacity: 0,
+    y: -10
+  },
+  transition: {
+    duration: 0.3,
+    ease: "easeOut" as const
+  }
 };
-
 const Index = () => {
   const navigate = useNavigate();
-  const { user, loading: authLoading, signOut } = useAuth();
+  const {
+    user,
+    loading: authLoading,
+    signOut
+  } = useAuth();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [recurringTransactions, setRecurringTransactions] = useState<RecurringTransaction[]>([]);
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
@@ -94,13 +107,15 @@ const Index = () => {
   const [filterPeriod, setFilterPeriod] = useState<string>("all");
   const [dateRangeStart, setDateRangeStart] = useState<Date | null>(null);
   const [dateRangeEnd, setDateRangeEnd] = useState<Date | null>(null);
-  const [categoryBudgets, setCategoryBudgets] = useState<Array<{ category: string; limit: number }>>([]);
+  const [categoryBudgets, setCategoryBudgets] = useState<Array<{
+    category: string;
+    limit: number;
+  }>>([]);
   const [monthlyBudget, setMonthlyBudget] = useState<number>(5000);
   const [activeSection, setActiveSection] = useState<string>("transactions");
   const [expandedSections, setExpandedSections] = useState<string[]>(["transactions"]);
   const sectionRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const allSections = ["transactions", "analytics", "budgets", "reports", "settings"];
-
   const toggleAllSections = useCallback(() => {
     if (expandedSections.length === allSections.length) {
       setExpandedSections([]);
@@ -113,29 +128,30 @@ const Index = () => {
   const handleAccordionChange = useCallback((values: string[]) => {
     const newlyOpened = values.find(v => !expandedSections.includes(v));
     setExpandedSections(values);
-    
     if (newlyOpened && sectionRefs.current[newlyOpened]) {
       setTimeout(() => {
         sectionRefs.current[newlyOpened]?.scrollIntoView({
           behavior: 'smooth',
-          block: 'start',
+          block: 'start'
         });
       }, 100);
     }
   }, [expandedSections]);
 
   // Budget alerts hook
-  const { requestNotificationPermission } = useBudgetAlerts({
+  const {
+    requestNotificationPermission
+  } = useBudgetAlerts({
     transactions,
     monthlyBudget,
     categoryBudgets
   });
 
   // Bill reminders hook
-  const { 
-    reminders: billReminders, 
-    addReminder: addBillReminder, 
-    updateReminder: updateBillReminder, 
+  const {
+    reminders: billReminders,
+    addReminder: addBillReminder,
+    updateReminder: updateBillReminder,
     deleteReminder: deleteBillReminder,
     markAsPaid: markBillAsPaid
   } = useBillReminders();
@@ -146,7 +162,7 @@ const Index = () => {
     addGoal: addSavingsGoal,
     updateGoal: updateSavingsGoal,
     deleteGoal: deleteSavingsGoal,
-    addToGoal: addToSavingsGoal,
+    addToGoal: addToSavingsGoal
   } = useSavingsGoals();
 
   // Sparkline data for current month
@@ -154,26 +170,20 @@ const Index = () => {
     const today = new Date();
     const monthStart = startOfMonth(today);
     const monthEnd = endOfMonth(today);
-    const daysInMonth = eachDayOfInterval({ start: monthStart, end: monthEnd });
-    
+    const daysInMonth = eachDayOfInterval({
+      start: monthStart,
+      end: monthEnd
+    });
     return daysInMonth.map(day => {
       const dayStr = format(day, 'yyyy-MM-dd');
-      const dayExpenses = transactions
-        .filter(t => t.type === 'expense' && format(new Date(t.date), 'yyyy-MM-dd') === dayStr)
-        .reduce((sum, t) => sum + t.amount, 0);
-      
+      const dayExpenses = transactions.filter(t => t.type === 'expense' && format(new Date(t.date), 'yyyy-MM-dd') === dayStr).reduce((sum, t) => sum + t.amount, 0);
       return {
         day: format(day, 'd'),
-        amount: dayExpenses,
+        amount: dayExpenses
       };
     });
   }, [transactions]);
-
-  const monthlyTotal = useMemo(() => 
-    monthlySparklineData.reduce((sum, d) => sum + d.amount, 0),
-    [monthlySparklineData]
-  );
-
+  const monthlyTotal = useMemo(() => monthlySparklineData.reduce((sum, d) => sum + d.amount, 0), [monthlySparklineData]);
   const currentMonthName = format(new Date(), 'MMMM');
 
   // Load category budgets from localStorage
@@ -187,25 +197,17 @@ const Index = () => {
   // Load monthly budget from database
   useEffect(() => {
     if (!user) return;
-
     const loadMonthlyBudget = async () => {
       const now = new Date();
       const month = now.getMonth() + 1;
       const year = now.getFullYear();
-
-      const { data } = await supabase
-        .from("budgets")
-        .select("amount")
-        .eq("user_id", user.id)
-        .eq("month", month)
-        .eq("year", year)
-        .single();
-
+      const {
+        data
+      } = await supabase.from("budgets").select("amount").eq("user_id", user.id).eq("month", month).eq("year", year).single();
       if (data) {
         setMonthlyBudget(Number(data.amount));
       }
     };
-
     loadMonthlyBudget();
   }, [user]);
 
@@ -219,17 +221,15 @@ const Index = () => {
   // Load transactions from database
   useEffect(() => {
     if (!user) return;
-
     const loadTransactions = async () => {
       try {
-        const { data, error } = await supabase
-          .from("transactions")
-          .select("*")
-          .eq("user_id", user.id)
-          .order("date", { ascending: false });
-
+        const {
+          data,
+          error
+        } = await supabase.from("transactions").select("*").eq("user_id", user.id).order("date", {
+          ascending: false
+        });
         if (error) throw error;
-
         const formattedTransactions = data.map(t => ({
           id: t.id,
           type: t.type as "income" | "expense",
@@ -239,9 +239,8 @@ const Index = () => {
           date: new Date(t.date),
           currency: t.currency || 'RON',
           exchange_rate: Number(t.exchange_rate) || 1,
-          attachment_url: t.attachment_url || undefined,
+          attachment_url: t.attachment_url || undefined
         }));
-
         setTransactions(formattedTransactions);
       } catch (error: any) {
         toast.error("Eroare la încărcarea tranzacțiilor");
@@ -250,24 +249,21 @@ const Index = () => {
         setLoading(false);
       }
     };
-
     loadTransactions();
   }, [user]);
 
   // Load recurring transactions from database
   useEffect(() => {
     if (!user) return;
-
     const loadRecurring = async () => {
       try {
-        const { data, error } = await supabase
-          .from("recurring_transactions")
-          .select("*")
-          .eq("user_id", user.id)
-          .order("created_at", { ascending: false });
-
+        const {
+          data,
+          error
+        } = await supabase.from("recurring_transactions").select("*").eq("user_id", user.id).order("created_at", {
+          ascending: false
+        });
         if (error) throw error;
-
         const formattedRecurring = data.map(r => ({
           id: r.id,
           type: r.type as "income" | "expense",
@@ -276,16 +272,14 @@ const Index = () => {
           description: r.description || "",
           frequency: r.frequency as "daily" | "weekly" | "monthly",
           isActive: r.is_active,
-          nextDate: r.last_processed ? new Date(r.last_processed) : new Date(),
+          nextDate: r.last_processed ? new Date(r.last_processed) : new Date()
         }));
-
         setRecurringTransactions(formattedRecurring);
       } catch (error: any) {
         toast.error("Eroare la încărcarea tranzacțiilor recurente");
         console.error(error);
       }
     };
-
     loadRecurring();
   }, [user]);
 
@@ -308,7 +302,6 @@ const Index = () => {
       } else if (filterPeriod !== "all") {
         const now = new Date();
         const transactionDate = new Date(transaction.date);
-        
         switch (filterPeriod) {
           case "today":
             if (transactionDate.toDateString() !== now.toDateString()) return false;
@@ -318,8 +311,7 @@ const Index = () => {
             if (transactionDate < weekAgo) return false;
             break;
           case "month":
-            if (transactionDate.getMonth() !== now.getMonth() || 
-                transactionDate.getFullYear() !== now.getFullYear()) return false;
+            if (transactionDate.getMonth() !== now.getMonth() || transactionDate.getFullYear() !== now.getFullYear()) return false;
             break;
           case "3months":
             const threeMonthsAgo = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
@@ -330,11 +322,9 @@ const Index = () => {
             break;
         }
       }
-
       return true;
     });
   }, [transactions, filterType, filterCategory, filterPeriod, dateRangeStart, dateRangeEnd]);
-
   const resetFilters = () => {
     setFilterType("all");
     setFilterCategory("all");
@@ -342,29 +332,24 @@ const Index = () => {
     setDateRangeStart(null);
     setDateRangeEnd(null);
   };
-
   const handleAddTransaction = async (newTransaction: Omit<Transaction, "id">) => {
     if (!user) return;
-
     try {
-      const { data, error } = await supabase
-        .from("transactions")
-        .insert([{
-          user_id: user.id,
-          type: newTransaction.type,
-          amount: newTransaction.amount,
-          category: newTransaction.category,
-          description: newTransaction.description,
-          date: newTransaction.date.toISOString().split('T')[0],
-          currency: newTransaction.currency || 'RON',
-          exchange_rate: newTransaction.exchange_rate || 1,
-          attachment_url: newTransaction.attachment_url || null,
-        }])
-        .select()
-        .single();
-
+      const {
+        data,
+        error
+      } = await supabase.from("transactions").insert([{
+        user_id: user.id,
+        type: newTransaction.type,
+        amount: newTransaction.amount,
+        category: newTransaction.category,
+        description: newTransaction.description,
+        date: newTransaction.date.toISOString().split('T')[0],
+        currency: newTransaction.currency || 'RON',
+        exchange_rate: newTransaction.exchange_rate || 1,
+        attachment_url: newTransaction.attachment_url || null
+      }]).select().single();
       if (error) throw error;
-
       const formattedTransaction: Transaction = {
         id: data.id,
         type: data.type as "income" | "expense",
@@ -374,9 +359,8 @@ const Index = () => {
         date: new Date(data.date),
         currency: data.currency || 'RON',
         exchange_rate: Number(data.exchange_rate) || 1,
-        attachment_url: data.attachment_url || undefined,
+        attachment_url: data.attachment_url || undefined
       };
-
       setTransactions(prev => [formattedTransaction, ...prev]);
       toast.success("Tranzacție adăugată!");
     } catch (error: any) {
@@ -384,55 +368,40 @@ const Index = () => {
       console.error(error);
     }
   };
-
   const handleEditTransaction = (transaction: Transaction) => {
     setEditingTransaction(transaction);
     setShowEditDialog(true);
   };
-
   const handleUpdateTransaction = async (updatedTransaction: Transaction) => {
     if (!user) return;
-
     try {
-      const { error } = await supabase
-        .from("transactions")
-        .update({
-          type: updatedTransaction.type,
-          amount: updatedTransaction.amount,
-          category: updatedTransaction.category,
-          description: updatedTransaction.description,
-          date: updatedTransaction.date.toISOString().split('T')[0],
-          currency: updatedTransaction.currency || 'RON',
-          exchange_rate: updatedTransaction.exchange_rate || 1,
-          attachment_url: updatedTransaction.attachment_url || null,
-        })
-        .eq("id", updatedTransaction.id)
-        .eq("user_id", user.id);
-
+      const {
+        error
+      } = await supabase.from("transactions").update({
+        type: updatedTransaction.type,
+        amount: updatedTransaction.amount,
+        category: updatedTransaction.category,
+        description: updatedTransaction.description,
+        date: updatedTransaction.date.toISOString().split('T')[0],
+        currency: updatedTransaction.currency || 'RON',
+        exchange_rate: updatedTransaction.exchange_rate || 1,
+        attachment_url: updatedTransaction.attachment_url || null
+      }).eq("id", updatedTransaction.id).eq("user_id", user.id);
       if (error) throw error;
-
-      setTransactions(prev => 
-        prev.map(t => t.id === updatedTransaction.id ? updatedTransaction : t)
-      );
+      setTransactions(prev => prev.map(t => t.id === updatedTransaction.id ? updatedTransaction : t));
       toast.success("Tranzacție actualizată!");
     } catch (error: any) {
       toast.error("Eroare la actualizarea tranzacției");
       console.error(error);
     }
   };
-
   const handleDeleteTransaction = async (id: string) => {
     if (!user) return;
-
     try {
-      const { error } = await supabase
-        .from("transactions")
-        .delete()
-        .eq("id", id)
-        .eq("user_id", user.id);
-
+      const {
+        error
+      } = await supabase.from("transactions").delete().eq("id", id).eq("user_id", user.id);
       if (error) throw error;
-
       setTransactions(prev => prev.filter(t => t.id !== id));
       toast.success("Tranzacție ștearsă!");
     } catch (error: any) {
@@ -440,28 +409,23 @@ const Index = () => {
       console.error(error);
     }
   };
-
   const handleAddRecurring = async (recurring: Omit<RecurringTransaction, "id" | "nextDate" | "isActive">) => {
     if (!user) return;
-
     try {
-      const { data, error } = await supabase
-        .from("recurring_transactions")
-        .insert([{
-          user_id: user.id,
-          type: recurring.type,
-          amount: recurring.amount,
-          category: recurring.category,
-          description: recurring.description,
-          frequency: recurring.frequency,
-          is_active: true,
-          last_processed: new Date().toISOString().split('T')[0],
-        }])
-        .select()
-        .single();
-
+      const {
+        data,
+        error
+      } = await supabase.from("recurring_transactions").insert([{
+        user_id: user.id,
+        type: recurring.type,
+        amount: recurring.amount,
+        category: recurring.category,
+        description: recurring.description,
+        frequency: recurring.frequency,
+        is_active: true,
+        last_processed: new Date().toISOString().split('T')[0]
+      }]).select().single();
       if (error) throw error;
-
       const newRecurring: RecurringTransaction = {
         id: data.id,
         type: data.type as "income" | "expense",
@@ -470,9 +434,8 @@ const Index = () => {
         description: data.description || "",
         frequency: data.frequency as "daily" | "weekly" | "monthly",
         isActive: data.is_active,
-        nextDate: new Date(data.last_processed),
+        nextDate: new Date(data.last_processed)
       };
-
       setRecurringTransactions([...recurringTransactions, newRecurring]);
       toast.success("Tranzacție recurentă adăugată!");
     } catch (error: any) {
@@ -480,19 +443,13 @@ const Index = () => {
       console.error(error);
     }
   };
-
   const handleDeleteRecurring = async (id: string) => {
     if (!user) return;
-
     try {
-      const { error } = await supabase
-        .from("recurring_transactions")
-        .delete()
-        .eq("id", id)
-        .eq("user_id", user.id);
-
+      const {
+        error
+      } = await supabase.from("recurring_transactions").delete().eq("id", id).eq("user_id", user.id);
       if (error) throw error;
-
       setRecurringTransactions(recurringTransactions.filter(r => r.id !== id));
       toast.success("Tranzacție recurentă ștearsă!");
     } catch (error: any) {
@@ -500,52 +457,39 @@ const Index = () => {
       console.error(error);
     }
   };
-
   const handleToggleRecurring = async (id: string) => {
     if (!user) return;
-
     const recurring = recurringTransactions.find(r => r.id === id);
     if (!recurring) return;
-
     try {
-      const { error } = await supabase
-        .from("recurring_transactions")
-        .update({ is_active: !recurring.isActive })
-        .eq("id", id)
-        .eq("user_id", user.id);
-
+      const {
+        error
+      } = await supabase.from("recurring_transactions").update({
+        is_active: !recurring.isActive
+      }).eq("id", id).eq("user_id", user.id);
       if (error) throw error;
-
-      setRecurringTransactions(
-        recurringTransactions.map(r =>
-          r.id === id ? { ...r, isActive: !r.isActive } : r
-        )
-      );
+      setRecurringTransactions(recurringTransactions.map(r => r.id === id ? {
+        ...r,
+        isActive: !r.isActive
+      } : r));
       toast.success("Stare tranzacție recurentă actualizată!");
     } catch (error: any) {
       toast.error("Eroare la actualizarea stării");
       console.error(error);
     }
   };
-
   const handleLogout = async () => {
     await signOut();
     navigate("/auth");
     toast.success("Deconectat cu succes!");
   };
-
   if (authLoading || loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
+    return <div className="min-h-screen flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
+      </div>;
   }
-
   if (!user) return null;
-
-  return (
-    <div className="flex min-h-screen w-full bg-gradient-subtle">
+  return <div className="flex min-h-screen w-full bg-gradient-subtle">
       <AppSidebar activeSection={activeSection} onSectionChange={setActiveSection} />
       
       <div className="flex-1 flex flex-col w-full">
@@ -564,42 +508,18 @@ const Index = () => {
               </div>
             </div>
             <div className="flex items-center space-x-1.5 sm:space-x-2 shrink-0">
-              <div className="hidden md:flex items-center space-x-2">
-                <div className="p-2 bg-primary/10 rounded-lg">
-                  <PieChart className="h-5 w-5 text-primary" />
-                </div>
-                <div className="p-2 bg-primary/10 rounded-lg">
-                  <BarChart3 className="h-5 w-5 text-primary" />
-                </div>
-              </div>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={toggleAllSections}
-                className="h-8 sm:h-9 active:scale-95 transition-smooth"
-                title={expandedSections.length === allSections.length ? "Închide toate secțiunile" : "Deschide toate secțiunile"}
-              >
+              
+              <Button variant="outline" size="sm" onClick={toggleAllSections} className="h-8 sm:h-9 active:scale-95 transition-smooth" title={expandedSections.length === allSections.length ? "Închide toate secțiunile" : "Deschide toate secțiunile"}>
                 <ChevronsUpDown className="h-4 w-4" />
                 <span className="hidden md:inline ml-1">
                   {expandedSections.length === allSections.length ? "Închide tot" : "Deschide tot"}
                 </span>
               </Button>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={requestNotificationPermission}
-                className="h-8 sm:h-9 active:scale-95 transition-smooth"
-                title="Activează notificările pentru alerte de buget"
-              >
+              <Button variant="outline" size="sm" onClick={requestNotificationPermission} className="h-8 sm:h-9 active:scale-95 transition-smooth" title="Activează notificările pentru alerte de buget">
                 <Bell className="h-4 w-4" />
               </Button>
               <ThemeToggle />
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={handleLogout}
-                className="h-8 sm:h-9 active:scale-95 transition-smooth"
-              >
+              <Button variant="outline" size="sm" onClick={handleLogout} className="h-8 sm:h-9 active:scale-95 transition-smooth">
                 <LogOut className="h-4 w-4 sm:mr-2" />
                 <span className="hidden sm:inline">Ieșire</span>
               </Button>
@@ -649,23 +569,13 @@ const Index = () => {
                             <stop offset="100%" stopColor="hsl(var(--danger))" stopOpacity={0} />
                           </linearGradient>
                         </defs>
-                        <Tooltip 
-                          contentStyle={{ 
-                            background: 'hsl(var(--card))', 
-                            border: '1px solid hsl(var(--border))',
-                            borderRadius: '8px',
-                            fontSize: '12px'
-                          }}
-                          formatter={(value: number) => [`${value.toLocaleString('ro-RO')} RON`, 'Cheltuieli']}
-                          labelFormatter={(label) => `Ziua ${label}`}
-                        />
-                        <Area 
-                          type="monotone" 
-                          dataKey="amount" 
-                          stroke="hsl(var(--danger))" 
-                          strokeWidth={2}
-                          fill="url(#sparklineGradient)"
-                        />
+                        <Tooltip contentStyle={{
+                        background: 'hsl(var(--card))',
+                        border: '1px solid hsl(var(--border))',
+                        borderRadius: '8px',
+                        fontSize: '12px'
+                      }} formatter={(value: number) => [`${value.toLocaleString('ro-RO')} RON`, 'Cheltuieli']} labelFormatter={label => `Ziua ${label}`} />
+                        <Area type="monotone" dataKey="amount" stroke="hsl(var(--danger))" strokeWidth={2} fill="url(#sparklineGradient)" />
                       </AreaChart>
                     </ResponsiveContainer>
                   </div>
@@ -683,10 +593,7 @@ const Index = () => {
                     <div>
                       <p className="text-xs text-success/80 font-medium">Venituri</p>
                       <p className="text-xl font-bold text-success">
-                        +{transactions
-                          .filter(t => t.type === 'income' && new Date(t.date).getMonth() === new Date().getMonth() && new Date(t.date).getFullYear() === new Date().getFullYear())
-                          .reduce((sum, t) => sum + Number(t.amount), 0)
-                          .toLocaleString('ro-RO')} RON
+                        +{transactions.filter(t => t.type === 'income' && new Date(t.date).getMonth() === new Date().getMonth() && new Date(t.date).getFullYear() === new Date().getFullYear()).reduce((sum, t) => sum + Number(t.amount), 0).toLocaleString('ro-RO')} RON
                       </p>
                     </div>
                   </div>
@@ -709,13 +616,10 @@ const Index = () => {
 
                 {/* Net Balance Card */}
                 {(() => {
-                  const monthlyIncome = transactions
-                    .filter(t => t.type === 'income' && new Date(t.date).getMonth() === new Date().getMonth() && new Date(t.date).getFullYear() === new Date().getFullYear())
-                    .reduce((sum, t) => sum + Number(t.amount), 0);
-                  const netBalance = monthlyIncome - monthlyTotal;
-                  const isPositive = netBalance >= 0;
-                  return (
-                    <div className={`flex-1 p-4 rounded-xl backdrop-blur cursor-pointer ${isPositive ? 'bg-primary/10 border border-primary/30 hover-glow-primary' : 'bg-warning/10 border border-warning/30 hover-glow-warning'}`}>
+                const monthlyIncome = transactions.filter(t => t.type === 'income' && new Date(t.date).getMonth() === new Date().getMonth() && new Date(t.date).getFullYear() === new Date().getFullYear()).reduce((sum, t) => sum + Number(t.amount), 0);
+                const netBalance = monthlyIncome - monthlyTotal;
+                const isPositive = netBalance >= 0;
+                return <div className={`flex-1 p-4 rounded-xl backdrop-blur cursor-pointer ${isPositive ? 'bg-primary/10 border border-primary/30 hover-glow-primary' : 'bg-warning/10 border border-warning/30 hover-glow-warning'}`}>
                       <div className="flex items-center gap-3">
                         <div className={`p-2.5 rounded-lg ${isPositive ? 'bg-primary/20' : 'bg-warning/20'}`}>
                           <BarChart3 className={`h-5 w-5 ${isPositive ? 'text-primary' : 'text-warning'}`} />
@@ -727,35 +631,21 @@ const Index = () => {
                           </p>
                         </div>
                       </div>
-                    </div>
-                  );
-                })()}
+                    </div>;
+              })()}
               </div>
             </div>
           </div>
         </section>
 
         {/* Main Content */}
-        <motion.main 
-          className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6 md:py-8 space-y-2"
-          initial="hidden"
-          animate="visible"
-          variants={containerVariants}
-        >
-          <Accordion 
-            type="multiple" 
-            value={expandedSections}
-            onValueChange={handleAccordionChange}
-            className="space-y-4"
-          >
+        <motion.main className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6 md:py-8 space-y-2" initial="hidden" animate="visible" variants={containerVariants}>
+          <Accordion type="multiple" value={expandedSections} onValueChange={handleAccordionChange} className="space-y-4">
             {/* Transactions Section */}
             <motion.div variants={itemVariants}>
-              <AccordionItem 
-                value="transactions" 
-                id="section-transactions" 
-                className="border rounded-lg bg-card shadow-card transition-all duration-300 data-[state=open]:shadow-lg data-[state=open]:border-primary/20"
-                ref={(el) => { sectionRefs.current['transactions'] = el; }}
-              >
+              <AccordionItem value="transactions" id="section-transactions" className="border rounded-lg bg-card shadow-card transition-all duration-300 data-[state=open]:shadow-lg data-[state=open]:border-primary/20" ref={el => {
+              sectionRefs.current['transactions'] = el;
+            }}>
               <AccordionTrigger className="px-4 sm:px-6 py-4 text-lg sm:text-xl font-bold hover:no-underline">
                 Tranzacții
               </AccordionTrigger>
@@ -765,48 +655,27 @@ const Index = () => {
                     <TransactionForm onAddTransaction={handleAddTransaction} />
                   </div>
                   <div className="lg:col-span-2">
-                    <TransactionList 
-                      transactions={filteredTransactions} 
-                      onEditTransaction={handleEditTransaction}
-                    />
+                    <TransactionList transactions={filteredTransactions} onEditTransaction={handleEditTransaction} />
                   </div>
                 </div>
                 <StatsCards transactions={transactions} />
-                <TransactionFilters
-                  selectedType={filterType}
-                  selectedCategory={filterCategory}
-                  selectedPeriod={filterPeriod}
-                  onTypeChange={setFilterType}
-                  onCategoryChange={setFilterCategory}
-                  onPeriodChange={setFilterPeriod}
-                  onReset={resetFilters}
-                />
+                <TransactionFilters selectedType={filterType} selectedCategory={filterCategory} selectedPeriod={filterPeriod} onTypeChange={setFilterType} onCategoryChange={setFilterCategory} onPeriodChange={setFilterPeriod} onReset={resetFilters} />
               </AccordionContent>
               </AccordionItem>
             </motion.div>
 
             {/* Analytics Section */}
             <motion.div variants={itemVariants}>
-              <AccordionItem 
-                value="analytics" 
-                id="section-analytics" 
-                className="border rounded-lg bg-card shadow-card transition-all duration-300 data-[state=open]:shadow-lg data-[state=open]:border-primary/20"
-                ref={(el) => { sectionRefs.current['analytics'] = el; }}
-              >
+              <AccordionItem value="analytics" id="section-analytics" className="border rounded-lg bg-card shadow-card transition-all duration-300 data-[state=open]:shadow-lg data-[state=open]:border-primary/20" ref={el => {
+              sectionRefs.current['analytics'] = el;
+            }}>
               <AccordionTrigger className="px-4 sm:px-6 py-4 text-lg sm:text-xl font-bold hover:no-underline">
                 Analiză Avansată
               </AccordionTrigger>
               <AccordionContent className="px-4 sm:px-6 pb-4 space-y-6">
                 <DateRangeFilter onDateRangeChange={handleDateRangeChange} />
-                <AIInsights 
-                  transactions={transactions}
-                  categoryBudgets={Object.fromEntries(categoryBudgets.map(b => [b.category, b.limit]))}
-                  monthlyBudget={monthlyBudget}
-                />
-                <BudgetVsActualChart 
-                  transactions={transactions} 
-                  categoryBudgets={categoryBudgets}
-                />
+                <AIInsights transactions={transactions} categoryBudgets={Object.fromEntries(categoryBudgets.map(b => [b.category, b.limit]))} monthlyBudget={monthlyBudget} />
+                <BudgetVsActualChart transactions={transactions} categoryBudgets={categoryBudgets} />
                 <CategoryTrendChart transactions={filteredTransactions} />
                 <TransactionCharts transactions={filteredTransactions} />
               </AccordionContent>
@@ -815,12 +684,9 @@ const Index = () => {
 
             {/* Budgets Section */}
             <motion.div variants={itemVariants}>
-              <AccordionItem 
-                value="budgets" 
-                id="section-budgets" 
-                className="border rounded-lg bg-card shadow-card transition-all duration-300 data-[state=open]:shadow-lg data-[state=open]:border-primary/20"
-                ref={(el) => { sectionRefs.current['budgets'] = el; }}
-              >
+              <AccordionItem value="budgets" id="section-budgets" className="border rounded-lg bg-card shadow-card transition-all duration-300 data-[state=open]:shadow-lg data-[state=open]:border-primary/20" ref={el => {
+              sectionRefs.current['budgets'] = el;
+            }}>
                 <AccordionTrigger className="px-4 sm:px-6 py-4 text-lg sm:text-xl font-bold hover:no-underline">
                   Bugete
                 </AccordionTrigger>
@@ -836,12 +702,9 @@ const Index = () => {
 
             {/* Reports Section */}
             <motion.div variants={itemVariants}>
-              <AccordionItem 
-                value="reports" 
-                id="section-reports" 
-                className="border rounded-lg bg-card shadow-card transition-all duration-300 data-[state=open]:shadow-lg data-[state=open]:border-primary/20"
-                ref={(el) => { sectionRefs.current['reports'] = el; }}
-              >
+              <AccordionItem value="reports" id="section-reports" className="border rounded-lg bg-card shadow-card transition-all duration-300 data-[state=open]:shadow-lg data-[state=open]:border-primary/20" ref={el => {
+              sectionRefs.current['reports'] = el;
+            }}>
                 <AccordionTrigger className="px-4 sm:px-6 py-4 text-lg sm:text-xl font-bold hover:no-underline">
                   Rapoarte & Integrări
                 </AccordionTrigger>
@@ -851,35 +714,26 @@ const Index = () => {
                     <ExportData transactions={transactions} />
                     <ShareReport transactions={transactions} />
                   </div>
-                  <ShareReportPublic 
-                    reportData={{ 
-                      transactions: filteredTransactions,
-                      income: filteredTransactions.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0),
-                      expenses: filteredTransactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0)
-                    }}
-                    title="Raport Financiar MoneyTracker"
-                  />
+                  <ShareReportPublic reportData={{
+                  transactions: filteredTransactions,
+                  income: filteredTransactions.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0),
+                  expenses: filteredTransactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0)
+                }} title="Raport Financiar MoneyTracker" />
                   <div className="space-y-4">
                     <h3 className="text-lg font-semibold">Integrări</h3>
                     <div className="grid gap-4 sm:gap-6 lg:grid-cols-2">
-                      <ZapierIntegration 
-                        transactions={transactions}
-                        budgets={categoryBudgets.map(cb => ({
-                          category: cb.category,
-                          amount: cb.limit,
-                          month: new Date().getMonth() + 1,
-                          year: new Date().getFullYear()
-                        }))}
-                      />
-                      <APIExport 
-                        transactions={transactions}
-                        budgets={categoryBudgets.map(cb => ({
-                          category: cb.category,
-                          amount: cb.limit,
-                          month: new Date().getMonth() + 1,
-                          year: new Date().getFullYear()
-                        }))}
-                      />
+                      <ZapierIntegration transactions={transactions} budgets={categoryBudgets.map(cb => ({
+                      category: cb.category,
+                      amount: cb.limit,
+                      month: new Date().getMonth() + 1,
+                      year: new Date().getFullYear()
+                    }))} />
+                      <APIExport transactions={transactions} budgets={categoryBudgets.map(cb => ({
+                      category: cb.category,
+                      amount: cb.limit,
+                      month: new Date().getMonth() + 1,
+                      year: new Date().getFullYear()
+                    }))} />
                     </div>
                   </div>
                 </AccordionContent>
@@ -888,12 +742,9 @@ const Index = () => {
 
             {/* Settings Section */}
             <motion.div variants={itemVariants}>
-              <AccordionItem 
-                value="settings" 
-                id="section-settings" 
-                className="border rounded-lg bg-card shadow-card transition-all duration-300 data-[state=open]:shadow-lg data-[state=open]:border-primary/20"
-                ref={(el) => { sectionRefs.current['settings'] = el; }}
-              >
+              <AccordionItem value="settings" id="section-settings" className="border rounded-lg bg-card shadow-card transition-all duration-300 data-[state=open]:shadow-lg data-[state=open]:border-primary/20" ref={el => {
+              sectionRefs.current['settings'] = el;
+            }}>
                 <AccordionTrigger className="px-4 sm:px-6 py-4 text-lg sm:text-xl font-bold hover:no-underline">
                   Setări
                 </AccordionTrigger>
@@ -903,33 +754,15 @@ const Index = () => {
                   <AccountSettings />
                   <div className="grid gap-4 sm:gap-6 lg:grid-cols-2">
                     <UserSettings />
-                    <ImportData onImport={(imported) => {
-                      imported.forEach(t => handleAddTransaction(t));
-                    }} />
+                    <ImportData onImport={imported => {
+                    imported.forEach(t => handleAddTransaction(t));
+                  }} />
                   </div>
                   <div className="grid gap-4 sm:gap-6 lg:grid-cols-2">
-                    <RecurringTransactions
-                      recurringTransactions={recurringTransactions}
-                      onAddRecurring={handleAddRecurring}
-                      onDeleteRecurring={handleDeleteRecurring}
-                      onToggleRecurring={handleToggleRecurring}
-                    />
-                    <BillReminders
-                      recurringTransactions={recurringTransactions}
-                      reminders={billReminders}
-                      onAddReminder={addBillReminder}
-                      onUpdateReminder={updateBillReminder}
-                      onDeleteReminder={deleteBillReminder}
-                      onMarkAsPaid={markBillAsPaid}
-                    />
+                    <RecurringTransactions recurringTransactions={recurringTransactions} onAddRecurring={handleAddRecurring} onDeleteRecurring={handleDeleteRecurring} onToggleRecurring={handleToggleRecurring} />
+                    <BillReminders recurringTransactions={recurringTransactions} reminders={billReminders} onAddReminder={addBillReminder} onUpdateReminder={updateBillReminder} onDeleteReminder={deleteBillReminder} onMarkAsPaid={markBillAsPaid} />
                   </div>
-                  <SavingsGoals
-                    goals={savingsGoals}
-                    onAddGoal={addSavingsGoal}
-                    onUpdateGoal={updateSavingsGoal}
-                    onDeleteGoal={deleteSavingsGoal}
-                    onAddToGoal={addToSavingsGoal}
-                  />
+                  <SavingsGoals goals={savingsGoals} onAddGoal={addSavingsGoal} onUpdateGoal={updateSavingsGoal} onDeleteGoal={deleteSavingsGoal} onAddToGoal={addToSavingsGoal} />
                 </AccordionContent>
               </AccordionItem>
             </motion.div>
@@ -937,13 +770,7 @@ const Index = () => {
         </motion.main>
 
         {/* Edit Transaction Dialog */}
-        <EditTransactionDialog
-          transaction={editingTransaction}
-          open={showEditDialog}
-          onOpenChange={setShowEditDialog}
-          onSave={handleUpdateTransaction}
-          onDelete={handleDeleteTransaction}
-        />
+        <EditTransactionDialog transaction={editingTransaction} open={showEditDialog} onOpenChange={setShowEditDialog} onSave={handleUpdateTransaction} onDelete={handleDeleteTransaction} />
 
         {/* Footer */}
         <footer className="bg-card border-t mt-8 sm:mt-12">
@@ -954,8 +781,6 @@ const Index = () => {
           </div>
         </footer>
       </div>
-    </div>
-  );
+    </div>;
 };
-
 export default Index;
