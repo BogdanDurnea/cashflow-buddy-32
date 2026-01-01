@@ -1,8 +1,8 @@
 import { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.lovable.cashflowbuddy',
-  appName: 'cashflow-buddy-32',
+  appId: 'app.lovable.925aba52baeb4ad482a7ad7ce8b538ba',
+  appName: 'MoneyTracker',
   webDir: 'dist',
   server: {
     androidScheme: 'https',
