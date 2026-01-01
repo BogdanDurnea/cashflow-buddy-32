@@ -1,7 +1,7 @@
 import { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'app.lovable.925aba52baeb4ad482a7ad7ce8b538ba',
+  appId: 'app.lovable.moneytracker',
   appName: 'MoneyTracker',
   webDir: 'dist',
   server: {
