@@ -8,6 +8,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Loader2 } from "lucide-react";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { SidebarProvider } from "@/components/ui/sidebar";
+import { OfflineIndicator } from "@/components/OfflineIndicator";
 
 // Lazy load pages for better performance
 const Index = lazy(() => import("./pages/Index"));
@@ -28,6 +29,7 @@ const App = () => (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
         <TooltipProvider>
+          <OfflineIndicator />
           <Toaster />
           <Sonner />
           <BrowserRouter>
