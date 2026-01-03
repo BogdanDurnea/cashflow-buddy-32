@@ -5,12 +5,13 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
-import { PlusCircle, Paperclip, X } from "lucide-react";
+import { PlusCircle, Paperclip, X, WifiOff } from "lucide-react";
 import * as LucideIcons from "lucide-react";
 import { incomeCategories, expenseCategories } from "@/lib/categoryConfig";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery } from "@tanstack/react-query";
+import { useOfflineSync } from "@/hooks/useOfflineSync";
 
 export interface Transaction {
   id: string;
@@ -38,6 +39,7 @@ const CURRENCIES = [
 
 export function TransactionForm({ onAddTransaction }: TransactionFormProps) {
   const { toast } = useToast();
+  const { isOnline } = useOfflineSync();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [type, setType] = useState<"income" | "expense">("expense");
   const [amount, setAmount] = useState("");
@@ -68,25 +70,33 @@ export function TransactionForm({ onAddTransaction }: TransactionFormProps) {
     let attachmentUrl = null;
 
     try {
-      // Upload attachment if present
+      // Upload attachment if present (only when online)
       if (attachmentFile) {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) throw new Error("Nu ești autentificat");
+        if (!isOnline) {
+          toast({
+            title: "Atașamentele necesită conexiune",
+            description: "Tranzacția va fi salvată fără atașament în modul offline.",
+            variant: "destructive"
+          });
+        } else {
+          const { data: { user } } = await supabase.auth.getUser();
+          if (!user) throw new Error("Nu ești autentificat");
 
-        const fileExt = attachmentFile.name.split('.').pop();
-        const fileName = `${user.id}/${Date.now()}.${fileExt}`;
+          const fileExt = attachmentFile.name.split('.').pop();
+          const fileName = `${user.id}/${Date.now()}.${fileExt}`;
 
-        const { error: uploadError } = await supabase.storage
-          .from('receipts')
-          .upload(fileName, attachmentFile);
+          const { error: uploadError } = await supabase.storage
+            .from('receipts')
+            .upload(fileName, attachmentFile);
 
-        if (uploadError) throw uploadError;
+          if (uploadError) throw uploadError;
 
-        const { data: { publicUrl } } = supabase.storage
-          .from('receipts')
-          .getPublicUrl(fileName);
+          const { data: { publicUrl } } = supabase.storage
+            .from('receipts')
+            .getPublicUrl(fileName);
 
-        attachmentUrl = publicUrl;
+          attachmentUrl = publicUrl;
+        }
       }
 
       const selectedCurrency = CURRENCIES.find(c => c.code === currency);
@@ -112,7 +122,14 @@ export function TransactionForm({ onAddTransaction }: TransactionFormProps) {
         fileInputRef.current.value = "";
       }
 
-      toast({ title: "Tranzacție adăugată cu succes!" });
+      toast({ 
+        title: isOnline 
+          ? "Tranzacție adăugată cu succes!" 
+          : "Tranzacție salvată offline",
+        description: !isOnline 
+          ? "Va fi sincronizată când revii online." 
+          : undefined
+      });
     } catch (error) {
       console.error("Error:", error);
       toast({ 
@@ -156,6 +173,12 @@ export function TransactionForm({ onAddTransaction }: TransactionFormProps) {
         <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
           <PlusCircle className="h-5 w-5 shrink-0" />
           <span className="truncate">Adaugă tranzacție nouă</span>
+          {!isOnline && (
+            <span className="ml-auto flex items-center gap-1 text-xs font-normal text-amber-500">
+              <WifiOff className="h-3 w-3" />
+              Offline
+            </span>
+          )}
         </CardTitle>
       </CardHeader>
       <CardContent className="p-4 sm:p-6 pt-0 sm:pt-0">
