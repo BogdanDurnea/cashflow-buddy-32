@@ -3,12 +3,13 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
-import { Calendar, Edit2, Paperclip, ExternalLink, Receipt } from "lucide-react";
+import { Calendar, Edit2, Receipt } from "lucide-react";
 import { Transaction } from "./TransactionForm";
 import { getCategoryConfig } from "@/lib/categoryConfig";
 import { EmptyState } from "./EmptyState";
 import React from "react";
 import { motion } from "framer-motion";
+import { ReceiptLink } from "./ReceiptLink";
 
 interface TransactionListProps {
   transactions: Transaction[];
@@ -126,20 +127,7 @@ export const TransactionList = React.memo(function TransactionList({ transaction
                             <span>{formatDate(transaction.date)}</span>
                           </div>
                           {transaction.attachment_url && (
-                            <>
-                              <span className="mx-1">•</span>
-                              <Paperclip className="h-3 w-3 shrink-0" />
-                              <a 
-                                href={transaction.attachment_url} 
-                                target="_blank" 
-                                rel="noopener noreferrer"
-                                className="hover:underline flex items-center gap-1 active:scale-95 transition-smooth"
-                                onClick={(e) => e.stopPropagation()}
-                              >
-                                Chitanță
-                                <ExternalLink className="h-2 w-2" />
-                              </a>
-                            </>
+                            <ReceiptLink attachmentUrl={transaction.attachment_url} />
                           )}
                         </div>
                       </div>

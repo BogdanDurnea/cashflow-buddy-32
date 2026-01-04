@@ -91,11 +91,8 @@ export function TransactionForm({ onAddTransaction }: TransactionFormProps) {
 
           if (uploadError) throw uploadError;
 
-          const { data: { publicUrl } } = supabase.storage
-            .from('receipts')
-            .getPublicUrl(fileName);
-
-          attachmentUrl = publicUrl;
+          // Store the file path (not the URL) - signed URLs will be generated on demand
+          attachmentUrl = fileName;
         }
       }
 

@@ -326,7 +326,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      increment_report_view_count: {
+        Args: { token_param: string }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never

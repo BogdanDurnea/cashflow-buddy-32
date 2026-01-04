@@ -47,12 +47,9 @@ export default function SharedReport() {
 
         setReport(data);
 
-        // Increment view count (fire and forget) - update directly
+        // Increment view count atomically using RPC function
         try {
-          await supabase
-            .from("report_shares")
-            .update({ view_count: ((data as any).view_count || 0) + 1 })
-            .eq("share_token", token);
+          await supabase.rpc('increment_report_view_count', { token_param: token });
         } catch {
           // Ignore errors - view count is not critical
         }
