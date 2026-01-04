@@ -159,41 +159,74 @@ export function SharedBudgetsManager() {
   const addMember = async () => {
     if (!selectedBudget || !memberEmail) return;
 
+    // Basic email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(memberEmail.trim())) {
+      toast({
+        title: "Eroare",
+        description: "Adresa de email nu este validă",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setLoading(true);
     try {
-      // Find user by email
+      // Find user by email - use generic error message to prevent email enumeration
       const { data: profileData, error: profileError } = await supabase
         .from("profiles")
         .select("id")
-        .eq("email", memberEmail)
+        .eq("email", memberEmail.trim().toLowerCase())
         .single();
 
-      if (profileError) throw new Error("Utilizator negăsit");
+      // Insert member if user exists
+      if (!profileError && profileData) {
+        const { error } = await supabase
+          .from("shared_budget_members")
+          .insert({
+            shared_budget_id: selectedBudget,
+            user_id: profileData.id,
+            role: memberRole,
+          });
 
-      const { error } = await supabase
-        .from("shared_budget_members")
-        .insert({
-          shared_budget_id: selectedBudget,
-          user_id: profileData.id,
-          role: memberRole,
+        if (error) {
+          // Check for duplicate member
+          if (error.code === '23505') {
+            toast({
+              title: "Eroare",
+              description: "Acest utilizator este deja membru",
+              variant: "destructive",
+            });
+          } else {
+            throw error;
+          }
+          return;
+        }
+
+        toast({
+          title: "✓ Invitație trimisă",
+          description: "Dacă utilizatorul există, a fost adăugat la budget",
         });
-
-      if (error) throw error;
-
-      toast({
-        title: "✓ Membru adăugat",
-        description: `${memberEmail} a fost adăugat cu rol ${memberRole}`,
-      });
+      } else {
+        // Return same generic message regardless of whether user exists
+        // This prevents email enumeration attacks
+        toast({
+          title: "✓ Invitație trimisă",
+          description: "Dacă utilizatorul există, a fost adăugat la budget",
+        });
+      }
 
       setMemberEmail("");
       setMemberRole("viewer");
       loadMembers(selectedBudget);
     } catch (error: any) {
+      // Generic error message to prevent information leakage
       toast({
         title: "Eroare",
-        description: error.message,
+        description: "Nu s-a putut procesa cererea. Încearcă din nou.",
         variant: "destructive",
       });
+      console.error("Error adding member:", error);
     } finally {
       setLoading(false);
     }
