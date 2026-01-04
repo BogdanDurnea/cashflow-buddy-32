@@ -41,7 +41,7 @@ export function ShareReportPublic({ reportData, title }: ShareReportPublicProps)
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
-      const shareToken = Math.random().toString(36).substring(2) + Date.now().toString(36);
+      const shareToken = crypto.randomUUID();
       const expiresAt = expiresInDays > 0
         ? new Date(Date.now() + expiresInDays * 24 * 60 * 60 * 1000).toISOString()
         : null;
