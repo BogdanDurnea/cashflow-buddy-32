@@ -13,6 +13,7 @@ import { OfflineIndicator } from "@/components/OfflineIndicator";
 // Lazy load pages for better performance
 const Index = lazy(() => import("./pages/Index"));
 const Auth = lazy(() => import("./pages/Auth"));
+const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const Install = lazy(() => import("./pages/Install"));
 const SharedReport = lazy(() => import("./pages/SharedReport"));
 const NotFound = lazy(() => import("./pages/NotFound"));
@@ -39,6 +40,7 @@ const App = () => (
                 <Routes>
                   <Route path="/" element={<Index />} />
                   <Route path="/auth" element={<Auth />} />
+                  <Route path="/reset-password" element={<ResetPassword />} />
                   <Route path="/install" element={<Install />} />
                   <Route path="/shared/:token" element={<SharedReport />} />
                   {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
