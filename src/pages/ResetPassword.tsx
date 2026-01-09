@@ -7,6 +7,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { KeyRound, Loader2, CheckCircle } from "lucide-react";
+import { z } from "zod";
+
+// Schema pentru validare parolă
+const passwordSchema = z.string()
+  .min(8, { message: "Parola trebuie să aibă cel puțin 8 caractere" })
+  .max(72, { message: "Parola nu poate depăși 72 de caractere" })
+  .regex(/[a-z]/, { message: "Parola trebuie să conțină cel puțin o literă mică" })
+  .regex(/[A-Z]/, { message: "Parola trebuie să conțină cel puțin o literă mare" })
+  .regex(/[0-9]/, { message: "Parola trebuie să conțină cel puțin o cifră" });
 
 export default function ResetPassword() {
   const navigate = useNavigate();
@@ -16,6 +25,7 @@ export default function ResetPassword() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isValidSession, setIsValidSession] = useState(false);
   const [isChecking, setIsChecking] = useState(true);
+  const [errors, setErrors] = useState<{ password?: string; confirmPassword?: string }>({});
 
   useEffect(() => {
     // Check if we have a valid recovery session
@@ -47,16 +57,33 @@ export default function ResetPassword() {
     checkSession();
   }, []);
 
+  const validatePassword = (value: string): boolean => {
+    const result = passwordSchema.safeParse(value);
+    if (!result.success) {
+      setErrors(prev => ({ ...prev, password: result.error.errors[0].message }));
+      return false;
+    }
+    setErrors(prev => ({ ...prev, password: undefined }));
+    return true;
+  };
+
+  const validateConfirmPassword = (value: string): boolean => {
+    if (value !== password) {
+      setErrors(prev => ({ ...prev, confirmPassword: "Parolele nu coincid" }));
+      return false;
+    }
+    setErrors(prev => ({ ...prev, confirmPassword: undefined }));
+    return true;
+  };
+
   const handlePasswordUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (password !== confirmPassword) {
-      toast.error("Parolele nu coincid!");
-      return;
-    }
+    // Validare
+    const isPasswordValid = validatePassword(password);
+    const isConfirmValid = validateConfirmPassword(confirmPassword);
 
-    if (password.length < 6) {
-      toast.error("Parola trebuie să aibă cel puțin 6 caractere!");
+    if (!isPasswordValid || !isConfirmValid) {
       return;
     }
 
@@ -167,11 +194,23 @@ export default function ResetPassword() {
                 type="password"
                 placeholder="••••••••"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  if (errors.password) validatePassword(e.target.value);
+                }}
+                onBlur={() => validatePassword(password)}
                 required
                 disabled={isLoading}
-                minLength={6}
+                className={errors.password ? "border-destructive" : ""}
               />
+              {errors.password && (
+                <p className="text-sm text-destructive">{errors.password}</p>
+              )}
+              {!errors.password && (
+                <p className="text-xs text-muted-foreground">
+                  Min. 8 caractere, o literă mare, o literă mică și o cifră
+                </p>
+              )}
             </div>
             <div className="space-y-2">
               <Label htmlFor="confirmPassword">Confirmă parola</Label>
@@ -180,11 +219,18 @@ export default function ResetPassword() {
                 type="password"
                 placeholder="••••••••"
                 value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
+                onChange={(e) => {
+                  setConfirmPassword(e.target.value);
+                  if (errors.confirmPassword) validateConfirmPassword(e.target.value);
+                }}
+                onBlur={() => validateConfirmPassword(confirmPassword)}
                 required
                 disabled={isLoading}
-                minLength={6}
+                className={errors.confirmPassword ? "border-destructive" : ""}
               />
+              {errors.confirmPassword && (
+                <p className="text-sm text-destructive">{errors.confirmPassword}</p>
+              )}
             </div>
             <Button type="submit" className="w-full" disabled={isLoading}>
               {isLoading ? (

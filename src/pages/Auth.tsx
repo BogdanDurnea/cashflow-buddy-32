@@ -7,6 +7,26 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { Wallet, Loader2, ArrowLeft } from "lucide-react";
+import { z } from "zod";
+
+// Schema pentru validare email
+const emailSchema = z.string()
+  .trim()
+  .min(1, { message: "Email-ul este obligatoriu" })
+  .email({ message: "Adresa de email nu este validă" })
+  .max(255, { message: "Email-ul nu poate depăși 255 de caractere" });
+
+// Schema pentru validare parolă
+const passwordSchema = z.string()
+  .min(8, { message: "Parola trebuie să aibă cel puțin 8 caractere" })
+  .max(72, { message: "Parola nu poate depăși 72 de caractere" })
+  .regex(/[a-z]/, { message: "Parola trebuie să conțină cel puțin o literă mică" })
+  .regex(/[A-Z]/, { message: "Parola trebuie să conțină cel puțin o literă mare" })
+  .regex(/[0-9]/, { message: "Parola trebuie să conțină cel puțin o cifră" });
+
+// Schema pentru login (parolă mai permisivă)
+const loginPasswordSchema = z.string()
+  .min(1, { message: "Parola este obligatorie" });
 
 type AuthMode = "login" | "signup" | "forgot-password";
 
@@ -16,6 +36,7 @@ export default function Auth() {
   const [mode, setMode] = useState<AuthMode>("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
 
   useEffect(() => {
     // Check if user is already logged in
@@ -37,14 +58,44 @@ export default function Auth() {
     return () => subscription.unsubscribe();
   }, [navigate]);
 
+  const validateEmail = (value: string): boolean => {
+    const result = emailSchema.safeParse(value);
+    if (!result.success) {
+      setErrors(prev => ({ ...prev, email: result.error.errors[0].message }));
+      return false;
+    }
+    setErrors(prev => ({ ...prev, email: undefined }));
+    return true;
+  };
+
+  const validatePassword = (value: string, isLogin: boolean): boolean => {
+    const schema = isLogin ? loginPasswordSchema : passwordSchema;
+    const result = schema.safeParse(value);
+    if (!result.success) {
+      setErrors(prev => ({ ...prev, password: result.error.errors[0].message }));
+      return false;
+    }
+    setErrors(prev => ({ ...prev, password: undefined }));
+    return true;
+  };
+
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validare
+    const isEmailValid = validateEmail(email);
+    const isPasswordValid = validatePassword(password, mode === "login");
+    
+    if (!isEmailValid || !isPasswordValid) {
+      return;
+    }
+
     setIsLoading(true);
 
     try {
       if (mode === "login") {
         const { error } = await supabase.auth.signInWithPassword({
-          email,
+          email: email.trim(),
           password,
         });
 
@@ -53,7 +104,7 @@ export default function Auth() {
         navigate("/");
       } else if (mode === "signup") {
         const { error } = await supabase.auth.signUp({
-          email,
+          email: email.trim(),
           password,
           options: {
             emailRedirectTo: `${window.location.origin}/`,
@@ -73,10 +124,16 @@ export default function Auth() {
 
   const handlePasswordReset = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validare email
+    if (!validateEmail(email)) {
+      return;
+    }
+
     setIsLoading(true);
 
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
         redirectTo: `${window.location.origin}/reset-password`,
       });
 
@@ -127,7 +184,7 @@ export default function Auth() {
         <CardContent className="space-y-4">
           {mode === "forgot-password" ? (
             <>
-              <form onSubmit={handlePasswordReset} className="space-y-4">
+            <form onSubmit={handlePasswordReset} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="email">Email</Label>
                   <Input
@@ -135,10 +192,18 @@ export default function Auth() {
                     type="email"
                     placeholder="email@exemplu.ro"
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    onChange={(e) => {
+                      setEmail(e.target.value);
+                      if (errors.email) validateEmail(e.target.value);
+                    }}
+                    onBlur={() => validateEmail(email)}
                     required
                     disabled={isLoading}
+                    className={errors.email ? "border-destructive" : ""}
                   />
+                  {errors.email && (
+                    <p className="text-sm text-destructive">{errors.email}</p>
+                  )}
                 </div>
                 <Button type="submit" className="w-full" disabled={isLoading}>
                   {isLoading ? (
@@ -173,10 +238,18 @@ export default function Auth() {
                     type="email"
                     placeholder="email@exemplu.ro"
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    onChange={(e) => {
+                      setEmail(e.target.value);
+                      if (errors.email) validateEmail(e.target.value);
+                    }}
+                    onBlur={() => validateEmail(email)}
                     required
                     disabled={isLoading}
+                    className={errors.email ? "border-destructive" : ""}
                   />
+                  {errors.email && (
+                    <p className="text-sm text-destructive">{errors.email}</p>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
@@ -184,7 +257,10 @@ export default function Auth() {
                     {mode === "login" && (
                       <button
                         type="button"
-                        onClick={() => setMode("forgot-password")}
+                        onClick={() => {
+                          setMode("forgot-password");
+                          setErrors({});
+                        }}
                         className="text-xs text-muted-foreground hover:text-primary hover:underline"
                         disabled={isLoading}
                       >
@@ -197,11 +273,23 @@ export default function Auth() {
                     type="password"
                     placeholder="••••••••"
                     value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    onChange={(e) => {
+                      setPassword(e.target.value);
+                      if (errors.password) validatePassword(e.target.value, mode === "login");
+                    }}
+                    onBlur={() => validatePassword(password, mode === "login")}
                     required
                     disabled={isLoading}
-                    minLength={6}
+                    className={errors.password ? "border-destructive" : ""}
                   />
+                  {errors.password && (
+                    <p className="text-sm text-destructive">{errors.password}</p>
+                  )}
+                  {mode === "signup" && !errors.password && (
+                    <p className="text-xs text-muted-foreground">
+                      Min. 8 caractere, o literă mare, o literă mică și o cifră
+                    </p>
+                  )}
                 </div>
                 <Button type="submit" className="w-full" disabled={isLoading}>
                   {isLoading ? (
@@ -219,7 +307,10 @@ export default function Auth() {
               <div className="mt-4 text-center text-sm">
                 <button
                   type="button"
-                  onClick={() => setMode(mode === "login" ? "signup" : "login")}
+                  onClick={() => {
+                    setMode(mode === "login" ? "signup" : "login");
+                    setErrors({});
+                  }}
                   className="text-primary hover:underline"
                   disabled={isLoading}
                 >
