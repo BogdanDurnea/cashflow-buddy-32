@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -12,69 +12,53 @@ interface PendingTransaction {
 
 const PENDING_TRANSACTIONS_KEY = 'moneytracker_pending_transactions';
 const CACHED_DATA_KEY = 'moneytracker_cached_data';
+const AUTO_SYNC_INTERVAL = 30000; // 30 seconds
+
+const getPendingTransactions = (): PendingTransaction[] => {
+  try {
+    const stored = localStorage.getItem(PENDING_TRANSACTIONS_KEY);
+    return stored ? JSON.parse(stored) : [];
+  } catch {
+    return [];
+  }
+};
+
+const getCachedData = (): Record<string, { data: any; timestamp: number }> => {
+  try {
+    const stored = localStorage.getItem(CACHED_DATA_KEY);
+    return stored ? JSON.parse(stored) : {};
+  } catch {
+    return {};
+  }
+};
 
 export const useOfflineSync = () => {
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [isSyncing, setIsSyncing] = useState(false);
   const [pendingCount, setPendingCount] = useState(0);
+  const syncIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const isSyncingRef = useRef(false);
 
-  // Update online status
-  useEffect(() => {
-    const handleOnline = () => {
-      setIsOnline(true);
-      toast.success("Conexiune restabilită", {
-        description: "Sincronizarea datelor în curs..."
-      });
-      syncPendingTransactions();
-    };
-
-    const handleOffline = () => {
-      setIsOnline(false);
-      toast.warning("Mod offline", {
-        description: "Modificările vor fi sincronizate când reveniți online."
-      });
-    };
-
-    window.addEventListener('online', handleOnline);
-    window.addEventListener('offline', handleOffline);
-
-    // Check pending transactions on mount
-    const pending = getPendingTransactions();
-    setPendingCount(pending.length);
-
-    return () => {
-      window.removeEventListener('online', handleOnline);
-      window.removeEventListener('offline', handleOffline);
-    };
-  }, []);
-
-  const getPendingTransactions = (): PendingTransaction[] => {
-    try {
-      const stored = localStorage.getItem(PENDING_TRANSACTIONS_KEY);
-      return stored ? JSON.parse(stored) : [];
-    } catch {
-      return [];
-    }
-  };
-
-  const savePendingTransaction = (transaction: PendingTransaction) => {
+  const savePendingTransaction = useCallback((transaction: PendingTransaction) => {
     const pending = getPendingTransactions();
     pending.push(transaction);
     localStorage.setItem(PENDING_TRANSACTIONS_KEY, JSON.stringify(pending));
     setPendingCount(pending.length);
-  };
+  }, []);
 
-  const clearPendingTransactions = () => {
+  const clearPendingTransactions = useCallback(() => {
     localStorage.removeItem(PENDING_TRANSACTIONS_KEY);
     setPendingCount(0);
-  };
+  }, []);
 
-  const syncPendingTransactions = async () => {
-    if (!navigator.onLine || isSyncing) return;
+  // Core sync function
+  const performSync = useCallback(async (showToast = true) => {
+    if (!navigator.onLine || isSyncingRef.current) return { successCount: 0, failedCount: 0 };
 
     const pending = getPendingTransactions();
-    if (pending.length === 0) return;
+    if (pending.length === 0) return { successCount: 0, failedCount: 0 };
 
+    isSyncingRef.current = true;
     setIsSyncing(true);
     let successCount = 0;
     let failedTransactions: PendingTransaction[] = [];
@@ -111,19 +95,84 @@ export const useOfflineSync = () => {
       localStorage.setItem(PENDING_TRANSACTIONS_KEY, JSON.stringify(failedTransactions));
       setPendingCount(failedTransactions.length);
     } else {
-      clearPendingTransactions();
+      localStorage.removeItem(PENDING_TRANSACTIONS_KEY);
+      setPendingCount(0);
     }
 
+    isSyncingRef.current = false;
     setIsSyncing(false);
 
-    if (successCount > 0) {
+    if (successCount > 0 && showToast) {
       toast.success(`${successCount} tranzacții sincronizate`, {
         description: failedTransactions.length > 0 
           ? `${failedTransactions.length} tranzacții nu au putut fi sincronizate`
           : undefined
       });
     }
-  };
+
+    return { successCount, failedCount: failedTransactions.length };
+  }, []);
+
+  // Auto-sync interval when there are pending transactions
+  useEffect(() => {
+    const startAutoSync = () => {
+      if (syncIntervalRef.current) return;
+      
+      syncIntervalRef.current = setInterval(() => {
+        const pending = getPendingTransactions();
+        if (pending.length > 0 && navigator.onLine && !isSyncingRef.current) {
+          console.log('Auto-sync: syncing', pending.length, 'pending transactions...');
+          performSync(true);
+        }
+      }, AUTO_SYNC_INTERVAL);
+    };
+
+    const stopAutoSync = () => {
+      if (syncIntervalRef.current) {
+        clearInterval(syncIntervalRef.current);
+        syncIntervalRef.current = null;
+      }
+    };
+
+    // Start auto-sync if online
+    if (isOnline) {
+      startAutoSync();
+    } else {
+      stopAutoSync();
+    }
+
+    return () => stopAutoSync();
+  }, [isOnline, performSync]);
+
+  // Update online status
+  useEffect(() => {
+    const handleOnline = () => {
+      setIsOnline(true);
+      toast.success("Conexiune restabilită", {
+        description: "Sincronizarea datelor în curs..."
+      });
+      performSync(true);
+    };
+
+    const handleOffline = () => {
+      setIsOnline(false);
+      toast.warning("Mod offline", {
+        description: "Modificările vor fi sincronizate când reveniți online."
+      });
+    };
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    // Check pending transactions on mount
+    const pending = getPendingTransactions();
+    setPendingCount(pending.length);
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, [performSync]);
 
   // Cache data for offline use
   const cacheData = useCallback((key: string, data: any) => {
@@ -138,15 +187,6 @@ export const useOfflineSync = () => {
       console.error('Cache error:', error);
     }
   }, []);
-
-  const getCachedData = (): Record<string, { data: any; timestamp: number }> => {
-    try {
-      const stored = localStorage.getItem(CACHED_DATA_KEY);
-      return stored ? JSON.parse(stored) : {};
-    } catch {
-      return {};
-    }
-  };
 
   const getFromCache = useCallback((key: string, maxAge?: number): any | null => {
     const cached = getCachedData();
@@ -193,7 +233,7 @@ export const useOfflineSync = () => {
       
       return null;
     }
-  }, []);
+  }, [savePendingTransaction]);
 
   const offlineUpdate = useCallback(async (
     table: string, 
@@ -220,7 +260,7 @@ export const useOfflineSync = () => {
       
       return null;
     }
-  }, []);
+  }, [savePendingTransaction]);
 
   const offlineDelete = useCallback(async (table: string, id: string) => {
     if (navigator.onLine) {
@@ -242,7 +282,12 @@ export const useOfflineSync = () => {
       
       return true;
     }
-  }, []);
+  }, [savePendingTransaction]);
+
+  // Wrapper for manual sync that uses performSync
+  const syncPendingTransactions = useCallback(async () => {
+    return performSync(true);
+  }, [performSync]);
 
   return {
     isOnline,
