@@ -1,4 +1,4 @@
-import { WifiOff, RefreshCw, CloudOff, Cloud, CheckCircle2 } from "lucide-react";
+import { WifiOff, RefreshCw, CloudOff, Cloud, CheckCircle2, Loader2 } from "lucide-react";
 import { useOfflineSync } from "@/hooks/useOfflineSync";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -28,99 +28,101 @@ export const OfflineIndicator = () => {
     }
   };
 
+  // Determine status
+  const hasIssues = !isOnline || pendingCount > 0;
+  const statusColor = !isOnline 
+    ? "bg-destructive" 
+    : pendingCount > 0 
+      ? "bg-amber-500" 
+      : "bg-green-500";
+
   return (
     <>
-      {/* Floating indicator when offline or has pending */}
-      <AnimatePresence>
-        {(!isOnline || pendingCount > 0) && (
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className="fixed top-4 left-1/2 -translate-x-1/2 z-50"
-          >
-            <div className={`flex items-center gap-2 px-4 py-2 rounded-full shadow-lg ${
-              isOnline 
-                ? 'bg-amber-500/90 text-white' 
-                : 'bg-destructive/90 text-destructive-foreground'
-            }`}>
-              {!isOnline ? (
-                <>
-                  <WifiOff className="h-4 w-4" />
-                  <span className="text-sm font-medium">Mod Offline</span>
-                  {pendingCount > 0 && (
-                    <Badge variant="secondary" className="bg-white/20 text-white">
-                      {pendingCount}
-                    </Badge>
-                  )}
-                </>
-              ) : pendingCount > 0 ? (
-                <>
-                  <CloudOff className="h-4 w-4" />
-                  <span className="text-sm font-medium">
-                    {pendingCount} {pendingCount === 1 ? 'modificare' : 'modificări'} nesincronizate
-                  </span>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    className="h-7 px-3 hover:bg-white/20 gap-1"
-                    onClick={handleSync}
-                    disabled={isSyncing}
-                  >
-                    <RefreshCw className={`h-3.5 w-3.5 ${isSyncing ? 'animate-spin' : ''}`} />
-                    <span className="text-xs">Sincronizează</span>
-                  </Button>
-                </>
-              ) : null}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Success animation */}
-      <AnimatePresence>
-        {lastSyncResult === 'success' && pendingCount === 0 && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.8, y: -20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.8, y: -20 }}
-            className="fixed top-4 left-1/2 -translate-x-1/2 z-50"
-          >
-            <div className="flex items-center gap-2 px-4 py-2 rounded-full shadow-lg bg-green-500/90 text-white">
-              <CheckCircle2 className="h-4 w-4" />
-              <span className="text-sm font-medium">Totul sincronizat!</span>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Sync status button in bottom right corner - always visible for quick access */}
-      <div className="fixed bottom-4 right-4 z-40">
+      {/* Fixed sync indicator in top-right corner */}
+      <div className="fixed top-4 right-4 z-50">
         <Dialog open={showDialog} onOpenChange={setShowDialog}>
           <DialogTrigger asChild>
-            <Button
-              variant={pendingCount > 0 ? "default" : "outline"}
-              size="sm"
-              className={`gap-2 shadow-lg ${
-                pendingCount > 0 
-                  ? 'bg-amber-500 hover:bg-amber-600 text-white' 
-                  : 'bg-background/80 backdrop-blur-sm'
-              }`}
+            <motion.button
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className={`
+                relative flex items-center gap-2 px-3 py-2 rounded-full
+                shadow-lg backdrop-blur-md border border-border/50
+                transition-all duration-300 cursor-pointer
+                ${hasIssues 
+                  ? 'bg-background/95 hover:bg-background' 
+                  : 'bg-background/80 hover:bg-background/95'
+                }
+              `}
             >
-              {!isOnline ? (
-                <WifiOff className="h-4 w-4" />
-              ) : pendingCount > 0 ? (
-                <CloudOff className="h-4 w-4" />
-              ) : (
-                <Cloud className="h-4 w-4 text-green-500" />
-              )}
-              {pendingCount > 0 && (
-                <Badge variant="secondary" className="h-5 px-1.5 text-xs bg-white/20">
+              {/* Animated status dot */}
+              <span className="relative flex h-3 w-3">
+                <motion.span
+                  animate={hasIssues ? { scale: [1, 1.2, 1], opacity: [1, 0.5, 1] } : {}}
+                  transition={{ duration: 2, repeat: Infinity }}
+                  className={`absolute inset-0 rounded-full ${statusColor} ${hasIssues ? 'opacity-75' : ''}`}
+                />
+                <span className={`relative rounded-full h-3 w-3 ${statusColor}`} />
+              </span>
+
+              {/* Status text */}
+              <AnimatePresence mode="wait">
+                {!isOnline ? (
+                  <motion.div
+                    key="offline"
+                    initial={{ opacity: 0, x: -5 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: 5 }}
+                    className="flex items-center gap-1.5"
+                  >
+                    <WifiOff className="h-4 w-4 text-destructive" />
+                    <span className="text-sm font-medium text-foreground">Offline</span>
+                  </motion.div>
+                ) : pendingCount > 0 ? (
+                  <motion.div
+                    key="pending"
+                    initial={{ opacity: 0, x: -5 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: 5 }}
+                    className="flex items-center gap-1.5"
+                  >
+                    {isSyncing ? (
+                      <Loader2 className="h-4 w-4 text-amber-500 animate-spin" />
+                    ) : (
+                      <CloudOff className="h-4 w-4 text-amber-500" />
+                    )}
+                    <span className="text-sm font-medium text-foreground">
+                      {isSyncing ? 'Sincronizare...' : `${pendingCount} în așteptare`}
+                    </span>
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    key="synced"
+                    initial={{ opacity: 0, x: -5 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: 5 }}
+                    className="flex items-center gap-1.5"
+                  >
+                    <Cloud className="h-4 w-4 text-green-500" />
+                    <span className="text-sm font-medium text-foreground">Sincronizat</span>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              {/* Pending badge */}
+              {pendingCount > 0 && !isSyncing && (
+                <Badge 
+                  variant="secondary" 
+                  className="h-5 min-w-5 px-1.5 text-xs bg-amber-500 text-white border-0"
+                >
                   {pendingCount}
                 </Badge>
               )}
-            </Button>
+            </motion.button>
           </DialogTrigger>
+
           <DialogContent className="sm:max-w-md">
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
@@ -155,7 +157,7 @@ export const OfflineIndicator = () => {
               {/* Status indicator */}
               <div className="flex items-center justify-between p-3 rounded-lg bg-muted">
                 <div className="flex items-center gap-2">
-                  <div className={`w-2 h-2 rounded-full ${isOnline ? 'bg-green-500' : 'bg-red-500'}`} />
+                  <div className={`w-2.5 h-2.5 rounded-full ${isOnline ? 'bg-green-500' : 'bg-red-500'}`} />
                   <span className="text-sm">Conexiune</span>
                 </div>
                 <span className="text-sm font-medium">{isOnline ? 'Online' : 'Offline'}</span>
@@ -207,6 +209,23 @@ export const OfflineIndicator = () => {
           </DialogContent>
         </Dialog>
       </div>
+
+      {/* Success notification */}
+      <AnimatePresence>
+        {lastSyncResult === 'success' && pendingCount === 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: -20, x: 20 }}
+            animate={{ opacity: 1, y: 0, x: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="fixed top-20 right-4 z-50"
+          >
+            <div className="flex items-center gap-2 px-4 py-2 rounded-full shadow-lg bg-green-500 text-white">
+              <CheckCircle2 className="h-4 w-4" />
+              <span className="text-sm font-medium">Totul sincronizat!</span>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </>
   );
 };
