@@ -27,6 +27,7 @@ import { ImportData } from "@/components/ImportData";
 import { ShareReport } from "@/components/ShareReport";
 import { ShareReportPublic } from "@/components/ShareReportPublic";
 import { SharedBudgetsManager } from "@/components/SharedBudgetsManager";
+import { OfflineIndicator } from "@/components/OfflineIndicator";
 import { AIInsights } from "@/components/AIInsights";
 import { ZapierIntegration } from "@/components/ZapierIntegration";
 import { APIExport } from "@/components/APIExport";
@@ -582,7 +583,7 @@ const Index = () => {
                 </div>
               </div>
 
-              {/* Income, Expense & Balance Cards */}
+              {/* Income, Expense, Balance Cards + Sync Indicator */}
               <div className="flex flex-col sm:flex-row items-stretch gap-3">
                 {/* Income Card */}
                 <div className="flex-1 p-4 rounded-xl bg-success/10 border border-success/30 backdrop-blur hover-glow-success cursor-pointer">
@@ -633,6 +634,11 @@ const Index = () => {
                       </div>
                     </div>;
               })()}
+
+                {/* Sync Indicator - inline */}
+                <div className="relative flex items-center">
+                  <OfflineIndicator inline />
+                </div>
               </div>
             </div>
           </div>
