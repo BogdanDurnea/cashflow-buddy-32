@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
-import { PlusCircle, Paperclip, X, WifiOff } from "lucide-react";
+import { PlusCircle, Paperclip, X, WifiOff, Camera, Image } from "lucide-react";
 import * as LucideIcons from "lucide-react";
 import { incomeCategories, expenseCategories } from "@/lib/categoryConfig";
 import { supabase } from "@/integrations/supabase/client";
@@ -41,6 +41,7 @@ export function TransactionForm({ onAddTransaction }: TransactionFormProps) {
   const { toast } = useToast();
   const { isOnline } = useOfflineSync();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
   const [type, setType] = useState<"income" | "expense">("expense");
   const [amount, setAmount] = useState("");
   const [category, setCategory] = useState("");
@@ -115,9 +116,8 @@ export function TransactionForm({ onAddTransaction }: TransactionFormProps) {
       setDescription("");
       setCurrency("RON");
       setAttachmentFile(null);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
-      }
+      if (fileInputRef.current) fileInputRef.current.value = "";
+      if (cameraInputRef.current) cameraInputRef.current.value = "";
 
       toast({ 
         title: isOnline 
@@ -275,7 +275,8 @@ export function TransactionForm({ onAddTransaction }: TransactionFormProps) {
 
           <div>
             <Label htmlFor="attachment" className="text-sm sm:text-base">Atașament (opțional)</Label>
-            <div className="flex gap-2">
+            <div className="flex flex-col gap-2">
+              {/* Hidden inputs for file selection */}
               <Input
                 ref={fileInputRef}
                 id="attachment"
@@ -284,30 +285,56 @@ export function TransactionForm({ onAddTransaction }: TransactionFormProps) {
                 onChange={handleFileSelect}
                 className="hidden"
               />
-              <Button
-                type="button"
-                variant="outline"
-                className="flex-1 h-11 text-base active:scale-95 transition-smooth"
-                onClick={() => fileInputRef.current?.click()}
-              >
-                <Paperclip className="h-4 w-4 mr-2 shrink-0" />
-                <span className="truncate">{attachmentFile ? attachmentFile.name : "Adaugă chitanță"}</span>
-              </Button>
-              {attachmentFile && (
+              <Input
+                ref={cameraInputRef}
+                type="file"
+                accept="image/*"
+                capture="environment"
+                onChange={handleFileSelect}
+                className="hidden"
+              />
+              
+              {/* Button group for camera and gallery */}
+              <div className="flex gap-2">
                 <Button
                   type="button"
-                  variant="ghost"
-                  size="icon"
-                  className="h-11 w-11 shrink-0 active:scale-95 transition-smooth"
-                  onClick={() => {
-                    setAttachmentFile(null);
-                    if (fileInputRef.current) {
-                      fileInputRef.current.value = "";
-                    }
-                  }}
+                  variant="outline"
+                  className="flex-1 h-11 text-base active:scale-95 transition-smooth"
+                  onClick={() => cameraInputRef.current?.click()}
                 >
-                  <X className="h-5 w-5" />
+                  <Camera className="h-4 w-4 mr-2 shrink-0" />
+                  <span className="truncate">Fotografiază</span>
                 </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="flex-1 h-11 text-base active:scale-95 transition-smooth"
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  <Image className="h-4 w-4 mr-2 shrink-0" />
+                  <span className="truncate">Galerie</span>
+                </Button>
+              </div>
+
+              {/* Selected file preview */}
+              {attachmentFile && (
+                <div className="flex items-center gap-2 p-3 bg-muted rounded-lg border">
+                  <Paperclip className="h-4 w-4 shrink-0 text-muted-foreground" />
+                  <span className="flex-1 truncate text-sm">{attachmentFile.name}</span>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 shrink-0 active:scale-95 transition-smooth"
+                    onClick={() => {
+                      setAttachmentFile(null);
+                      if (fileInputRef.current) fileInputRef.current.value = "";
+                      if (cameraInputRef.current) cameraInputRef.current.value = "";
+                    }}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
               )}
             </div>
           </div>
