@@ -22,6 +22,12 @@ export const ZapierIntegration = ({ transactions, budgets }: ZapierIntegrationPr
       return;
     }
 
+    // Security: Enforce HTTPS for webhook URLs
+    if (!webhookUrl.startsWith('https://')) {
+      toast.error("Only HTTPS webhook URLs are allowed for security reasons");
+      return;
+    }
+
     setIsLoading(true);
     console.log("Triggering Zapier webhook:", webhookUrl);
 
@@ -72,7 +78,8 @@ export const ZapierIntegration = ({ transactions, budgets }: ZapierIntegrationPr
           Zapier Integration
         </CardTitle>
         <CardDescription>
-          Connect your financial data to thousands of apps via Zapier webhooks
+          Connect your financial data to thousands of apps via Zapier webhooks.
+          <span className="block mt-1 text-amber-600 dark:text-amber-500">⚠️ Only use webhook URLs from trusted sources - your financial data will be sent to the specified URL.</span>
         </CardDescription>
       </CardHeader>
       <CardContent>
