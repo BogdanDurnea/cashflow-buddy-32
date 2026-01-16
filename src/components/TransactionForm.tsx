@@ -348,8 +348,10 @@ export function TransactionForm({ onAddTransaction }: TransactionFormProps) {
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Descriere tranzacție..."
               rows={2}
+              maxLength={500}
               className="text-base resize-none"
             />
+            <p className="text-xs text-muted-foreground mt-1 text-right">{description.length}/500</p>
           </div>
 
           <div>

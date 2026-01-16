@@ -187,7 +187,9 @@ export function CustomCategoriesManager() {
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     placeholder="Ex: Abonament Sală"
+                    maxLength={100}
                   />
+                  <p className="text-xs text-muted-foreground mt-1 text-right">{formData.name.length}/100</p>
                 </div>
 
                 <div>

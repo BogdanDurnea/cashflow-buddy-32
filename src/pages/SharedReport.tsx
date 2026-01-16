@@ -28,9 +28,10 @@ export default function SharedReport() {
 
       try {
         // Fetch report by token (RLS policy allows anon access with valid token)
+        // Note: Only select fields needed for display - exclude user_id for privacy
         const { data, error: fetchError } = await supabase
           .from("report_shares")
-          .select("title, report_data, created_at, expires_at")
+          .select("title, report_data, created_at, expires_at, view_count")
           .eq("share_token", token)
           .single();
 
