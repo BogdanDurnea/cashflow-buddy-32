@@ -5,13 +5,14 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
-import { PlusCircle, Paperclip, X, WifiOff, Camera, Image } from "lucide-react";
+import { PlusCircle, Paperclip, X, WifiOff, Camera, Image, Loader2, Sparkles } from "lucide-react";
 import * as LucideIcons from "lucide-react";
 import { incomeCategories, expenseCategories } from "@/lib/categoryConfig";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery } from "@tanstack/react-query";
 import { useOfflineSync } from "@/hooks/useOfflineSync";
+import { Badge } from "@/components/ui/badge";
 
 export interface Transaction {
   id: string;
@@ -49,6 +50,8 @@ export function TransactionForm({ onAddTransaction }: TransactionFormProps) {
   const [currency, setCurrency] = useState("RON");
   const [attachmentFile, setAttachmentFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [isExtracting, setIsExtracting] = useState(false);
+  const [ocrConfidence, setOcrConfidence] = useState<string | null>(null);
 
   const { data: customCategories = [] } = useQuery({
     queryKey: ["custom-categories"],
@@ -138,6 +141,77 @@ export function TransactionForm({ onAddTransaction }: TransactionFormProps) {
     }
   };
 
+  const fileToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = (error) => reject(error);
+    });
+  };
+
+  const extractReceiptData = async (file: File) => {
+    if (!isOnline) {
+      toast({
+        title: "OCR necesită conexiune",
+        description: "Extragerea automată funcționează doar online.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsExtracting(true);
+    setOcrConfidence(null);
+
+    try {
+      const base64 = await fileToBase64(file);
+      
+      const { data, error } = await supabase.functions.invoke('extract-receipt', {
+        body: { imageBase64: base64 }
+      });
+
+      if (error) throw error;
+
+      console.log("OCR result:", data);
+
+      if (data.amount) {
+        setAmount(data.amount.toString());
+      }
+      
+      if (data.description) {
+        setDescription(data.description);
+      }
+
+      setOcrConfidence(data.confidence || null);
+
+      const extractedItems = [];
+      if (data.amount) extractedItems.push(`${data.amount} RON`);
+      if (data.description) extractedItems.push(data.description);
+
+      if (extractedItems.length > 0) {
+        toast({
+          title: "Date extrase din chitanță",
+          description: `Am detectat: ${extractedItems.join(", ")}`,
+        });
+      } else {
+        toast({
+          title: "Nu am putut extrage date",
+          description: "Încercați o poză mai clară a chitanței.",
+          variant: "destructive"
+        });
+      }
+    } catch (error) {
+      console.error("OCR extraction error:", error);
+      toast({
+        title: "Eroare la procesare",
+        description: "Nu am putut analiza chitanța. Încercați din nou.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsExtracting(false);
+    }
+  };
+
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -150,6 +224,11 @@ export function TransactionForm({ onAddTransaction }: TransactionFormProps) {
         return;
       }
       setAttachmentFile(file);
+      
+      // Auto-extract data from image files
+      if (file.type.startsWith('image/')) {
+        extractReceiptData(file);
+      }
     }
   };
 
@@ -301,6 +380,7 @@ export function TransactionForm({ onAddTransaction }: TransactionFormProps) {
                   variant="outline"
                   className="flex-1 h-11 text-base active:scale-95 transition-smooth"
                   onClick={() => cameraInputRef.current?.click()}
+                  disabled={isExtracting}
                 >
                   <Camera className="h-4 w-4 mr-2 shrink-0" />
                   <span className="truncate">Fotografiază</span>
@@ -310,17 +390,37 @@ export function TransactionForm({ onAddTransaction }: TransactionFormProps) {
                   variant="outline"
                   className="flex-1 h-11 text-base active:scale-95 transition-smooth"
                   onClick={() => fileInputRef.current?.click()}
+                  disabled={isExtracting}
                 >
                   <Image className="h-4 w-4 mr-2 shrink-0" />
                   <span className="truncate">Galerie</span>
                 </Button>
               </div>
 
+              {/* OCR extraction status */}
+              {isExtracting && (
+                <div className="flex items-center gap-2 p-3 bg-primary/10 rounded-lg border border-primary/20">
+                  <Loader2 className="h-4 w-4 shrink-0 animate-spin text-primary" />
+                  <span className="text-sm text-primary font-medium">
+                    Se analizează chitanța cu AI...
+                  </span>
+                </div>
+              )}
+
               {/* Selected file preview */}
-              {attachmentFile && (
+              {attachmentFile && !isExtracting && (
                 <div className="flex items-center gap-2 p-3 bg-muted rounded-lg border">
                   <Paperclip className="h-4 w-4 shrink-0 text-muted-foreground" />
                   <span className="flex-1 truncate text-sm">{attachmentFile.name}</span>
+                  {ocrConfidence && (
+                    <Badge 
+                      variant={ocrConfidence === 'high' ? 'default' : ocrConfidence === 'medium' ? 'secondary' : 'outline'}
+                      className="shrink-0 gap-1"
+                    >
+                      <Sparkles className="h-3 w-3" />
+                      OCR
+                    </Badge>
+                  )}
                   <Button
                     type="button"
                     variant="ghost"
@@ -328,6 +428,7 @@ export function TransactionForm({ onAddTransaction }: TransactionFormProps) {
                     className="h-8 w-8 shrink-0 active:scale-95 transition-smooth"
                     onClick={() => {
                       setAttachmentFile(null);
+                      setOcrConfidence(null);
                       if (fileInputRef.current) fileInputRef.current.value = "";
                       if (cameraInputRef.current) cameraInputRef.current.value = "";
                     }}
