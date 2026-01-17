@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
+import { useAchievements } from "@/hooks/useAchievements";
 import { 
   Brain, 
   TrendingUp, 
@@ -51,6 +52,7 @@ export function AIInsights({ transactions, categoryBudgets, monthlyBudget }: AII
   const [insights, setInsights] = useState<Insight | null>(null);
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
+  const { checkFeatureAchievement } = useAchievements();
 
   const generateInsights = async () => {
     if (transactions.length === 0) {
@@ -70,6 +72,9 @@ export function AIInsights({ transactions, categoryBudgets, monthlyBudget }: AII
 
       if (error) throw error;
       setInsights(data);
+      
+      // Trigger AI insights achievement
+      checkFeatureAchievement("ai_insights");
       
       toast({
         title: "✨ Insights generate",

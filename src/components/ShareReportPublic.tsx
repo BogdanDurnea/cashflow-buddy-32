@@ -7,6 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Share2, Copy, ExternalLink, Calendar, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
+import { useAchievements } from "@/hooks/useAchievements";
 
 interface ShareReportPublicProps {
   reportData: any;
@@ -20,6 +21,7 @@ export function ShareReportPublic({ reportData, title }: ShareReportPublicProps)
   const [existingShares, setExistingShares] = useState<any[]>([]);
   const [expiresInDays, setExpiresInDays] = useState(7);
   const { toast } = useToast();
+  const { checkFeatureAchievement } = useAchievements();
 
   const loadExistingShares = async () => {
     try {
@@ -67,6 +69,9 @@ export function ShareReportPublic({ reportData, title }: ShareReportPublicProps)
         title: "✓ Link generat",
         description: "Raportul poate fi accesat public",
       });
+
+      // Trigger share report achievement
+      checkFeatureAchievement("share_report");
 
       loadExistingShares();
     } catch (error: any) {

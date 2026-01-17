@@ -34,6 +34,8 @@ import { APIExport } from "@/components/APIExport";
 import { AppSidebar } from "@/components/AppSidebar";
 import { NotificationSettings } from "@/components/NotificationSettings";
 import { OnboardingTutorial } from "@/components/OnboardingTutorial";
+import { AchievementsPanel } from "@/components/AchievementsPanel";
+import { useAchievements } from "@/hooks/useAchievements";
 import { Button } from "@/components/ui/button";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
@@ -41,7 +43,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useBudgetAlerts } from "@/hooks/useBudgetAlerts";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { PieChart, BarChart3, TrendingUp, LogOut, Loader2, Bell, ChevronsUpDown, TrendingDown } from "lucide-react";
+import { PieChart, BarChart3, TrendingUp, LogOut, Loader2, Bell, ChevronsUpDown, TrendingDown, Trophy } from "lucide-react";
 import { AreaChart, Area, ResponsiveContainer, Tooltip } from "recharts";
 import { startOfMonth, endOfMonth, eachDayOfInterval, format } from "date-fns";
 
@@ -167,7 +169,8 @@ const Index = () => {
     addToGoal: addToSavingsGoal
   } = useSavingsGoals();
 
-  // Sparkline data for current month
+  // Achievements hook
+  const { checkTransactionAchievements, checkFeatureAchievement, totalPoints } = useAchievements();
   const monthlySparklineData = useMemo(() => {
     const today = new Date();
     const monthStart = startOfMonth(today);
@@ -363,7 +366,15 @@ const Index = () => {
         exchange_rate: Number(data.exchange_rate) || 1,
         attachment_url: data.attachment_url || undefined
       };
-      setTransactions(prev => [formattedTransaction, ...prev]);
+      setTransactions(prev => {
+        const updated = [formattedTransaction, ...prev];
+        // Check achievements after adding transaction
+        const hasIncome = updated.some(t => t.type === "income");
+        const hasExpense = updated.some(t => t.type === "expense");
+        const usedCategories = [...new Set(updated.map(t => t.category))];
+        checkTransactionAchievements(updated.length, hasIncome, hasExpense, usedCategories);
+        return updated;
+      });
       toast.success("Tranzacție adăugată!");
     } catch (error: any) {
       toast.error("Eroare la adăugarea tranzacției");
@@ -440,6 +451,7 @@ const Index = () => {
       };
       setRecurringTransactions([...recurringTransactions, newRecurring]);
       toast.success("Tranzacție recurentă adăugată!");
+      checkFeatureAchievement("first_recurring");
     } catch (error: any) {
       toast.error("Eroare la adăugarea tranzacției recurente");
       console.error(error);
@@ -500,7 +512,10 @@ const Index = () => {
   if (!user) return null;
   return <div className="flex min-h-screen w-full bg-gradient-subtle">
       <OnboardingTutorial 
-        onComplete={() => setShowOnboarding(false)} 
+        onComplete={() => {
+          setShowOnboarding(false);
+          checkFeatureAchievement("complete_onboarding");
+        }} 
         forceShow={showOnboarding}
       />
       <AppSidebar activeSection={activeSection} onSectionChange={setActiveSection} />
@@ -781,6 +796,7 @@ const Index = () => {
                     <BillReminders recurringTransactions={recurringTransactions} reminders={billReminders} onAddReminder={addBillReminder} onUpdateReminder={updateBillReminder} onDeleteReminder={deleteBillReminder} onMarkAsPaid={markBillAsPaid} />
                   </div>
                   <SavingsGoals goals={savingsGoals} onAddGoal={addSavingsGoal} onUpdateGoal={updateSavingsGoal} onDeleteGoal={deleteSavingsGoal} onAddToGoal={addToSavingsGoal} />
+                  <AchievementsPanel />
                 </AccordionContent>
               </AccordionItem>
             </motion.div>
