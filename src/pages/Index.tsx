@@ -33,6 +33,7 @@ import { ZapierIntegration } from "@/components/ZapierIntegration";
 import { APIExport } from "@/components/APIExport";
 import { AppSidebar } from "@/components/AppSidebar";
 import { NotificationSettings } from "@/components/NotificationSettings";
+import { OnboardingTutorial } from "@/components/OnboardingTutorial";
 import { Button } from "@/components/ui/button";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
@@ -489,8 +490,19 @@ const Index = () => {
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>;
   }
+  const [showOnboarding, setShowOnboarding] = useState(false);
+
+  const handleRestartTutorial = useCallback(() => {
+    localStorage.removeItem("onboarding_completed");
+    setShowOnboarding(true);
+  }, []);
+
   if (!user) return null;
   return <div className="flex min-h-screen w-full bg-gradient-subtle">
+      <OnboardingTutorial 
+        onComplete={() => setShowOnboarding(false)} 
+        forceShow={showOnboarding}
+      />
       <AppSidebar activeSection={activeSection} onSectionChange={setActiveSection} />
       
       <div className="flex-1 flex flex-col w-full">
@@ -759,7 +771,7 @@ const Index = () => {
                   <CustomCategoriesManager />
                   <AccountSettings />
                   <div className="grid gap-4 sm:gap-6 lg:grid-cols-2">
-                    <UserSettings />
+                    <UserSettings onRestartTutorial={handleRestartTutorial} />
                     <ImportData onImport={imported => {
                     imported.forEach(t => handleAddTransaction(t));
                   }} />
