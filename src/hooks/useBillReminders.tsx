@@ -1,12 +1,14 @@
 import { useState, useEffect, useCallback } from "react";
 import { BillReminder, PaymentRecord } from "@/components/BillReminders";
 import { useAuth } from "@/hooks/useAuth";
+import { useAchievements } from "@/hooks/useAchievements";
 import { toast } from "sonner";
 
 const STORAGE_KEY = "billReminders";
 
 export function useBillReminders() {
   const { user } = useAuth();
+  const { checkFeatureAchievement } = useAchievements();
   const [reminders, setReminders] = useState<BillReminder[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -53,7 +55,8 @@ export function useBillReminders() {
       paymentHistory: reminder.paymentHistory || [],
     };
     setReminders(prev => [...prev, newReminder]);
-  }, []);
+    checkFeatureAchievement("first_reminder");
+  }, [checkFeatureAchievement]);
 
   const updateReminder = useCallback((id: string, updates: Partial<BillReminder>) => {
     setReminders(prev => 
