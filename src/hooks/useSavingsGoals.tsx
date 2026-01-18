@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/hooks/useAuth";
-import { useAchievements } from "@/hooks/useAchievements";
 
 export interface SavingsGoal {
   id: string;
@@ -26,7 +25,6 @@ const GOAL_COLORS = [
 
 export function useSavingsGoals() {
   const { user } = useAuth();
-  const { checkFeatureAchievement } = useAchievements();
   const [goals, setGoals] = useState<SavingsGoal[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -69,8 +67,7 @@ export function useSavingsGoals() {
       color: GOAL_COLORS[Math.floor(Math.random() * GOAL_COLORS.length)],
     };
     setGoals(prev => [...prev, newGoal]);
-    checkFeatureAchievement("first_goal");
-  }, [checkFeatureAchievement]);
+  }, []);
 
   const updateGoal = useCallback((id: string, updates: Partial<SavingsGoal>) => {
     setGoals(prev => 
@@ -84,23 +81,9 @@ export function useSavingsGoals() {
 
   const addToGoal = useCallback((id: string, amount: number) => {
     setGoals(prev => 
-      prev.map(g => {
-        if (g.id === id) {
-          const newAmount = g.currentAmount + amount;
-          // Check for 50% progress achievement
-          if (newAmount >= g.targetAmount * 0.5 && g.currentAmount < g.targetAmount * 0.5) {
-            checkFeatureAchievement("goal_progress_50");
-          }
-          // Check for completed goal achievement
-          if (newAmount >= g.targetAmount && g.currentAmount < g.targetAmount) {
-            checkFeatureAchievement("goal_completed");
-          }
-          return { ...g, currentAmount: newAmount };
-        }
-        return g;
-      })
+      prev.map(g => g.id === id ? { ...g, currentAmount: g.currentAmount + amount } : g)
     );
-  }, [checkFeatureAchievement]);
+  }, []);
 
   return {
     goals,

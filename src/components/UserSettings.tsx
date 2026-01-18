@@ -5,14 +5,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Settings, Bell, Globe, Palette, Save, GraduationCap } from "lucide-react";
+import { Settings, Bell, Globe, Palette, Save } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
-interface UserSettingsProps {
-  onRestartTutorial?: () => void;
-}
-
-export function UserSettings({ onRestartTutorial }: UserSettingsProps) {
+export function UserSettings() {
   const { toast } = useToast();
   const [defaultCurrency, setDefaultCurrency] = useState("RON");
   const [emailNotifications, setEmailNotifications] = useState(true);
@@ -25,16 +21,6 @@ export function UserSettings({ onRestartTutorial }: UserSettingsProps) {
       title: "Setări salvate",
       description: "Preferințele tale au fost actualizate cu succes.",
     });
-  };
-
-  const handleRestartTutorial = () => {
-    if (onRestartTutorial) {
-      onRestartTutorial();
-      toast({
-        title: "Tutorial repornit",
-        description: "Tutorialul de onboarding va fi afișat din nou.",
-      });
-    }
   };
 
   return (
@@ -129,23 +115,10 @@ export function UserSettings({ onRestartTutorial }: UserSettingsProps) {
           </div>
         </div>
 
-        <div className="space-y-3">
-          <Button onClick={handleSave} className="w-full">
-            <Save className="h-4 w-4 mr-2" />
-            Salvează Setările
-          </Button>
-          
-          {onRestartTutorial && (
-            <Button 
-              variant="outline" 
-              onClick={handleRestartTutorial} 
-              className="w-full"
-            >
-              <GraduationCap className="h-4 w-4 mr-2" />
-              Repornește Tutorialul
-            </Button>
-          )}
-        </div>
+        <Button onClick={handleSave} className="w-full">
+          <Save className="h-4 w-4 mr-2" />
+          Salvează Setările
+        </Button>
       </CardContent>
     </Card>
   );
