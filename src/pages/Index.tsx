@@ -33,6 +33,8 @@ import { ZapierIntegration } from "@/components/ZapierIntegration";
 import { APIExport } from "@/components/APIExport";
 import { AppSidebar } from "@/components/AppSidebar";
 import { NotificationSettings } from "@/components/NotificationSettings";
+import { Achievements } from "@/components/Achievements";
+import { useAchievements } from "@/hooks/useAchievements";
 import { Button } from "@/components/ui/button";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
@@ -40,9 +42,9 @@ import { useAuth } from "@/hooks/useAuth";
 import { useBudgetAlerts } from "@/hooks/useBudgetAlerts";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { PieChart, BarChart3, TrendingUp, LogOut, Loader2, Bell, ChevronsUpDown, TrendingDown } from "lucide-react";
+import { PieChart, BarChart3, TrendingUp, LogOut, Loader2, Bell, ChevronsUpDown, TrendingDown, Trophy } from "lucide-react";
 import { AreaChart, Area, ResponsiveContainer, Tooltip } from "recharts";
-import { startOfMonth, endOfMonth, eachDayOfInterval, format } from "date-fns";
+import { startOfMonth, endOfMonth, eachDayOfInterval, format, differenceInDays } from "date-fns";
 
 // Animation variants for staggered children
 const containerVariants = {
@@ -116,7 +118,10 @@ const Index = () => {
   const [activeSection, setActiveSection] = useState<string>("transactions");
   const [expandedSections, setExpandedSections] = useState<string[]>(["transactions"]);
   const sectionRefs = useRef<Record<string, HTMLDivElement | null>>({});
-  const allSections = ["transactions", "analytics", "budgets", "reports", "settings"];
+  
+  // Achievements hook
+  const { checkAchievements, getProgress } = useAchievements();
+  const allSections = ["transactions", "analytics", "budgets", "achievements", "reports", "settings"];
   const toggleAllSections = useCallback(() => {
     if (expandedSections.length === allSections.length) {
       setExpandedSections([]);
@@ -362,7 +367,37 @@ const Index = () => {
         exchange_rate: Number(data.exchange_rate) || 1,
         attachment_url: data.attachment_url || undefined
       };
-      setTransactions(prev => [formattedTransaction, ...prev]);
+      setTransactions(prev => {
+        const updatedTransactions = [formattedTransaction, ...prev];
+        
+        // Check achievements after adding transaction
+        const currentHour = new Date().getHours();
+        const hasIncome = updatedTransactions.some(t => t.type === 'income');
+        const hasExpense = updatedTransactions.some(t => t.type === 'expense');
+        const hasReceipt = updatedTransactions.some(t => t.attachment_url);
+        
+        // Calculate consecutive days
+        const uniqueDays = [...new Set(updatedTransactions.map(t => 
+          format(new Date(t.date), 'yyyy-MM-dd')
+        ))].sort().reverse();
+        let consecutiveDays = 1;
+        for (let i = 0; i < uniqueDays.length - 1; i++) {
+          const diff = differenceInDays(new Date(uniqueDays[i]), new Date(uniqueDays[i + 1]));
+          if (diff === 1) consecutiveDays++;
+          else break;
+        }
+        
+        checkAchievements({
+          transactionCount: updatedTransactions.length,
+          hasIncome,
+          hasExpense,
+          hasReceipt,
+          currentHour,
+          consecutiveDays,
+        });
+        
+        return updatedTransactions;
+      });
       toast.success("Tranzacție adăugată!");
     } catch (error: any) {
       toast.error("Eroare la adăugarea tranzacției");
@@ -438,6 +473,10 @@ const Index = () => {
         nextDate: new Date(data.last_processed)
       };
       setRecurringTransactions([...recurringTransactions, newRecurring]);
+      
+      // Check recurring achievement
+      checkAchievements({ hasRecurring: true });
+      
       toast.success("Tranzacție recurentă adăugată!");
     } catch (error: any) {
       toast.error("Eroare la adăugarea tranzacției recurente");
@@ -702,6 +741,26 @@ const Index = () => {
                     <CategoryBudgets transactions={transactions} />
                   </div>
                   <SharedBudgetsManager />
+                </AccordionContent>
+              </AccordionItem>
+            </motion.div>
+
+            {/* Achievements Section */}
+            <motion.div variants={itemVariants}>
+              <AccordionItem value="achievements" id="section-achievements" className="border rounded-lg bg-card shadow-card transition-all duration-300 data-[state=open]:shadow-lg data-[state=open]:border-primary/20" ref={el => {
+              sectionRefs.current['achievements'] = el;
+            }}>
+                <AccordionTrigger className="px-4 sm:px-6 py-4 text-lg sm:text-xl font-bold hover:no-underline">
+                  <div className="flex items-center gap-2">
+                    <Trophy className="h-5 w-5 text-primary" />
+                    Insigne
+                    <span className="text-sm font-normal text-muted-foreground ml-2">
+                      ({getProgress().unlocked}/{getProgress().total})
+                    </span>
+                  </div>
+                </AccordionTrigger>
+                <AccordionContent className="px-4 sm:px-6 pb-4">
+                  <Achievements />
                 </AccordionContent>
               </AccordionItem>
             </motion.div>

@@ -1,4 +1,4 @@
-import { Home, TrendingUp, Wallet, FileText, Settings, ChevronDown } from "lucide-react";
+import { Home, TrendingUp, Wallet, FileText, Settings, Trophy } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -20,6 +20,7 @@ const sections = [
   { id: "transactions", title: "Tranzacții", icon: Home },
   { id: "analytics", title: "Analiză", icon: TrendingUp },
   { id: "budgets", title: "Bugete", icon: Wallet },
+  { id: "achievements", title: "Insigne", icon: Trophy },
   { id: "reports", title: "Rapoarte", icon: FileText },
   { id: "settings", title: "Setări", icon: Settings },
 ];
