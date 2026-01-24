@@ -34,6 +34,7 @@ import { APIExport } from "@/components/APIExport";
 import { AppSidebar } from "@/components/AppSidebar";
 import { NotificationSettings } from "@/components/NotificationSettings";
 import { Achievements } from "@/components/Achievements";
+import { AchievementsLeaderboard } from "@/components/AchievementsLeaderboard";
 import { useAchievements } from "@/hooks/useAchievements";
 import { Button } from "@/components/ui/button";
 import { SidebarTrigger } from "@/components/ui/sidebar";
@@ -759,8 +760,11 @@ const Index = () => {
                     </span>
                   </div>
                 </AccordionTrigger>
-                <AccordionContent className="px-4 sm:px-6 pb-4">
-                  <Achievements />
+                <AccordionContent className="px-4 sm:px-6 pb-4 space-y-6">
+                  <div className="grid gap-6 lg:grid-cols-2">
+                    <Achievements />
+                    <AchievementsLeaderboard />
+                  </div>
                 </AccordionContent>
               </AccordionItem>
             </motion.div>

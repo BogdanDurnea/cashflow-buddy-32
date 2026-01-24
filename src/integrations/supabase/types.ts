@@ -347,6 +347,23 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_achievements_leaderboard: {
+        Args: { limit_count?: number }
+        Returns: {
+          achievement_count: number
+          display_name: string
+          rank: number
+          user_id: string
+        }[]
+      }
+      get_user_achievement_rank: {
+        Args: { target_user_id: string }
+        Returns: {
+          achievement_count: number
+          rank: number
+          total_users: number
+        }[]
+      }
       increment_report_view_count: {
         Args: { token_param: string }
         Returns: undefined
