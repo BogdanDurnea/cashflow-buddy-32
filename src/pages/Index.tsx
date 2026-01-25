@@ -237,17 +237,29 @@ const Index = () => {
           ascending: false
         });
         if (error) throw error;
-        const formattedTransactions = data.map(t => ({
-          id: t.id,
-          type: t.type as "income" | "expense",
-          amount: Number(t.amount),
-          category: t.category,
-          description: t.description || "",
-          date: new Date(t.date),
-          currency: t.currency || 'RON',
-          exchange_rate: Number(t.exchange_rate) || 1,
-          attachment_url: t.attachment_url || undefined
-        }));
+        const formattedTransactions = data.map(t => {
+          // Parse date properly - database stores date-only values as YYYY-MM-DD
+          // Add time portion to avoid timezone offset issues
+          const dateParts = t.date.split('-');
+          const dateObj = new Date(
+            parseInt(dateParts[0]), 
+            parseInt(dateParts[1]) - 1, 
+            parseInt(dateParts[2]),
+            12, 0, 0 // Set to noon local time to avoid timezone issues
+          );
+          
+          return {
+            id: t.id,
+            type: t.type as "income" | "expense",
+            amount: Number(t.amount),
+            category: t.category,
+            description: t.description || "",
+            date: dateObj,
+            currency: t.currency || 'RON',
+            exchange_rate: Number(t.exchange_rate) || 1,
+            attachment_url: t.attachment_url || undefined
+          };
+        });
         setTransactions(formattedTransactions);
       } catch (error: any) {
         toast.error("Eroare la încărcarea tranzacțiilor");
