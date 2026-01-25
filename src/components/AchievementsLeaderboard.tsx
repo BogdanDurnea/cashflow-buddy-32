@@ -2,10 +2,12 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { getLevelInfo } from "@/hooks/useAchievements";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Crown, Medal, Trophy, User, TrendingUp } from "lucide-react";
 
 interface LeaderboardEntry {
@@ -140,6 +142,7 @@ export const AchievementsLeaderboard = () => {
           <div className="space-y-2">
             {leaderboard.map((entry, index) => {
               const isCurrentUser = user?.id === entry.user_id;
+              const entryLevel = getLevelInfo(entry.achievement_count);
               
               return (
                 <motion.div
@@ -190,6 +193,24 @@ export const AchievementsLeaderboard = () => {
                       {entry.achievement_count} insigne deblocate
                     </p>
                   </div>
+
+                  {/* Level Badge */}
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div className={`
+                          px-2 py-1 rounded-lg bg-gradient-to-r ${entryLevel.currentLevel.color} 
+                          text-white text-xs font-semibold flex items-center gap-1 shrink-0
+                        `}>
+                          <span>{entryLevel.currentLevel.icon}</span>
+                          <span className="hidden sm:inline">Lv.{entryLevel.currentLevel.level}</span>
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>{entryLevel.currentLevel.name} - Nivel {entryLevel.currentLevel.level}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
 
                   {/* Achievement Count */}
                   <div className="flex items-center gap-1.5 shrink-0">
