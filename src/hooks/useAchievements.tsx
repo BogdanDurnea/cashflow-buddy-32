@@ -165,6 +165,45 @@ export const ACHIEVEMENTS: Achievement[] = [
   },
 ];
 
+// Level definitions based on achievement count
+export const LEVELS = [
+  { level: 1, minAchievements: 0, name: "Începător", icon: "🌱", color: "from-slate-400 to-slate-500" },
+  { level: 2, minAchievements: 3, name: "Explorator", icon: "🧭", color: "from-green-400 to-green-600" },
+  { level: 3, minAchievements: 6, name: "Avansat", icon: "⭐", color: "from-blue-400 to-blue-600" },
+  { level: 4, minAchievements: 10, name: "Expert", icon: "💫", color: "from-purple-400 to-purple-600" },
+  { level: 5, minAchievements: 15, name: "Maestru", icon: "👑", color: "from-amber-400 to-amber-600" },
+  { level: 6, minAchievements: 20, name: "Legendă", icon: "🏆", color: "from-rose-400 to-rose-600" },
+];
+
+export const getLevelInfo = (achievementCount: number) => {
+  let currentLevel = LEVELS[0];
+  let nextLevel = LEVELS[1];
+  
+  for (let i = LEVELS.length - 1; i >= 0; i--) {
+    if (achievementCount >= LEVELS[i].minAchievements) {
+      currentLevel = LEVELS[i];
+      nextLevel = LEVELS[i + 1] || null;
+      break;
+    }
+  }
+  
+  const progressToNext = nextLevel
+    ? ((achievementCount - currentLevel.minAchievements) / 
+       (nextLevel.minAchievements - currentLevel.minAchievements)) * 100
+    : 100;
+  
+  const achievementsToNext = nextLevel 
+    ? nextLevel.minAchievements - achievementCount 
+    : 0;
+  
+  return {
+    currentLevel,
+    nextLevel,
+    progressToNext: Math.min(progressToNext, 100),
+    achievementsToNext,
+  };
+};
+
 export const useAchievements = () => {
   const { user } = useAuth();
   const [unlockedAchievements, setUnlockedAchievements] = useState<string[]>([]);
@@ -325,6 +364,11 @@ export const useAchievements = () => {
     };
   }, [unlockedAchievements]);
 
+  // Get level info
+  const getLevelProgress = useCallback(() => {
+    return getLevelInfo(unlockedAchievements.length);
+  }, [unlockedAchievements]);
+
   return {
     achievements: getAchievementsWithStatus(),
     unlockedAchievements,
@@ -332,5 +376,6 @@ export const useAchievements = () => {
     unlockAchievement,
     checkAchievements,
     getProgress,
+    getLevelProgress,
   };
 };
