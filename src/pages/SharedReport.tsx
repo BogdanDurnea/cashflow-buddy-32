@@ -35,11 +35,11 @@ export default function SharedReport() {
           .single();
 
         if (fetchError || !data) {
-          setError("Raportul nu a fost găsit sau a expirat");
+          setError("Raportul nu a fost găsit, a expirat sau a fost revocat");
           return;
         }
 
-        // Check expiration
+        // Check expiration (note: revoked check is handled by RLS policy)
         if (data.expires_at && new Date(data.expires_at) < new Date()) {
           setError("Acest link a expirat");
           return;
