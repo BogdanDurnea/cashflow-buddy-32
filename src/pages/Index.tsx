@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { motion, AnimatePresence } from "framer-motion";
 import { TransactionForm, Transaction } from "@/components/TransactionForm";
 import { TransactionList } from "@/components/TransactionList";
@@ -36,6 +37,8 @@ import { NotificationSettings } from "@/components/NotificationSettings";
 import { Achievements } from "@/components/Achievements";
 import { AchievementsLeaderboard } from "@/components/AchievementsLeaderboard";
 import { useAchievements } from "@/hooks/useAchievements";
+import { LanguageSelector } from "@/components/LanguageSelector";
+import { LanguageSettings } from "@/components/LanguageSettings";
 import { Button } from "@/components/ui/button";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
@@ -94,6 +97,7 @@ const fadeInUp = {
 };
 const Index = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const {
     user,
     loading: authLoading,
@@ -562,19 +566,20 @@ const Index = () => {
             </div>
             <div className="flex items-center space-x-1.5 sm:space-x-2 shrink-0">
               
-              <Button variant="outline" size="sm" onClick={toggleAllSections} className="h-8 sm:h-9 active:scale-95 transition-smooth" title={expandedSections.length === allSections.length ? "Închide toate secțiunile" : "Deschide toate secțiunile"}>
+              <Button variant="outline" size="sm" onClick={toggleAllSections} className="h-8 sm:h-9 active:scale-95 transition-smooth" title={expandedSections.length === allSections.length ? t("common.close") : t("common.all")}>
                 <ChevronsUpDown className="h-4 w-4" />
                 <span className="hidden md:inline ml-1">
-                  {expandedSections.length === allSections.length ? "Închide tot" : "Deschide tot"}
+                  {expandedSections.length === allSections.length ? t("common.close") : t("common.all")}
                 </span>
               </Button>
-              <Button variant="outline" size="sm" onClick={requestNotificationPermission} className="h-8 sm:h-9 active:scale-95 transition-smooth" title="Activează notificările pentru alerte de buget">
+              <Button variant="outline" size="sm" onClick={requestNotificationPermission} className="h-8 sm:h-9 active:scale-95 transition-smooth" title={t("settings.notifications")}>
                 <Bell className="h-4 w-4" />
               </Button>
+              <LanguageSelector variant="icon" />
               <ThemeToggle />
               <Button variant="outline" size="sm" onClick={handleLogout} className="h-8 sm:h-9 active:scale-95 transition-smooth">
                 <LogOut className="h-4 w-4 sm:mr-2" />
-                <span className="hidden sm:inline">Ieșire</span>
+                <span className="hidden sm:inline">{t("nav.logout")}</span>
               </Button>
             </div>
           </div>
@@ -705,7 +710,7 @@ const Index = () => {
               sectionRefs.current['transactions'] = el;
             }}>
               <AccordionTrigger className="px-4 sm:px-6 py-4 text-lg sm:text-xl font-bold hover:no-underline">
-                Tranzacții
+                {t("nav.transactions")}
               </AccordionTrigger>
               <AccordionContent className="px-4 sm:px-6 pb-4 space-y-6">
                 <div className="grid gap-4 sm:gap-6 lg:grid-cols-3">
@@ -728,7 +733,7 @@ const Index = () => {
               sectionRefs.current['analytics'] = el;
             }}>
               <AccordionTrigger className="px-4 sm:px-6 py-4 text-lg sm:text-xl font-bold hover:no-underline">
-                Analiză Avansată
+                {t("analytics.title")}
               </AccordionTrigger>
               <AccordionContent className="px-4 sm:px-6 pb-4 space-y-6">
                 <DateRangeFilter onDateRangeChange={handleDateRangeChange} />
@@ -746,7 +751,7 @@ const Index = () => {
               sectionRefs.current['budgets'] = el;
             }}>
                 <AccordionTrigger className="px-4 sm:px-6 py-4 text-lg sm:text-xl font-bold hover:no-underline">
-                  Bugete
+                  {t("budgets.title")}
                 </AccordionTrigger>
                 <AccordionContent className="px-4 sm:px-6 pb-4 space-y-6">
                   <div className="grid gap-4 sm:gap-6 lg:grid-cols-2">
@@ -766,7 +771,7 @@ const Index = () => {
                 <AccordionTrigger className="px-4 sm:px-6 py-4 text-lg sm:text-xl font-bold hover:no-underline">
                   <div className="flex items-center gap-2">
                     <Trophy className="h-5 w-5 text-primary" />
-                    Insigne
+                    {t("achievements.title")}
                     <span className="text-sm font-normal text-muted-foreground ml-2">
                       ({getProgress().unlocked}/{getProgress().total})
                     </span>
@@ -787,7 +792,7 @@ const Index = () => {
               sectionRefs.current['reports'] = el;
             }}>
                 <AccordionTrigger className="px-4 sm:px-6 py-4 text-lg sm:text-xl font-bold hover:no-underline">
-                  Rapoarte & Integrări
+                  {t("reports.title")}
                 </AccordionTrigger>
                 <AccordionContent className="px-4 sm:px-6 pb-4 space-y-6">
                   <ReportsSection transactions={transactions} />
@@ -827,9 +832,10 @@ const Index = () => {
               sectionRefs.current['settings'] = el;
             }}>
                 <AccordionTrigger className="px-4 sm:px-6 py-4 text-lg sm:text-xl font-bold hover:no-underline">
-                  Setări
+                  {t("settings.title")}
                 </AccordionTrigger>
                 <AccordionContent className="px-4 sm:px-6 pb-4 space-y-6">
+                  <LanguageSettings />
                   <NotificationSettings />
                   <CustomCategoriesManager />
                   <AccountSettings />

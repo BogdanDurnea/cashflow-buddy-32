@@ -1,4 +1,5 @@
 import { Home, TrendingUp, Wallet, FileText, Settings, Trophy } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import {
   Sidebar,
   SidebarContent,
@@ -16,17 +17,19 @@ interface AppSidebarProps {
   onSectionChange: (section: string) => void;
 }
 
-const sections = [
-  { id: "transactions", title: "Tranzacții", icon: Home },
-  { id: "analytics", title: "Analiză", icon: TrendingUp },
-  { id: "budgets", title: "Bugete", icon: Wallet },
-  { id: "achievements", title: "Insigne", icon: Trophy },
-  { id: "reports", title: "Rapoarte", icon: FileText },
-  { id: "settings", title: "Setări", icon: Settings },
+const getSections = (t: (key: string) => string) => [
+  { id: "transactions", title: t("nav.transactions"), icon: Home },
+  { id: "analytics", title: t("analytics.title"), icon: TrendingUp },
+  { id: "budgets", title: t("budgets.title"), icon: Wallet },
+  { id: "achievements", title: t("achievements.title"), icon: Trophy },
+  { id: "reports", title: t("reports.title"), icon: FileText },
+  { id: "settings", title: t("settings.title"), icon: Settings },
 ];
 
 export function AppSidebar({ activeSection, onSectionChange }: AppSidebarProps) {
   const { open } = useSidebar();
+  const { t } = useTranslation();
+  const sections = getSections(t);
 
   const scrollToSection = (sectionId: string) => {
     onSectionChange(sectionId);
@@ -41,7 +44,7 @@ export function AppSidebar({ activeSection, onSectionChange }: AppSidebarProps) 
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupLabel className={open ? "" : "sr-only"}>
-            Secțiuni
+            {t("nav.dashboard")}
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
