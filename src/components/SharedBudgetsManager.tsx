@@ -8,7 +8,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Users, Plus, Trash2, UserPlus, Mail } from "lucide-react";
+import { Users, Plus, Trash2, UserPlus, Mail, LogOut } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface SharedBudget {
@@ -278,6 +278,34 @@ export function SharedBudgetsManager() {
     }
   };
 
+  const leaveBudget = async (budgetId: string) => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
+
+      const { error } = await supabase
+        .from("shared_budget_members")
+        .delete()
+        .eq("shared_budget_id", budgetId)
+        .eq("user_id", user.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "✓ Ai părăsit bugetul",
+        description: "Nu mai ai acces la acest budget partajat",
+      });
+
+      loadSharedBudgets();
+    } catch (error: any) {
+      toast({
+        title: "Eroare",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -383,7 +411,7 @@ export function SharedBudgetsManager() {
                     </div>
                   </div>
                   <div className="flex gap-2">
-                    {budget.role === "owner" && (
+                    {budget.role === "owner" ? (
                       <>
                         <Button
                           size="sm"
@@ -403,6 +431,15 @@ export function SharedBudgetsManager() {
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </>
+                    ) : (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => leaveBudget(budget.id)}
+                        title="Părăsește bugetul"
+                      >
+                        <LogOut className="h-4 w-4" />
+                      </Button>
                     )}
                   </div>
                 </div>
