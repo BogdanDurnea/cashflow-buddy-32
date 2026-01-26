@@ -146,6 +146,7 @@ export type Database = {
           expires_at: string | null
           id: string
           report_data: Json
+          revoked: boolean
           share_token: string
           title: string
           user_id: string
@@ -156,6 +157,7 @@ export type Database = {
           expires_at?: string | null
           id?: string
           report_data: Json
+          revoked?: boolean
           share_token: string
           title: string
           user_id: string
@@ -166,6 +168,7 @@ export type Database = {
           expires_at?: string | null
           id?: string
           report_data?: Json
+          revoked?: boolean
           share_token?: string
           title?: string
           user_id?: string

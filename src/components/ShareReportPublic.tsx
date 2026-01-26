@@ -4,7 +4,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Share2, Copy, ExternalLink, Calendar, Trash2 } from "lucide-react";
+import { Share2, Copy, ExternalLink, Calendar, Trash2, Ban, RotateCcw } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 
@@ -114,6 +114,32 @@ export function ShareReportPublic({ reportData, title }: ShareReportPublicProps)
     }
   };
 
+  const toggleRevokeShare = async (shareId: string, currentRevoked: boolean) => {
+    try {
+      const { error } = await supabase
+        .from("report_shares")
+        .update({ revoked: !currentRevoked })
+        .eq("id", shareId);
+
+      if (error) throw error;
+
+      toast({
+        title: currentRevoked ? "✓ Link reactivat" : "✓ Link revocat",
+        description: currentRevoked 
+          ? "Raportul poate fi accesat din nou" 
+          : "Raportul nu mai poate fi accesat public",
+      });
+
+      loadExistingShares();
+    } catch (error: any) {
+      toast({
+        title: "Eroare",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={(open) => {
       setIsOpen(open);
@@ -178,12 +204,19 @@ export function ShareReportPublic({ reportData, title }: ShareReportPublicProps)
               <Label>Link-uri Existente</Label>
               <div className="space-y-2 max-h-60 overflow-y-auto">
                 {existingShares.map((share) => (
-                  <Card key={share.id}>
+                  <Card key={share.id} className={share.revoked ? "opacity-60" : ""}>
                     <CardContent className="p-3">
                       <div className="flex items-start justify-between gap-2">
                         <div className="flex-1 min-w-0">
-                          <div className="font-medium text-sm truncate">{share.title}</div>
-                          <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium text-sm truncate">{share.title}</span>
+                            {share.revoked && (
+                              <span className="text-xs bg-destructive/20 text-destructive px-1.5 py-0.5 rounded">
+                                Revocat
+                              </span>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1 flex-wrap">
                             <span>Vizualizări: {share.view_count}</span>
                             {share.expires_at && (
                               <span className="flex items-center gap-1">
@@ -197,7 +230,20 @@ export function ShareReportPublic({ reportData, title }: ShareReportPublicProps)
                           <Button
                             size="sm"
                             variant="ghost"
+                            onClick={() => toggleRevokeShare(share.id, share.revoked)}
+                            title={share.revoked ? "Reactivează link-ul" : "Revocă link-ul"}
+                          >
+                            {share.revoked ? (
+                              <RotateCcw className="h-3 w-3" />
+                            ) : (
+                              <Ban className="h-3 w-3" />
+                            )}
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
                             onClick={() => copyToClipboard(`${window.location.origin}/shared/${share.share_token}`)}
+                            disabled={share.revoked}
                           >
                             <Copy className="h-3 w-3" />
                           </Button>
