@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
@@ -17,6 +18,8 @@ interface TransactionListProps {
 }
 
 export const TransactionList = React.memo(function TransactionList({ transactions, onEditTransaction }: TransactionListProps) {
+  const { t, i18n } = useTranslation();
+  
   const sortedTransactions = transactions.sort((a, b) => 
     new Date(b.date).getTime() - new Date(a.date).getTime()
   );
@@ -31,9 +34,11 @@ export const TransactionList = React.memo(function TransactionList({ transaction
                        dateObj.getUTCMinutes() === 0 && 
                        dateObj.getUTCSeconds() === 0;
     
+    const locale = i18n.language === 'ro' ? 'ro-RO' : i18n.language;
+    
     if (isDateOnly) {
       // For date-only values, display just the date
-      return new Intl.DateTimeFormat('ro-RO', {
+      return new Intl.DateTimeFormat(locale, {
         day: '2-digit',
         month: 'short',
         year: 'numeric'
@@ -41,7 +46,7 @@ export const TransactionList = React.memo(function TransactionList({ transaction
     }
     
     // For full timestamps, include the time
-    return new Intl.DateTimeFormat('ro-RO', {
+    return new Intl.DateTimeFormat(locale, {
       day: '2-digit',
       month: 'short',
       hour: '2-digit',
@@ -51,7 +56,7 @@ export const TransactionList = React.memo(function TransactionList({ transaction
 
   const formatAmount = (amount: number, currency: string = 'RON', exchangeRate: number = 1) => {
     const ronAmount = amount * exchangeRate;
-    const formatted = new Intl.NumberFormat('ro-RO', {
+    const formatted = new Intl.NumberFormat(i18n.language === 'ro' ? 'ro-RO' : i18n.language, {
       style: 'currency',
       currency: 'RON'
     }).format(ronAmount);
@@ -83,15 +88,15 @@ export const TransactionList = React.memo(function TransactionList({ transaction
     >
       <Card className="shadow-card transition-smooth">
         <CardHeader className="p-4 sm:p-6">
-          <CardTitle className="text-base sm:text-lg">Tranzacții recente</CardTitle>
+          <CardTitle className="text-base sm:text-lg">{t("transactions.recentTransactions")}</CardTitle>
         </CardHeader>
         <CardContent className="p-0">
           {sortedTransactions.length === 0 ? (
             <div className="p-4">
               <EmptyState
                 icon={Receipt}
-                title="Nicio tranzacție"
-                description="Nu ai adăugat încă nicio tranzacție. Începe prin a adăuga prima ta tranzacție pentru a urmări cheltuielile și veniturile."
+                title={t("transactions.noTransactions")}
+                description={t("transactions.noTransactionsDesc")}
               />
             </div>
           ) : (
@@ -132,7 +137,7 @@ export const TransactionList = React.memo(function TransactionList({ transaction
                                   : "border-danger text-danger"
                               }`}
                             >
-                              {transaction.type === "income" ? "Venit" : "Cheltuială"}
+                              {transaction.type === "income" ? t("transactions.income") : t("transactions.expense")}
                             </Badge>
                           </div>
                         {transaction.description && (
