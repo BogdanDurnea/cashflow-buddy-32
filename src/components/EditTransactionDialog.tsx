@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -25,6 +26,7 @@ export function EditTransactionDialog({
   onSave, 
   onDelete 
 }: EditTransactionDialogProps) {
+  const { t } = useTranslation();
   const [type, setType] = useState<"income" | "expense">("expense");
   const [amount, setAmount] = useState("");
   const [category, setCategory] = useState("");
@@ -69,25 +71,25 @@ export function EditTransactionDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Editează tranzacția</DialogTitle>
+          <DialogTitle>{t("transactions.editTransaction")}</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit}>
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="edit-type">Tip tranzacție</Label>
+                <Label htmlFor="edit-type">{t("transactions.type")}</Label>
                 <Select value={type} onValueChange={(value: "income" | "expense") => setType(value)}>
                   <SelectTrigger id="edit-type">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="income">Venit</SelectItem>
-                    <SelectItem value="expense">Cheltuială</SelectItem>
+                    <SelectItem value="income">{t("transactions.income")}</SelectItem>
+                    <SelectItem value="expense">{t("transactions.expense")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <div>
-                <Label htmlFor="edit-amount">Sumă (RON)</Label>
+                <Label htmlFor="edit-amount">{t("transactions.amount")} (RON)</Label>
                 <Input
                   id="edit-amount"
                   type="number"
@@ -100,10 +102,10 @@ export function EditTransactionDialog({
             </div>
 
             <div>
-              <Label htmlFor="edit-category">Categorie</Label>
+              <Label htmlFor="edit-category">{t("transactions.category")}</Label>
               <Select value={category} onValueChange={setCategory}>
                 <SelectTrigger id="edit-category">
-                  <SelectValue placeholder="Selectează categoria" />
+                  <SelectValue placeholder={t("transactions.selectCategory")} />
                 </SelectTrigger>
                 <SelectContent>
                   {categories.map((cat) => {
@@ -130,12 +132,12 @@ export function EditTransactionDialog({
             </div>
 
             <div>
-              <Label htmlFor="edit-description">Descriere (opțional)</Label>
+              <Label htmlFor="edit-description">{t("transactions.descriptionOptional")}</Label>
               <Textarea
                 id="edit-description"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                placeholder="Descriere tranzacție..."
+                placeholder={t("transactions.descriptionPlaceholder")}
                 rows={2}
               />
             </div>
@@ -148,7 +150,7 @@ export function EditTransactionDialog({
               onClick={handleDelete}
               className="w-full sm:w-auto"
             >
-              Șterge
+              {t("common.delete")}
             </Button>
             <div className="flex gap-2 w-full sm:w-auto">
               <Button
@@ -157,10 +159,10 @@ export function EditTransactionDialog({
                 onClick={() => onOpenChange(false)}
                 className="flex-1 sm:flex-none"
               >
-                Anulează
+                {t("common.cancel")}
               </Button>
               <Button type="submit" className="flex-1 sm:flex-none">
-                Salvează
+                {t("common.save")}
               </Button>
             </div>
           </DialogFooter>

@@ -1,4 +1,5 @@
 import { useState, useRef } from "react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -39,6 +40,7 @@ const CURRENCIES = [
 ];
 
 export function TransactionForm({ onAddTransaction }: TransactionFormProps) {
+  const { t } = useTranslation();
   const { toast } = useToast();
   const { isOnline } = useOfflineSync();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -78,8 +80,8 @@ export function TransactionForm({ onAddTransaction }: TransactionFormProps) {
       if (attachmentFile) {
         if (!isOnline) {
           toast({
-            title: "Atașamentele necesită conexiune",
-            description: "Tranzacția va fi salvată fără atașament în modul offline.",
+            title: t("transactions.attachmentRequiresConnection"),
+            description: t("transactions.attachmentOfflineDesc"),
             variant: "destructive"
           });
         } else {
@@ -124,16 +126,16 @@ export function TransactionForm({ onAddTransaction }: TransactionFormProps) {
 
       toast({ 
         title: isOnline 
-          ? "Tranzacție adăugată cu succes!" 
-          : "Tranzacție salvată offline",
+          ? t("transactions.transactionAdded")
+          : t("transactions.transactionAddedOffline"),
         description: !isOnline 
-          ? "Va fi sincronizată când revii online." 
+          ? t("transactions.willSyncOnline")
           : undefined
       });
     } catch (error) {
       console.error("Error:", error);
       toast({ 
-        title: "Eroare la adăugarea tranzacției", 
+        title: t("transactions.transactionError"), 
         variant: "destructive" 
       });
     } finally {
@@ -153,8 +155,8 @@ export function TransactionForm({ onAddTransaction }: TransactionFormProps) {
   const extractReceiptData = async (file: File) => {
     if (!isOnline) {
       toast({
-        title: "OCR necesită conexiune",
-        description: "Extragerea automată funcționează doar online.",
+        title: t("transactions.ocrRequiresConnection"),
+        description: t("transactions.ocrOfflineDesc"),
         variant: "destructive"
       });
       return;
@@ -190,21 +192,21 @@ export function TransactionForm({ onAddTransaction }: TransactionFormProps) {
 
       if (extractedItems.length > 0) {
         toast({
-          title: "Date extrase din chitanță",
-          description: `Am detectat: ${extractedItems.join(", ")}`,
+          title: t("transactions.dataExtracted"),
+          description: t("transactions.dataExtractedDesc", { items: extractedItems.join(", ") }),
         });
       } else {
         toast({
-          title: "Nu am putut extrage date",
-          description: "Încercați o poză mai clară a chitanței.",
+          title: t("transactions.extractionFailed"),
+          description: t("transactions.extractionFailedDesc"),
           variant: "destructive"
         });
       }
     } catch (error) {
       console.error("OCR extraction error:", error);
       toast({
-        title: "Eroare la procesare",
-        description: "Nu am putut analiza chitanța. Încercați din nou.",
+        title: t("transactions.processingError"),
+        description: t("transactions.processingErrorDesc"),
         variant: "destructive"
       });
     } finally {
@@ -217,8 +219,8 @@ export function TransactionForm({ onAddTransaction }: TransactionFormProps) {
     if (file) {
       if (file.size > 5 * 1024 * 1024) {
         toast({ 
-          title: "Fișierul este prea mare", 
-          description: "Dimensiunea maximă este 5MB",
+          title: t("transactions.fileTooLarge"), 
+          description: t("transactions.fileTooLargeDesc"),
           variant: "destructive" 
         });
         return;
@@ -248,11 +250,11 @@ export function TransactionForm({ onAddTransaction }: TransactionFormProps) {
       <CardHeader className="p-4 sm:p-6">
         <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
           <PlusCircle className="h-5 w-5 shrink-0" />
-          <span className="truncate">Adaugă tranzacție nouă</span>
+          <span className="truncate">{t("transactions.addTransaction")}</span>
           {!isOnline && (
             <span className="ml-auto flex items-center gap-1 text-xs font-normal text-amber-500">
               <WifiOff className="h-3 w-3" />
-              Offline
+              {t("transactions.offline")}
             </span>
           )}
         </CardTitle>
@@ -260,7 +262,7 @@ export function TransactionForm({ onAddTransaction }: TransactionFormProps) {
       <CardContent className="p-4 sm:p-6 pt-0 sm:pt-0">
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <Label htmlFor="type" className="text-sm sm:text-base">Tip tranzacție</Label>
+            <Label htmlFor="type" className="text-sm sm:text-base">{t("transactions.type")}</Label>
             <Select value={type} onValueChange={(value: "income" | "expense") => {
               setType(value);
               setCategory(""); // Reset category when type changes
@@ -269,15 +271,15 @@ export function TransactionForm({ onAddTransaction }: TransactionFormProps) {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="income" className="text-base py-3">Venit</SelectItem>
-                <SelectItem value="expense" className="text-base py-3">Cheltuială</SelectItem>
+                <SelectItem value="income" className="text-base py-3">{t("transactions.income")}</SelectItem>
+                <SelectItem value="expense" className="text-base py-3">{t("transactions.expense")}</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="amount" className="text-sm sm:text-base">Sumă</Label>
+              <Label htmlFor="amount" className="text-sm sm:text-base">{t("transactions.amount")}</Label>
               <Input
                 id="amount"
                 type="number"
@@ -290,7 +292,7 @@ export function TransactionForm({ onAddTransaction }: TransactionFormProps) {
               />
             </div>
             <div>
-              <Label htmlFor="currency" className="text-sm sm:text-base">Valută</Label>
+              <Label htmlFor="currency" className="text-sm sm:text-base">{t("transactions.currency")}</Label>
               <Select value={currency} onValueChange={setCurrency}>
                 <SelectTrigger id="currency" className="h-11 text-base">
                   <SelectValue />
@@ -307,10 +309,10 @@ export function TransactionForm({ onAddTransaction }: TransactionFormProps) {
           </div>
 
           <div>
-            <Label htmlFor="category" className="text-sm sm:text-base">Categorie</Label>
+            <Label htmlFor="category" className="text-sm sm:text-base">{t("transactions.category")}</Label>
             <Select value={category} onValueChange={setCategory}>
               <SelectTrigger id="category" className="h-11 text-base">
-                <SelectValue placeholder="Selectează categoria" />
+                <SelectValue placeholder={t("transactions.selectCategory")} />
               </SelectTrigger>
               <SelectContent>
                 {allCategories.map((cat) => {
@@ -341,19 +343,19 @@ export function TransactionForm({ onAddTransaction }: TransactionFormProps) {
           </div>
 
           <div>
-            <Label htmlFor="description" className="text-sm sm:text-base">Descriere (opțional)</Label>
+            <Label htmlFor="description" className="text-sm sm:text-base">{t("transactions.descriptionOptional")}</Label>
             <Textarea
               id="description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Descriere tranzacție..."
+              placeholder={t("transactions.descriptionPlaceholder")}
               rows={2}
               className="text-base resize-none"
             />
           </div>
 
           <div>
-            <Label htmlFor="attachment" className="text-sm sm:text-base">Atașament (opțional)</Label>
+            <Label htmlFor="attachment" className="text-sm sm:text-base">{t("transactions.attachmentOptional")}</Label>
             <div className="flex flex-col gap-2">
               {/* Hidden inputs for file selection */}
               <Input
@@ -383,7 +385,7 @@ export function TransactionForm({ onAddTransaction }: TransactionFormProps) {
                   disabled={isExtracting}
                 >
                   <Camera className="h-4 w-4 mr-2 shrink-0" />
-                  <span className="truncate">Fotografiază</span>
+                  <span className="truncate">{t("transactions.takePhoto")}</span>
                 </Button>
                 <Button
                   type="button"
@@ -393,7 +395,7 @@ export function TransactionForm({ onAddTransaction }: TransactionFormProps) {
                   disabled={isExtracting}
                 >
                   <Image className="h-4 w-4 mr-2 shrink-0" />
-                  <span className="truncate">Galerie</span>
+                  <span className="truncate">{t("transactions.gallery")}</span>
                 </Button>
               </div>
 
@@ -402,7 +404,7 @@ export function TransactionForm({ onAddTransaction }: TransactionFormProps) {
                 <div className="flex items-center gap-2 p-3 bg-primary/10 rounded-lg border border-primary/20">
                   <Loader2 className="h-4 w-4 shrink-0 animate-spin text-primary" />
                   <span className="text-sm text-primary font-medium">
-                    Se analizează chitanța cu AI...
+                    {t("transactions.analyzingReceipt")}
                   </span>
                 </div>
               )}
@@ -446,7 +448,7 @@ export function TransactionForm({ onAddTransaction }: TransactionFormProps) {
             variant={type === "income" ? "success" : "danger"}
             disabled={isUploading}
           >
-            {isUploading ? "Se încarcă..." : `Adaugă ${type === "income" ? "venit" : "cheltuială"}`}
+            {isUploading ? t("transactions.uploading") : (type === "income" ? t("transactions.addIncome") : t("transactions.addExpense"))}
           </Button>
         </form>
       </CardContent>
