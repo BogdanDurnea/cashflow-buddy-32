@@ -9,6 +9,7 @@ import { Wallet, Edit, Check, X, AlertTriangle, Target } from "lucide-react";
 import { Transaction } from "@/components/TransactionForm";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 
 interface BudgetManagerProps {
   transactions: Transaction[];
@@ -16,10 +17,21 @@ interface BudgetManagerProps {
 }
 
 export function BudgetManager({ transactions, userId }: BudgetManagerProps) {
+  const { t, i18n } = useTranslation();
+  const currency = t("common.currency");
+  
   const [monthlyBudget, setMonthlyBudget] = useState<number>(5000);
   const [isEditing, setIsEditing] = useState(false);
   const [tempBudget, setTempBudget] = useState<string>("");
   const [loading, setLoading] = useState(true);
+
+  // Format numbers using Intl
+  const formatAmount = (amount: number) => {
+    return new Intl.NumberFormat(i18n.language, {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    }).format(amount);
+  };
 
   // Load budget from Supabase
   useEffect(() => {
@@ -79,12 +91,12 @@ export function BudgetManager({ transactions, userId }: BudgetManagerProps) {
         });
 
       if (error) {
-        toast.error("Eroare la salvarea bugetului");
+        toast.error(t("budgets.budgetSaveError"));
         console.error(error);
       } else {
         setMonthlyBudget(newBudget);
         setIsEditing(false);
-        toast.success("Budget salvat cu succes");
+        toast.success(t("budgets.budgetSaved"));
       }
     }
   };
@@ -112,7 +124,7 @@ export function BudgetManager({ transactions, userId }: BudgetManagerProps) {
         <CardTitle className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Target className="h-5 w-5 text-primary" />
-            <span>Obiectiv Buget Lunar</span>
+            <span>{t("budgets.monthlyBudgetGoal")}</span>
           </div>
           {!isEditing && (
             <Button
@@ -131,7 +143,7 @@ export function BudgetManager({ transactions, userId }: BudgetManagerProps) {
       <CardContent className="space-y-4">
         {isEditing ? (
           <div className="space-y-2">
-            <Label htmlFor="budget-input">Budget lunar (RON)</Label>
+            <Label htmlFor="budget-input">{t("budgets.monthlyLimit")} ({currency})</Label>
             <div className="flex gap-2">
               <Input
                 id="budget-input"
@@ -139,7 +151,7 @@ export function BudgetManager({ transactions, userId }: BudgetManagerProps) {
                 step="0.01"
                 value={tempBudget}
                 onChange={(e) => setTempBudget(e.target.value)}
-                placeholder="Introdu bugetul lunar"
+                placeholder={t("budgets.enterMonthlyBudget")}
               />
               <Button
                 size="sm"
@@ -162,9 +174,9 @@ export function BudgetManager({ transactions, userId }: BudgetManagerProps) {
           <>
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Cheltuit</span>
+                <span className="text-muted-foreground">{t("budgets.spent")}</span>
                 <span className="font-semibold">
-                  {currentMonthExpenses.toFixed(2)} / {monthlyBudget.toFixed(2)} RON
+                  {formatAmount(currentMonthExpenses)} / {formatAmount(monthlyBudget)} {currency}
                 </span>
               </div>
               <Progress 
@@ -172,7 +184,7 @@ export function BudgetManager({ transactions, userId }: BudgetManagerProps) {
                 className={`h-3 ${isOverBudget ? "bg-destructive/20" : ""}`}
               />
               <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Progres</span>
+                <span className="text-muted-foreground">{t("budgets.progress")}</span>
                 <span className={`font-semibold ${isOverBudget ? "text-destructive" : "text-primary"}`}>
                   {budgetPercentage.toFixed(1)}%
                 </span>
@@ -181,9 +193,9 @@ export function BudgetManager({ transactions, userId }: BudgetManagerProps) {
 
             <div className="pt-2 border-t">
               <div className="flex justify-between items-center">
-                <span className="text-sm text-muted-foreground">Rămas disponibil:</span>
+                <span className="text-sm text-muted-foreground">{t("budgets.remainingAvailable")}:</span>
                 <span className={`text-lg font-bold ${isOverBudget ? "text-destructive" : "text-success"}`}>
-                  {remainingBudget.toFixed(2)} RON
+                  {formatAmount(remainingBudget)} {currency}
                 </span>
               </div>
             </div>
@@ -192,7 +204,10 @@ export function BudgetManager({ transactions, userId }: BudgetManagerProps) {
               <Alert variant="destructive" className="mt-4">
                 <AlertTriangle className="h-4 w-4" />
                 <AlertDescription>
-                  Ai depășit bugetul lunar cu {Math.abs(remainingBudget).toFixed(2)} RON!
+                  {t("budgets.budgetExceededBy", { 
+                    amount: formatAmount(Math.abs(remainingBudget)), 
+                    currency 
+                  })}
                 </AlertDescription>
               </Alert>
             )}
@@ -201,7 +216,7 @@ export function BudgetManager({ transactions, userId }: BudgetManagerProps) {
               <Alert className="mt-4 border-yellow-500 bg-yellow-50 dark:bg-yellow-950/20">
                 <AlertTriangle className="h-4 w-4 text-yellow-600" />
                 <AlertDescription className="text-yellow-800 dark:text-yellow-200">
-                  Atenție! Ai folosit {budgetPercentage.toFixed(0)}% din bugetul lunar.
+                  {t("budgets.budgetWarning", { percentage: budgetPercentage.toFixed(0) })}
                 </AlertDescription>
               </Alert>
             )}

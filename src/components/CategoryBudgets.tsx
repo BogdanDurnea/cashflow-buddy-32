@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { expenseCategories } from "@/lib/categoryConfig";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 
 interface CategoryBudgetsProps {
   transactions: Transaction[];
@@ -22,10 +23,21 @@ interface CategoryBudget {
 }
 
 export function CategoryBudgets({ transactions }: CategoryBudgetsProps) {
+  const { t, i18n } = useTranslation();
+  const currency = t("common.currency");
+
   const [categoryBudgets, setCategoryBudgets] = useState<CategoryBudget[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string>("");
   const [budgetAmount, setBudgetAmount] = useState<string>("");
+
+  // Format numbers using Intl
+  const formatAmount = (amount: number) => {
+    return new Intl.NumberFormat(i18n.language, {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    }).format(amount);
+  };
 
   // Load category budgets from localStorage
   useEffect(() => {
@@ -57,19 +69,19 @@ export function CategoryBudgets({ transactions }: CategoryBudgetsProps) {
 
   const handleAddBudget = () => {
     if (!selectedCategory || !budgetAmount) {
-      toast.error("Selectează categoria și suma");
+      toast.error(t("budgets.selectCategoryAndAmount"));
       return;
     }
 
     const amount = parseFloat(budgetAmount);
     if (amount <= 0) {
-      toast.error("Suma trebuie să fie mai mare decât 0");
+      toast.error(t("budgets.amountMustBePositive"));
       return;
     }
 
     // Check if category already has a budget
     if (categoryBudgets.some(b => b.category === selectedCategory)) {
-      toast.error("Categoria are deja un buget setat");
+      toast.error(t("budgets.categoryHasBudget"));
       return;
     }
 
@@ -78,13 +90,13 @@ export function CategoryBudgets({ transactions }: CategoryBudgetsProps) {
     setIsDialogOpen(false);
     setSelectedCategory("");
     setBudgetAmount("");
-    toast.success("Buget adăugat cu succes");
+    toast.success(t("budgets.budgetAdded"));
   };
 
   const handleDeleteBudget = (category: string) => {
     const newBudgets = categoryBudgets.filter(b => b.category !== category);
     saveBudgets(newBudgets);
-    toast.success("Buget șters");
+    toast.success(t("budgets.budgetDeleted"));
   };
 
   const availableCategories = expenseCategories.filter(
@@ -97,25 +109,25 @@ export function CategoryBudgets({ transactions }: CategoryBudgetsProps) {
         <CardTitle className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Target className="h-5 w-5 text-primary" />
-            <span>Obiective pe Categorii</span>
+            <span>{t("budgets.categoryGoals")}</span>
           </div>
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
               <Button size="sm" variant="outline">
                 <Plus className="h-4 w-4 mr-1" />
-                Adaugă
+                {t("common.add")}
               </Button>
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>Adaugă buget pentru categorie</DialogTitle>
+                <DialogTitle>{t("budgets.addCategoryBudget")}</DialogTitle>
               </DialogHeader>
               <div className="space-y-4 py-4">
                 <div className="space-y-2">
-                  <Label>Categorie</Label>
+                  <Label>{t("transactions.category")}</Label>
                   <Select value={selectedCategory} onValueChange={setSelectedCategory}>
                     <SelectTrigger>
-                      <SelectValue placeholder="Selectează categoria" />
+                      <SelectValue placeholder={t("budgets.selectCategory")} />
                     </SelectTrigger>
                     <SelectContent>
                       {availableCategories.map(cat => (
@@ -127,7 +139,7 @@ export function CategoryBudgets({ transactions }: CategoryBudgetsProps) {
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label>Limită lunară (RON)</Label>
+                  <Label>{t("budgets.monthlyLimit")} ({currency})</Label>
                   <Input
                     type="number"
                     step="0.01"
@@ -137,7 +149,7 @@ export function CategoryBudgets({ transactions }: CategoryBudgetsProps) {
                   />
                 </div>
                 <Button onClick={handleAddBudget} className="w-full">
-                  Salvează
+                  {t("common.save")}
                 </Button>
               </div>
             </DialogContent>
@@ -147,9 +159,9 @@ export function CategoryBudgets({ transactions }: CategoryBudgetsProps) {
       <CardContent className="space-y-4">
         {categoryBudgets.length === 0 ? (
           <div className="text-center py-8 text-muted-foreground text-sm">
-            Nu ai setat obiective pentru categorii.
+            {t("budgets.noCategoryBudgets")}
             <br />
-            Apasă pe "Adaugă" pentru a începe.
+            {t("budgets.noCategoryBudgetsHint")}
           </div>
         ) : (
           categoryBudgets.map(budget => {
@@ -173,9 +185,9 @@ export function CategoryBudgets({ transactions }: CategoryBudgetsProps) {
                 
                 <div className="space-y-1">
                   <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Cheltuit</span>
+                    <span className="text-muted-foreground">{t("budgets.spent")}</span>
                     <span className="font-semibold">
-                      {spent.toFixed(2)} / {budget.limit.toFixed(2)} RON
+                      {formatAmount(spent)} / {formatAmount(budget.limit)} {currency}
                     </span>
                   </div>
                   <Progress 
@@ -184,7 +196,7 @@ export function CategoryBudgets({ transactions }: CategoryBudgetsProps) {
                   />
                   <div className="flex justify-between text-xs">
                     <span className="text-muted-foreground">
-                      Rămas: {Math.max(0, budget.limit - spent).toFixed(2)} RON
+                      {t("budgets.remaining")}: {formatAmount(Math.max(0, budget.limit - spent))} {currency}
                     </span>
                     <span className={`font-semibold ${isOverBudget ? "text-destructive" : "text-primary"}`}>
                       {percentage.toFixed(0)}%
@@ -196,7 +208,10 @@ export function CategoryBudgets({ transactions }: CategoryBudgetsProps) {
                   <Alert variant="destructive" className="py-2">
                     <AlertTriangle className="h-3 w-3" />
                     <AlertDescription className="text-xs">
-                      Ai depășit limita cu {(spent - budget.limit).toFixed(2)} RON
+                      {t("budgets.categoryExceededBy", { 
+                        amount: formatAmount(spent - budget.limit), 
+                        currency 
+                      })}
                     </AlertDescription>
                   </Alert>
                 )}
@@ -205,7 +220,7 @@ export function CategoryBudgets({ transactions }: CategoryBudgetsProps) {
                   <Alert className="py-2 border-yellow-500 bg-yellow-50 dark:bg-yellow-950/20">
                     <AlertTriangle className="h-3 w-3 text-yellow-600" />
                     <AlertDescription className="text-xs text-yellow-800 dark:text-yellow-200">
-                      Ai folosit {percentage.toFixed(0)}% din limită
+                      {t("budgets.categoryWarning", { percentage: percentage.toFixed(0) })}
                     </AlertDescription>
                   </Alert>
                 )}

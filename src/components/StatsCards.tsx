@@ -3,12 +3,16 @@ import { TrendingUp, TrendingDown, DollarSign, Activity, Calendar, PiggyBank } f
 import { Transaction } from "@/components/TransactionForm";
 import React from "react";
 import { motion } from "framer-motion";
+import { useTranslation } from "react-i18next";
 
 interface StatsCardsProps {
   transactions: Transaction[];
 }
 
 export const StatsCards = React.memo(function StatsCards({ transactions }: StatsCardsProps) {
+  const { t, i18n } = useTranslation();
+  const currency = t("common.currency");
+
   // Calculate statistics
   const totalIncome = transactions
     .filter(t => t.type === "income")
@@ -54,52 +58,71 @@ export const StatsCards = React.memo(function StatsCards({ transactions }: Stats
   const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
   const projectedExpenses = (monthlyExpense / dayOfMonth) * daysInMonth;
 
+  // Format numbers using Intl
+  const formatAmount = (amount: number) => {
+    return new Intl.NumberFormat(i18n.language, {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    }).format(amount);
+  };
+
+  const monthName = new Intl.DateTimeFormat(i18n.language, { month: 'long' }).format(now);
+
   const stats = [
     {
-      title: "Sold Total",
-      value: `${balance.toFixed(2)} RON`,
+      title: t("stats.totalBalance"),
+      value: `${formatAmount(balance)} ${currency}`,
       icon: DollarSign,
       trend: balance >= 0 ? "positive" : "negative",
-      description: `${totalIncome.toFixed(2)} venituri - ${totalExpense.toFixed(2)} cheltuieli`,
+      description: t("stats.incomeMinusExpenses", { 
+        income: formatAmount(totalIncome), 
+        expenses: formatAmount(totalExpense) 
+      }),
     },
     {
-      title: "Luna Curentă",
-      value: `${(monthlyIncome - monthlyExpense).toFixed(2)} RON`,
+      title: t("stats.currentMonth"),
+      value: `${formatAmount(monthlyIncome - monthlyExpense)} ${currency}`,
       icon: Calendar,
       trend: (monthlyIncome - monthlyExpense) >= 0 ? "positive" : "negative",
-      description: `${monthlyIncome.toFixed(2)} venituri - ${monthlyExpense.toFixed(2)} cheltuieli`,
+      description: t("stats.incomeMinusExpenses", { 
+        income: formatAmount(monthlyIncome), 
+        expenses: formatAmount(monthlyExpense) 
+      }),
     },
     {
-      title: "Medie Zilnică",
-      value: `${dailyAverage.toFixed(2)} RON`,
+      title: t("stats.dailyAverage"),
+      value: `${formatAmount(dailyAverage)} ${currency}`,
       icon: Activity,
       trend: "neutral",
-      description: "Cheltuieli medii (ultimele 30 zile)",
+      description: t("stats.averageExpensesLast30Days"),
     },
     {
-      title: "Rată de Economisire",
+      title: t("stats.savingsRate"),
       value: `${savingsRate.toFixed(1)}%`,
       icon: PiggyBank,
       trend: savingsRate >= 20 ? "positive" : savingsRate >= 10 ? "neutral" : "negative",
-      description: monthlyIncome > 0 ? `Din venitul lunar` : "Fără venituri înregistrate",
+      description: monthlyIncome > 0 ? t("stats.fromMonthlyIncome") : t("stats.noIncomeRecorded"),
     },
     {
-      title: "Proiecție Lunară",
-      value: `${projectedExpenses.toFixed(2)} RON`,
+      title: t("stats.monthlyProjection"),
+      value: `${formatAmount(projectedExpenses)} ${currency}`,
       icon: TrendingUp,
       trend: projectedExpenses <= monthlyIncome ? "positive" : "negative",
-      description: `Estimare cheltuieli până la ${daysInMonth} ${now.toLocaleDateString('ro-RO', { month: 'long' })}`,
+      description: t("stats.estimatedExpensesUntil", { day: daysInMonth, month: monthName }),
     },
     {
-      title: "Cea mai Mare Cheltuială",
+      title: t("stats.largestExpense"),
       value: transactions.filter(t => t.type === "expense").length > 0
-        ? `${Math.max(...transactions.filter(t => t.type === "expense").map(t => t.amount)).toFixed(2)} RON`
-        : "0.00 RON",
+        ? `${formatAmount(Math.max(...transactions.filter(t => t.type === "expense").map(t => t.amount)))} ${currency}`
+        : `0.00 ${currency}`,
       icon: TrendingDown,
       trend: "neutral",
       description: currentMonthTransactions.filter(t => t.type === "expense").length > 0
-        ? `Luna curentă: ${Math.max(...currentMonthTransactions.filter(t => t.type === "expense").map(t => t.amount), 0).toFixed(2)} RON`
-        : "Nicio cheltuială în luna curentă",
+        ? t("stats.currentMonthAmount", { 
+            amount: formatAmount(Math.max(...currentMonthTransactions.filter(t => t.type === "expense").map(t => t.amount), 0)), 
+            currency 
+          })
+        : t("stats.noExpensesThisMonth"),
     },
   ];
 
