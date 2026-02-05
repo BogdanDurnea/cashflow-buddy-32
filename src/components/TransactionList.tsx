@@ -25,27 +25,10 @@ export const TransactionList = React.memo(function TransactionList({ transaction
   );
 
   const formatDate = (date: Date) => {
-    // Handle date-only values from database (which come as YYYY-MM-DD strings)
-    // These get interpreted as UTC midnight, so we need to display only the date part
     const dateObj = new Date(date);
-    
-    // Check if the time is exactly midnight UTC (meaning it's a date-only value)
-    const isDateOnly = dateObj.getUTCHours() === 0 && 
-                       dateObj.getUTCMinutes() === 0 && 
-                       dateObj.getUTCSeconds() === 0;
-    
     const locale = i18n.language === 'ro' ? 'ro-RO' : i18n.language;
     
-    if (isDateOnly) {
-      // For date-only values, display just the date
-      return new Intl.DateTimeFormat(locale, {
-        day: '2-digit',
-        month: 'short',
-        year: 'numeric'
-      }).format(dateObj);
-    }
-    
-    // For full timestamps, include the time
+    // Always show date and time for transactions
     return new Intl.DateTimeFormat(locale, {
       day: '2-digit',
       month: 'short',
