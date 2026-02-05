@@ -214,7 +214,7 @@ const Index = () => {
       const year = now.getFullYear();
       const {
         data
-      } = await supabase.from("budgets").select("amount").eq("user_id", user.id).eq("month", month).eq("year", year).single();
+      } = await supabase.from("budgets").select("amount").eq("user_id", user.id).eq("month", month).eq("year", year).maybeSingle();
       if (data) {
         setMonthlyBudget(Number(data.amount));
       }
