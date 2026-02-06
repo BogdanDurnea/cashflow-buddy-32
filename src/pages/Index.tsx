@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { motion, AnimatePresence } from "framer-motion";
 import { TransactionForm, Transaction } from "@/components/TransactionForm";
 import { TransactionList } from "@/components/TransactionList";
+import { MobileTransactionFAB } from "@/components/MobileTransactionFAB";
 import { EditTransactionDialog } from "@/components/EditTransactionDialog";
 import { StatsCards } from "@/components/StatsCards";
 import { TransactionFilters } from "@/components/TransactionFilters";
@@ -706,11 +707,11 @@ const Index = () => {
               </AccordionTrigger>
               <AccordionContent className="px-4 sm:px-6 pb-4 space-y-6">
                 <div className="grid gap-4 sm:gap-6 lg:grid-cols-3">
-                  <div className="lg:col-span-1">
+                  <div className="lg:col-span-1 hidden md:block">
                     <TransactionForm onAddTransaction={handleAddTransaction} />
                   </div>
-                  <div className="lg:col-span-2">
-                    <TransactionList transactions={filteredTransactions} onEditTransaction={handleEditTransaction} />
+                  <div className="lg:col-span-2 md:col-span-1">
+                    <TransactionList transactions={filteredTransactions} onEditTransaction={handleEditTransaction} onDeleteTransaction={handleDeleteTransaction} />
                   </div>
                 </div>
                 <StatsCards transactions={transactions} />
@@ -859,6 +860,8 @@ const Index = () => {
             </div>
           </div>
         </footer>
+
+        <MobileTransactionFAB onAddTransaction={handleAddTransaction} />
       </div>
     </div>;
 };
