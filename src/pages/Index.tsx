@@ -242,15 +242,7 @@ const Index = () => {
         });
         if (error) throw error;
         const formattedTransactions = data.map(t => {
-          // Parse date properly - database stores date-only values as YYYY-MM-DD
-          // Add time portion to avoid timezone offset issues
-          const dateParts = t.date.split('-');
-          const dateObj = new Date(
-            parseInt(dateParts[0]), 
-            parseInt(dateParts[1]) - 1, 
-            parseInt(dateParts[2]),
-            12, 0, 0 // Set to noon local time to avoid timezone issues
-          );
+          const dateObj = new Date(t.date);
           
           return {
             id: t.id,
@@ -367,7 +359,7 @@ const Index = () => {
         amount: newTransaction.amount,
         category: newTransaction.category,
         description: newTransaction.description,
-        date: newTransaction.date.toISOString().split('T')[0],
+        date: newTransaction.date.toISOString(),
         currency: newTransaction.currency || 'RON',
         exchange_rate: newTransaction.exchange_rate || 1,
         attachment_url: newTransaction.attachment_url || null
@@ -435,7 +427,7 @@ const Index = () => {
         amount: updatedTransaction.amount,
         category: updatedTransaction.category,
         description: updatedTransaction.description,
-        date: updatedTransaction.date.toISOString().split('T')[0],
+        date: updatedTransaction.date.toISOString(),
         currency: updatedTransaction.currency || 'RON',
         exchange_rate: updatedTransaction.exchange_rate || 1,
         attachment_url: updatedTransaction.attachment_url || null
