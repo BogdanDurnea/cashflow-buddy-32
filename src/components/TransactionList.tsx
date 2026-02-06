@@ -11,13 +11,15 @@ import { EmptyState } from "./EmptyState";
 import React from "react";
 import { motion } from "framer-motion";
 import { ReceiptLink } from "./ReceiptLink";
+import { SwipeableTransactionItem } from "./SwipeableTransactionItem";
 
 interface TransactionListProps {
   transactions: Transaction[];
   onEditTransaction: (transaction: Transaction) => void;
+  onDeleteTransaction?: (id: string) => void;
 }
 
-export const TransactionList = React.memo(function TransactionList({ transactions, onEditTransaction }: TransactionListProps) {
+export const TransactionList = React.memo(function TransactionList({ transactions, onEditTransaction, onDeleteTransaction }: TransactionListProps) {
   const { t, i18n } = useTranslation();
   
   const sortedTransactions = transactions.sort((a, b) => 
@@ -90,8 +92,12 @@ export const TransactionList = React.memo(function TransactionList({ transaction
                   const CategoryIcon = categoryConfig.icon;
                   
                   return (
-                    <motion.div
+                    <SwipeableTransactionItem
                       key={transaction.id}
+                      transactionId={transaction.id}
+                      onDelete={() => onDeleteTransaction?.(transaction.id)}
+                    >
+                    <motion.div
                       custom={index}
                       initial="hidden"
                       animate="visible"
@@ -162,6 +168,7 @@ export const TransactionList = React.memo(function TransactionList({ transaction
                       </div>
                       <Separator className="mt-3 sm:mt-4" />
                     </motion.div>
+                    </SwipeableTransactionItem>
                   );
                 })}
               </div>
