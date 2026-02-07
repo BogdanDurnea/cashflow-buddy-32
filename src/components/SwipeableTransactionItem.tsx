@@ -30,8 +30,19 @@ export function SwipeableTransactionItem({ children, onDelete, transactionId }: 
     return <>{children}</>;
   }
 
+  const handleDrag = (_: any, info: PanInfo) => {
+    if (info.offset.x < SWIPE_THRESHOLD && !deleteTriggered.current) {
+      deleteTriggered.current = true;
+      navigator.vibrate?.(30);
+    } else if (info.offset.x > SWIPE_THRESHOLD) {
+      deleteTriggered.current = false;
+    }
+  };
+
   const handleDragEnd = (_: any, info: PanInfo) => {
+    deleteTriggered.current = false;
     if (info.offset.x < DELETE_TRIGGER) {
+      navigator.vibrate?.(50);
       setIsDeleting(true);
       onDelete();
     }
@@ -60,6 +71,7 @@ export function SwipeableTransactionItem({ children, onDelete, transactionId }: 
         dragElastic={0.1}
         dragSnapToOrigin
         style={{ x }}
+        onDrag={handleDrag}
         onDragEnd={handleDragEnd}
         className="relative bg-card z-10"
       >
