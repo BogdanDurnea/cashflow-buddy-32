@@ -441,19 +441,45 @@ const Index = () => {
       console.error(error);
     }
   };
-  const handleDeleteTransaction = async (id: string) => {
+  const deleteTimeoutRef = useRef<Record<string, NodeJS.Timeout>>({});
+
+  const handleDeleteTransaction = (id: string) => {
     if (!user) return;
-    try {
-      const {
-        error
-      } = await supabase.from("transactions").delete().eq("id", id).eq("user_id", user.id);
-      if (error) throw error;
-      setTransactions(prev => prev.filter(t => t.id !== id));
-      toast.success("Tranzacție ștearsă!");
-    } catch (error: any) {
-      toast.error("Eroare la ștergerea tranzacției");
-      console.error(error);
-    }
+
+    // Store the transaction for potential undo
+    const deletedTx = transactions.find(t => t.id === id);
+    if (!deletedTx) return;
+
+    // Remove from UI immediately
+    setTransactions(prev => prev.filter(t => t.id !== id));
+
+    // Schedule actual DB deletion after 5 seconds
+    const timeoutId = setTimeout(async () => {
+      delete deleteTimeoutRef.current[id];
+      try {
+        const { error } = await supabase.from("transactions").delete().eq("id", id).eq("user_id", user.id);
+        if (error) throw error;
+      } catch (error: any) {
+        console.error("Eroare la ștergerea tranzacției:", error);
+        // Restore on failure
+        setTransactions(prev => [...prev, deletedTx]);
+        toast.error("Eroare la ștergerea tranzacției");
+      }
+    }, 5000);
+
+    deleteTimeoutRef.current[id] = timeoutId;
+
+    toast("Tranzacție ștearsă", {
+      action: {
+        label: "Anulează",
+        onClick: () => {
+          clearTimeout(deleteTimeoutRef.current[id]);
+          delete deleteTimeoutRef.current[id];
+          setTransactions(prev => [...prev, deletedTx]);
+        },
+      },
+      duration: 5000,
+    });
   };
   const handleAddRecurring = async (recurring: Omit<RecurringTransaction, "id" | "nextDate" | "isActive">) => {
     if (!user) return;
