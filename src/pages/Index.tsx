@@ -109,6 +109,7 @@ const Index = () => {
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [displayName, setDisplayName] = useState<string>("");
 
   // Filter states
   const [filterType, setFilterType] = useState<"all" | "income" | "expense">("all");
@@ -229,6 +230,22 @@ const Index = () => {
       navigate("/auth");
     }
   }, [user, authLoading, navigate]);
+
+  // Load display name from profile
+  useEffect(() => {
+    if (!user) return;
+    const loadDisplayName = async () => {
+      const { data } = await supabase
+        .from("profiles")
+        .select("display_name")
+        .eq("id", user.id)
+        .maybeSingle();
+      if (data?.display_name) {
+        setDisplayName(data.display_name);
+      }
+    };
+    loadDisplayName();
+  }, [user]);
 
   // Load transactions from database
   useEffect(() => {
@@ -619,7 +636,7 @@ const Index = () => {
                 </div>
                 <div>
                   <h2 className="text-xl sm:text-2xl md:text-3xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text">
-                    Bună, {user?.email?.split('@')[0] || 'User'}! 👋
+                    Bună, {displayName || user?.email?.split('@')[0] || 'User'}! 👋
                   </h2>
                   <p className="text-sm sm:text-base text-muted-foreground">
                     Ai <span className="font-semibold text-primary">{transactions.length}</span> tranzacții înregistrate

@@ -1,9 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { User, Mail, Lock, KeyRound, Loader2, Shield, Trash2 } from "lucide-react";
+import { User, Mail, Lock, KeyRound, Loader2, Shield, Trash2, Save } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -22,12 +22,49 @@ import { Separator } from "@/components/ui/separator";
 
 export function AccountSettings() {
   const { user } = useAuth();
+  const [displayName, setDisplayName] = useState("");
+  const [isSavingName, setIsSavingName] = useState(false);
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isChangingPassword, setIsChangingPassword] = useState(false);
   const [isSendingReset, setIsSendingReset] = useState(false);
   const [isDeletingAccount, setIsDeletingAccount] = useState(false);
+
+  // Load display name from profile
+  useEffect(() => {
+    if (!user) return;
+    const loadProfile = async () => {
+      const { data } = await supabase
+        .from("profiles")
+        .select("display_name")
+        .eq("id", user.id)
+        .maybeSingle();
+      if (data?.display_name) {
+        setDisplayName(data.display_name);
+      } else if (user.email) {
+        setDisplayName(user.email.split('@')[0]);
+      }
+    };
+    loadProfile();
+  }, [user]);
+
+  const handleSaveDisplayName = async () => {
+    if (!user || !displayName.trim()) return;
+    setIsSavingName(true);
+    try {
+      const { error } = await supabase
+        .from("profiles")
+        .update({ display_name: displayName.trim() })
+        .eq("id", user.id);
+      if (error) throw error;
+      toast.success("Numele afișat a fost salvat!");
+    } catch (error: any) {
+      toast.error(error.message || "Eroare la salvarea numelui");
+    } finally {
+      setIsSavingName(false);
+    }
+  };
 
   const handlePasswordChange = async () => {
     if (!newPassword || !confirmPassword) {
@@ -132,6 +169,45 @@ export function AccountSettings() {
                 <p className="text-xs text-muted-foreground font-mono">{user?.id?.slice(0, 8)}...</p>
               </div>
             </div>
+          </div>
+        </div>
+
+        <Separator />
+
+        {/* Display Name */}
+        <div className="space-y-3">
+          <div className="flex items-center gap-2">
+            <User className="h-4 w-4 text-primary" />
+            <Label htmlFor="display-name" className="text-sm font-medium">Nume Afișat</Label>
+          </div>
+          <div className="pl-6 space-y-2">
+            <p className="text-sm text-muted-foreground">
+              Acest nume va fi afișat în clasamentul de insigne.
+            </p>
+            <Input
+              id="display-name"
+              value={displayName}
+              onChange={(e) => setDisplayName(e.target.value)}
+              placeholder="Numele tău"
+              maxLength={30}
+            />
+            <Button
+              onClick={handleSaveDisplayName}
+              disabled={isSavingName || !displayName.trim()}
+              className="w-full"
+            >
+              {isSavingName ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Se salvează...
+                </>
+              ) : (
+                <>
+                  <Save className="h-4 w-4 mr-2" />
+                  Salvează Numele
+                </>
+              )}
+            </Button>
           </div>
         </div>
 
