@@ -214,9 +214,19 @@ export function TransactionForm({ onAddTransaction }: TransactionFormProps) {
     }
   };
 
+  const ALLOWED_FILE_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'application/pdf'];
+
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      if (!ALLOWED_FILE_TYPES.includes(file.type)) {
+        toast({
+          title: t("transactions.invalidFileType", "Tip de fișier invalid"),
+          description: t("transactions.invalidFileTypeDesc", "Încărcați doar imagini (JPEG, PNG, WebP) sau PDF-uri."),
+          variant: "destructive"
+        });
+        return;
+      }
       if (file.size > 5 * 1024 * 1024) {
         toast({ 
           title: t("transactions.fileTooLarge"), 
