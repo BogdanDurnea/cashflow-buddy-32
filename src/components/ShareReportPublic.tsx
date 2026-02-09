@@ -42,9 +42,8 @@ export function ShareReportPublic({ reportData, title }: ShareReportPublicProps)
       if (!user) throw new Error("Not authenticated");
 
       const shareToken = crypto.randomUUID();
-      const expiresAt = expiresInDays > 0
-        ? new Date(Date.now() + expiresInDays * 24 * 60 * 60 * 1000).toISOString()
-        : null;
+      const cappedDays = Math.min(Math.max(expiresInDays, 1), 90);
+      const expiresAt = new Date(Date.now() + cappedDays * 24 * 60 * 60 * 1000).toISOString();
 
       const { data, error } = await supabase
         .from("report_shares")
@@ -169,11 +168,13 @@ export function ShareReportPublic({ reportData, title }: ShareReportPublicProps)
             <Input
               id="expires"
               type="number"
-              min="0"
+              min="1"
+              max="90"
               value={expiresInDays}
-              onChange={(e) => setExpiresInDays(parseInt(e.target.value) || 0)}
-              placeholder="0 = niciodată"
+              onChange={(e) => setExpiresInDays(Math.min(Math.max(parseInt(e.target.value) || 1, 1), 90))}
+              placeholder="1-90 zile"
             />
+            <p className="text-xs text-muted-foreground">Maxim 90 de zile pentru securitate</p>
           </div>
           
           {!shareUrl ? (
