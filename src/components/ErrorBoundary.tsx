@@ -19,6 +19,10 @@ export class ErrorBoundary extends Component<Props, State> {
   };
 
   public static getDerivedStateFromError(error: Error): State {
+    // Ignore known Radix UI Select + Drawer DOM conflict (cosmetic, non-breaking)
+    if (error?.message?.includes("removeChild") && error?.message?.includes("not a child")) {
+      return { hasError: false };
+    }
     return { hasError: true, error };
   }
 
