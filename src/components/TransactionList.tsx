@@ -87,6 +87,7 @@ export const TransactionList = React.memo(function TransactionList({ transaction
               />
             </div>
           ) : (
+          <PullToRefresh onRefresh={onRefresh || (async () => {})}>
           <ScrollArea className="h-[400px] sm:h-[450px]">
               <div className="space-y-1">
                 {sortedTransactions.map((transaction, index) => {
