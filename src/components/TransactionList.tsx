@@ -91,7 +91,9 @@ export const TransactionList = React.memo(function TransactionList({ transaction
           <CardTitle className="text-base sm:text-lg">{t("transactions.recentTransactions")}</CardTitle>
         </CardHeader>
         <CardContent className="p-0">
-          {sortedTransactions.length === 0 ? (
+          {isRefreshing ? (
+            <LoadingTransactionList />
+          ) : sortedTransactions.length === 0 ? (
             <div className="p-4">
               <EmptyState
                 icon={Receipt}
@@ -100,7 +102,7 @@ export const TransactionList = React.memo(function TransactionList({ transaction
               />
             </div>
           ) : (
-          <PullToRefresh onRefresh={onRefresh || (async () => {})}>
+          <PullToRefresh onRefresh={handleRefresh}>
           <ScrollArea className="h-[400px] sm:h-[450px]">
               <div className="space-y-1">
                 {sortedTransactions.map((transaction, index) => {
