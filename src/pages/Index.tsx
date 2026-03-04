@@ -250,42 +250,43 @@ const Index = () => {
   }, [user]);
 
   // Load transactions from database
-  useEffect(() => {
+  const loadTransactions = useCallback(async () => {
     if (!user) return;
-    const loadTransactions = async () => {
-      try {
-        const {
-          data,
-          error
-        } = await supabase.from("transactions").select("*").eq("user_id", user.id).order("date", {
-          ascending: false
-        });
-        if (error) throw error;
-        const formattedTransactions = data.map(t => {
-          const dateObj = new Date(t.date);
-          
-          return {
-            id: t.id,
-            type: t.type as "income" | "expense",
-            amount: Number(t.amount),
-            category: t.category,
-            description: t.description || "",
-            date: dateObj,
-            currency: t.currency || 'RON',
-            exchange_rate: Number(t.exchange_rate) || 1,
-            attachment_url: t.attachment_url || undefined
-          };
-        });
-        setTransactions(formattedTransactions);
-      } catch (error: any) {
-        toast.error("Eroare la încărcarea tranzacțiilor");
-        console.error(error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    loadTransactions();
+    try {
+      const {
+        data,
+        error
+      } = await supabase.from("transactions").select("*").eq("user_id", user.id).order("date", {
+        ascending: false
+      });
+      if (error) throw error;
+      const formattedTransactions = data.map(t => {
+        const dateObj = new Date(t.date);
+        
+        return {
+          id: t.id,
+          type: t.type as "income" | "expense",
+          amount: Number(t.amount),
+          category: t.category,
+          description: t.description || "",
+          date: dateObj,
+          currency: t.currency || 'RON',
+          exchange_rate: Number(t.exchange_rate) || 1,
+          attachment_url: t.attachment_url || undefined
+        };
+      });
+      setTransactions(formattedTransactions);
+    } catch (error: any) {
+      toast.error("Eroare la încărcarea tranzacțiilor");
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
   }, [user]);
+
+  useEffect(() => {
+    loadTransactions();
+  }, [loadTransactions]);
 
   // Load recurring transactions from database
   useEffect(() => {
