@@ -177,6 +177,7 @@ export const TransactionList = React.memo(function TransactionList({ transaction
               </div>
           </ScrollArea>
           </PullToRefresh>
+          )}
         </CardContent>
       </Card>
     </motion.div>
