@@ -13,6 +13,8 @@ import { motion } from "framer-motion";
 import { ReceiptLink } from "./ReceiptLink";
 import { SwipeableTransactionItem } from "./SwipeableTransactionItem";
 import { PullToRefresh } from "./PullToRefresh";
+import { LoadingTransactionList } from "./LoadingTransactionList";
+import { useState } from "react";
 
 interface TransactionListProps {
   transactions: Transaction[];
@@ -23,7 +25,18 @@ interface TransactionListProps {
 
 export const TransactionList = React.memo(function TransactionList({ transactions, onEditTransaction, onDeleteTransaction, onRefresh }: TransactionListProps) {
   const { t, i18n } = useTranslation();
+  const [isRefreshing, setIsRefreshing] = useState(false);
   
+  const handleRefresh = async () => {
+    if (!onRefresh) return;
+    setIsRefreshing(true);
+    try {
+      await onRefresh();
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
   const sortedTransactions = transactions.sort((a, b) => 
     new Date(b.date).getTime() - new Date(a.date).getTime()
   );
@@ -78,7 +91,9 @@ export const TransactionList = React.memo(function TransactionList({ transaction
           <CardTitle className="text-base sm:text-lg">{t("transactions.recentTransactions")}</CardTitle>
         </CardHeader>
         <CardContent className="p-0">
-          {sortedTransactions.length === 0 ? (
+          {isRefreshing ? (
+            <LoadingTransactionList />
+          ) : sortedTransactions.length === 0 ? (
             <div className="p-4">
               <EmptyState
                 icon={Receipt}
@@ -87,7 +102,7 @@ export const TransactionList = React.memo(function TransactionList({ transaction
               />
             </div>
           ) : (
-          <PullToRefresh onRefresh={onRefresh || (async () => {})}>
+          <PullToRefresh onRefresh={handleRefresh}>
           <ScrollArea className="h-[400px] sm:h-[450px]">
               <div className="space-y-1">
                 {sortedTransactions.map((transaction, index) => {
