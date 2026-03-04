@@ -12,11 +12,13 @@ import React from "react";
 import { motion } from "framer-motion";
 import { ReceiptLink } from "./ReceiptLink";
 import { SwipeableTransactionItem } from "./SwipeableTransactionItem";
+import { PullToRefresh } from "./PullToRefresh";
 
 interface TransactionListProps {
   transactions: Transaction[];
   onEditTransaction: (transaction: Transaction) => void;
   onDeleteTransaction?: (id: string) => void;
+  onRefresh?: () => Promise<void>;
 }
 
 export const TransactionList = React.memo(function TransactionList({ transactions, onEditTransaction, onDeleteTransaction }: TransactionListProps) {
