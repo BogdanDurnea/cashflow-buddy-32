@@ -759,7 +759,7 @@ const Index = () => {
                     </div>
                   )}
                   <div className="lg:col-span-2 md:col-span-1">
-                    <TransactionList transactions={filteredTransactions} onEditTransaction={handleEditTransaction} onDeleteTransaction={handleDeleteTransaction} />
+                    <TransactionList transactions={filteredTransactions} onEditTransaction={handleEditTransaction} onDeleteTransaction={handleDeleteTransaction} onRefresh={loadTransactions} />
                   </div>
                 </div>
                 <StatsCards transactions={transactions} />
