@@ -12,14 +12,16 @@ import React from "react";
 import { motion } from "framer-motion";
 import { ReceiptLink } from "./ReceiptLink";
 import { SwipeableTransactionItem } from "./SwipeableTransactionItem";
+import { PullToRefresh } from "./PullToRefresh";
 
 interface TransactionListProps {
   transactions: Transaction[];
   onEditTransaction: (transaction: Transaction) => void;
   onDeleteTransaction?: (id: string) => void;
+  onRefresh?: () => Promise<void>;
 }
 
-export const TransactionList = React.memo(function TransactionList({ transactions, onEditTransaction, onDeleteTransaction }: TransactionListProps) {
+export const TransactionList = React.memo(function TransactionList({ transactions, onEditTransaction, onDeleteTransaction, onRefresh }: TransactionListProps) {
   const { t, i18n } = useTranslation();
   
   const sortedTransactions = transactions.sort((a, b) => 
@@ -85,6 +87,7 @@ export const TransactionList = React.memo(function TransactionList({ transaction
               />
             </div>
           ) : (
+          <PullToRefresh onRefresh={onRefresh || (async () => {})}>
           <ScrollArea className="h-[400px] sm:h-[450px]">
               <div className="space-y-1">
                 {sortedTransactions.map((transaction, index) => {
@@ -173,6 +176,7 @@ export const TransactionList = React.memo(function TransactionList({ transaction
                 })}
               </div>
           </ScrollArea>
+          </PullToRefresh>
           )}
         </CardContent>
       </Card>
