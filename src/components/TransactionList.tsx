@@ -13,6 +13,8 @@ import { motion } from "framer-motion";
 import { ReceiptLink } from "./ReceiptLink";
 import { SwipeableTransactionItem } from "./SwipeableTransactionItem";
 import { PullToRefresh } from "./PullToRefresh";
+import { LoadingTransactionList } from "./LoadingTransactionList";
+import { useState } from "react";
 
 interface TransactionListProps {
   transactions: Transaction[];
