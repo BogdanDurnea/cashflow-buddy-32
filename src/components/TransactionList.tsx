@@ -25,7 +25,18 @@ interface TransactionListProps {
 
 export const TransactionList = React.memo(function TransactionList({ transactions, onEditTransaction, onDeleteTransaction, onRefresh }: TransactionListProps) {
   const { t, i18n } = useTranslation();
+  const [isRefreshing, setIsRefreshing] = useState(false);
   
+  const handleRefresh = async () => {
+    if (!onRefresh) return;
+    setIsRefreshing(true);
+    try {
+      await onRefresh();
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
   const sortedTransactions = transactions.sort((a, b) => 
     new Date(b.date).getTime() - new Date(a.date).getTime()
   );
