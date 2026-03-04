@@ -21,7 +21,7 @@ interface TransactionListProps {
   onRefresh?: () => Promise<void>;
 }
 
-export const TransactionList = React.memo(function TransactionList({ transactions, onEditTransaction, onDeleteTransaction }: TransactionListProps) {
+export const TransactionList = React.memo(function TransactionList({ transactions, onEditTransaction, onDeleteTransaction, onRefresh }: TransactionListProps) {
   const { t, i18n } = useTranslation();
   
   const sortedTransactions = transactions.sort((a, b) => 
