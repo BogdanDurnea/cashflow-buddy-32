@@ -224,23 +224,11 @@ export const TransactionList = React.memo(function TransactionList({ transaction
                   );
                 })}
 
-                {/* Load more button */}
+                {/* Infinite scroll sentinel */}
                 {hasMore && (
-                  <motion.div 
-                    initial={{ opacity: 0 }} 
-                    animate={{ opacity: 1 }}
-                    className="p-4 flex flex-col items-center gap-2"
-                  >
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={handleLoadMore}
-                      className="gap-2"
-                    >
-                      <ChevronDown className="h-4 w-4" />
-                      {t("transactions.loadMore", `Încarcă mai multe (${sortedTransactions.length - visibleCount} rămase)`)}
-                    </Button>
-                  </motion.div>
+                  <div ref={sentinelRef} className="flex items-center justify-center p-4">
+                    <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                  </div>
                 )}
               </div>
           </ScrollArea>
