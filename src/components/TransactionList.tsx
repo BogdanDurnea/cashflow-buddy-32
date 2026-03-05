@@ -14,7 +14,7 @@ import { ReceiptLink } from "./ReceiptLink";
 import { SwipeableTransactionItem } from "./SwipeableTransactionItem";
 import { PullToRefresh } from "./PullToRefresh";
 import { LoadingTransactionList } from "./LoadingTransactionList";
-import { useState } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 
 const PAGE_SIZE = 20;
 
