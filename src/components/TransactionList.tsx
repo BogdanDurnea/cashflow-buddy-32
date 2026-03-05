@@ -46,10 +46,25 @@ export const TransactionList = React.memo(function TransactionList({ transaction
 
   const visibleTransactions = sortedTransactions.slice(0, visibleCount);
   const hasMore = visibleCount < sortedTransactions.length;
+  const sentinelRef = useRef<HTMLDivElement>(null);
 
-  const handleLoadMore = () => {
-    setVisibleCount(prev => Math.min(prev + PAGE_SIZE, sortedTransactions.length));
-  };
+  // Infinite scroll via IntersectionObserver
+  useEffect(() => {
+    if (!hasMore) return;
+    const sentinel = sentinelRef.current;
+    if (!sentinel) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          setVisibleCount(prev => Math.min(prev + PAGE_SIZE, sortedTransactions.length));
+        }
+      },
+      { threshold: 0.1 }
+    );
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [hasMore, sortedTransactions.length]);
 
   // Reset visible count when transactions change (e.g. filter change)
   React.useEffect(() => {
