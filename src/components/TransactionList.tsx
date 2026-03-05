@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
-import { Calendar, Edit2, Receipt } from "lucide-react";
+import { Calendar, Edit2, Receipt, ChevronDown } from "lucide-react";
 import { Transaction } from "./TransactionForm";
 import { getCategoryConfig } from "@/lib/categoryConfig";
 import { EmptyState } from "./EmptyState";
@@ -16,6 +16,8 @@ import { PullToRefresh } from "./PullToRefresh";
 import { LoadingTransactionList } from "./LoadingTransactionList";
 import { useState } from "react";
 
+const PAGE_SIZE = 20;
+
 interface TransactionListProps {
   transactions: Transaction[];
   onEditTransaction: (transaction: Transaction) => void;
@@ -26,6 +28,7 @@ interface TransactionListProps {
 export const TransactionList = React.memo(function TransactionList({ transactions, onEditTransaction, onDeleteTransaction, onRefresh }: TransactionListProps) {
   const { t, i18n } = useTranslation();
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
   
   const handleRefresh = async () => {
     if (!onRefresh) return;
@@ -41,11 +44,22 @@ export const TransactionList = React.memo(function TransactionList({ transaction
     new Date(b.date).getTime() - new Date(a.date).getTime()
   );
 
+  const visibleTransactions = sortedTransactions.slice(0, visibleCount);
+  const hasMore = visibleCount < sortedTransactions.length;
+
+  const handleLoadMore = () => {
+    setVisibleCount(prev => Math.min(prev + PAGE_SIZE, sortedTransactions.length));
+  };
+
+  // Reset visible count when transactions change (e.g. filter change)
+  React.useEffect(() => {
+    setVisibleCount(PAGE_SIZE);
+  }, [transactions.length]);
+
   const formatDate = (date: Date) => {
     const dateObj = new Date(date);
     const locale = i18n.language === 'ro' ? 'ro-RO' : i18n.language;
     
-    // Always show date and time for transactions
     return new Intl.DateTimeFormat(locale, {
       day: '2-digit',
       month: 'short',
@@ -88,7 +102,12 @@ export const TransactionList = React.memo(function TransactionList({ transaction
     >
       <Card className="shadow-card transition-smooth">
         <CardHeader className="p-4 sm:p-6">
-          <CardTitle className="text-base sm:text-lg">{t("transactions.recentTransactions")}</CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-base sm:text-lg">{t("transactions.recentTransactions")}</CardTitle>
+            <Badge variant="secondary" className="text-xs font-medium">
+              {visibleTransactions.length} / {sortedTransactions.length}
+            </Badge>
+          </div>
         </CardHeader>
         <CardContent className="p-0">
           {isRefreshing ? (
@@ -105,7 +124,7 @@ export const TransactionList = React.memo(function TransactionList({ transaction
           <PullToRefresh onRefresh={handleRefresh}>
           <ScrollArea className="h-[400px] sm:h-[450px]">
               <div className="space-y-1">
-                {sortedTransactions.map((transaction, index) => {
+                {visibleTransactions.map((transaction, index) => {
                   const categoryConfig = getCategoryConfig(transaction.category, transaction.type);
                   const CategoryIcon = categoryConfig.icon;
                   
@@ -189,6 +208,25 @@ export const TransactionList = React.memo(function TransactionList({ transaction
                     </SwipeableTransactionItem>
                   );
                 })}
+
+                {/* Load more button */}
+                {hasMore && (
+                  <motion.div 
+                    initial={{ opacity: 0 }} 
+                    animate={{ opacity: 1 }}
+                    className="p-4 flex flex-col items-center gap-2"
+                  >
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleLoadMore}
+                      className="gap-2"
+                    >
+                      <ChevronDown className="h-4 w-4" />
+                      {t("transactions.loadMore", `Încarcă mai multe (${sortedTransactions.length - visibleCount} rămase)`)}
+                    </Button>
+                  </motion.div>
+                )}
               </div>
           </ScrollArea>
           </PullToRefresh>
