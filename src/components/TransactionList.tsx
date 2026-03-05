@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
-import { Calendar, Edit2, Receipt, ChevronDown } from "lucide-react";
+import { Calendar, Edit2, Receipt, Loader2 } from "lucide-react";
 import { Transaction } from "./TransactionForm";
 import { getCategoryConfig } from "@/lib/categoryConfig";
 import { EmptyState } from "./EmptyState";
@@ -14,7 +14,7 @@ import { ReceiptLink } from "./ReceiptLink";
 import { SwipeableTransactionItem } from "./SwipeableTransactionItem";
 import { PullToRefresh } from "./PullToRefresh";
 import { LoadingTransactionList } from "./LoadingTransactionList";
-import { useState } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 
 const PAGE_SIZE = 20;
 
@@ -46,10 +46,25 @@ export const TransactionList = React.memo(function TransactionList({ transaction
 
   const visibleTransactions = sortedTransactions.slice(0, visibleCount);
   const hasMore = visibleCount < sortedTransactions.length;
+  const sentinelRef = useRef<HTMLDivElement>(null);
 
-  const handleLoadMore = () => {
-    setVisibleCount(prev => Math.min(prev + PAGE_SIZE, sortedTransactions.length));
-  };
+  // Infinite scroll via IntersectionObserver
+  useEffect(() => {
+    if (!hasMore) return;
+    const sentinel = sentinelRef.current;
+    if (!sentinel) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          setVisibleCount(prev => Math.min(prev + PAGE_SIZE, sortedTransactions.length));
+        }
+      },
+      { threshold: 0.1 }
+    );
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [hasMore, sortedTransactions.length]);
 
   // Reset visible count when transactions change (e.g. filter change)
   React.useEffect(() => {
@@ -209,23 +224,11 @@ export const TransactionList = React.memo(function TransactionList({ transaction
                   );
                 })}
 
-                {/* Load more button */}
+                {/* Infinite scroll sentinel */}
                 {hasMore && (
-                  <motion.div 
-                    initial={{ opacity: 0 }} 
-                    animate={{ opacity: 1 }}
-                    className="p-4 flex flex-col items-center gap-2"
-                  >
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={handleLoadMore}
-                      className="gap-2"
-                    >
-                      <ChevronDown className="h-4 w-4" />
-                      {t("transactions.loadMore", `Încarcă mai multe (${sortedTransactions.length - visibleCount} rămase)`)}
-                    </Button>
-                  </motion.div>
+                  <div ref={sentinelRef} className="flex items-center justify-center p-4">
+                    <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                  </div>
                 )}
               </div>
           </ScrollArea>
