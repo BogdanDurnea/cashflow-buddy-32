@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
-import { Calendar, Edit2, Receipt, ChevronDown } from "lucide-react";
+import { Calendar, Edit2, Receipt, Loader2 } from "lucide-react";
 import { Transaction } from "./TransactionForm";
 import { getCategoryConfig } from "@/lib/categoryConfig";
 import { EmptyState } from "./EmptyState";
