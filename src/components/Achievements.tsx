@@ -201,6 +201,7 @@ const AchievementGuide = () => {
   );
 };
 
+interface AchievementGridProps {
   achievements: Array<{
     id: string;
     name: string;
