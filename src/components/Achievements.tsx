@@ -138,6 +138,8 @@ export const Achievements = () => {
             </TabsContent>
           ))}
         </Tabs>
+        {/* Achievement Guide Section */}
+        <AchievementGuide />
       </CardContent>
     </Card>
   );
