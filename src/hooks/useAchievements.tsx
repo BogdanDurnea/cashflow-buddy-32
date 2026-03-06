@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "./useAuth";
 import { toast } from "sonner";
+import i18n from "@/i18n";
 
 export interface Achievement {
   id: string;
@@ -252,12 +253,13 @@ export const useAchievements = () => {
         setUnlockedAchievements((prev) => [...prev, achievementId]);
 
         // Show celebration toast
+        const badgeName = i18n.t(`achievements.badge.${achievementId}.name`);
         toast.success(
           <div className="flex items-center gap-3">
             <span className="text-2xl">{achievement.icon}</span>
             <div>
-              <p className="font-bold">Insignă deblocată!</p>
-              <p className="text-sm text-muted-foreground">{achievement.name}</p>
+              <p className="font-bold">{i18n.t("achievements.badgeUnlocked")}</p>
+              <p className="text-sm text-muted-foreground">{badgeName}</p>
             </div>
           </div>,
           {
