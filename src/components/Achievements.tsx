@@ -145,7 +145,62 @@ export const Achievements = () => {
   );
 };
 
-interface AchievementGridProps {
+const achievementGuideData: Record<string, { how: string; detail: string }> = {
+  first_transaction: { how: "Adaugă prima ta tranzacție din formularul principal.", detail: "Se deblocheză automat când înregistrezi orice tranzacție pentru prima dată." },
+  ten_transactions: { how: "Înregistrează 10 tranzacții în total.", detail: "Continuă să adaugi tranzacții — tipul nu contează." },
+  fifty_transactions: { how: "Ajunge la 50 de tranzacții înregistrate.", detail: "Fii consecvent și vei primi această insignă în câteva săptămâni." },
+  hundred_transactions: { how: "Înregistrează 100 de tranzacții.", detail: "Insigna supremă pentru utilizatorii dedicați." },
+  first_income: { how: "Adaugă o tranzacție de tip 'venit'.", detail: "Selectează tipul 'Venit' când adaugi o tranzacție nouă." },
+  first_expense: { how: "Adaugă o tranzacție de tip 'cheltuială'.", detail: "Selectează tipul 'Cheltuială' când adaugi o tranzacție nouă." },
+  first_budget: { how: "Setează un buget lunar din secțiunea Bugete.", detail: "Definește o limită de cheltuieli pentru luna curentă." },
+  budget_keeper: { how: "Rămâi sub limita bugetului o lună întreagă.", detail: "Cheltuielile tale trebuie să fie sub bugetul setat pentru toată luna." },
+  category_budget: { how: "Creează un buget pe o categorie specifică.", detail: "Din secțiunea bugete, setează un buget pe o categorie (ex: mâncare, transport)." },
+  first_goal: { how: "Creează un obiectiv de economii.", detail: "Accesează secțiunea 'Obiective de economii' și creează primul tău obiectiv." },
+  goal_achieved: { how: "Atinge un obiectiv de economii complet.", detail: "Suma economisită trebuie să egaleze sau să depășească ținta setată." },
+  big_saver: { how: "Economisește peste 5000 RON în total.", detail: "Suma totală din obiectivele tale de economii trebuie să depășească 5000 RON." },
+  week_streak: { how: "Adaugă tranzacții 7 zile la rând.", detail: "Fără pauze — înregistrează cel puțin o tranzacție în fiecare zi, 7 zile consecutiv." },
+  month_streak: { how: "Adaugă tranzacții 30 de zile la rând.", detail: "O lună întreagă de tranzacții zilnice consecutive." },
+  first_receipt: { how: "Atașează o chitanță la o tranzacție.", detail: "Folosește butonul de atașare când adaugi sau editezi o tranzacție." },
+  recurring_master: { how: "Creează o tranzacție recurentă.", detail: "Din secțiunea 'Tranzacții recurente', setează o plată automată." },
+  shared_budget: { how: "Creează un buget partajat cu alt utilizator.", detail: "Accesează 'Bugete partajate' și invită pe cineva." },
+  report_shared: { how: "Partajează un raport financiar.", detail: "Din secțiunea 'Rapoarte', generează și partajează un link public." },
+  night_owl: { how: "Adaugă o tranzacție între 00:00 și 04:59.", detail: "Insigna se deblocheză automat pe baza orei de adăugare." },
+  early_bird: { how: "Adaugă o tranzacție între 05:00 și 05:59.", detail: "Trezește-te devreme și înregistrează o tranzacție!" },
+};
+
+const AchievementGuide = () => {
+  const [isOpen, setIsOpen] = useState(false);
+
+  return (
+    <Collapsible open={isOpen} onOpenChange={setIsOpen} className="mt-6">
+      <CollapsibleTrigger className="flex items-center gap-2 w-full p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors text-sm font-medium text-foreground">
+        <HelpCircle className="h-4 w-4 text-primary" />
+        <span>Cum obțin insignele? — Ghid detaliat</span>
+        <ChevronDown className={`h-4 w-4 ml-auto transition-transform ${isOpen ? "rotate-180" : ""}`} />
+      </CollapsibleTrigger>
+      <CollapsibleContent className="mt-3">
+        <div className="rounded-lg border bg-card p-4 space-y-1">
+          <p className="text-xs text-muted-foreground mb-3">
+            Insignele se deblocheză automat pe măsură ce folosești aplicația. Iată ce trebuie să faci pentru fiecare:
+          </p>
+          <div className="space-y-2 max-h-[400px] overflow-y-auto pr-1">
+            {ACHIEVEMENTS.map((a) => (
+              <div key={a.id} className="flex gap-3 p-2.5 rounded-md bg-muted/30 hover:bg-muted/50 transition-colors">
+                <span className="text-2xl shrink-0">{a.icon}</span>
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold text-foreground">{a.name}</p>
+                  <p className="text-xs text-primary font-medium">{achievementGuideData[a.id]?.how}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">{achievementGuideData[a.id]?.detail}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </CollapsibleContent>
+    </Collapsible>
+  );
+};
+
   achievements: Array<{
     id: string;
     name: string;
