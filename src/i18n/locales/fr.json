@@ -79,6 +79,8 @@
     "willSyncOnline": "Elle sera synchronisée lorsque vous serez de nouveau en ligne.",
     "transactionUpdated": "Transaction mise à jour",
     "transactionDeleted": "Transaction supprimée",
+    "deleteConfirmTitle": "Confirmation de suppression",
+    "deleteConfirmMessage": "Êtes-vous sûr de vouloir supprimer cette transaction ? Cette action ne peut pas être annulée.",
     "transactionError": "Erreur lors de l'ajout de la transaction",
     "selectCategory": "Sélectionner la catégorie",
     "descriptionPlaceholder": "Description de la transaction...",

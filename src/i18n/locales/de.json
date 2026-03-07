@@ -79,6 +79,8 @@
     "willSyncOnline": "Wird synchronisiert, wenn Sie wieder online sind.",
     "transactionUpdated": "Transaktion aktualisiert",
     "transactionDeleted": "Transaktion gelöscht",
+    "deleteConfirmTitle": "Löschbestätigung",
+    "deleteConfirmMessage": "Sind Sie sicher, dass Sie diese Transaktion löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.",
     "transactionError": "Fehler beim Hinzufügen der Transaktion",
     "selectCategory": "Kategorie auswählen",
     "descriptionPlaceholder": "Transaktionsbeschreibung...",

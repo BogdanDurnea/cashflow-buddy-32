@@ -78,7 +78,7 @@ export function SwipeableTransactionItem({ children, onDelete, transactionId }: 
             className="flex items-center gap-2 text-danger font-medium"
           >
             <Trash2 className="h-5 w-5" />
-            <span className="text-sm">Șterge</span>
+            <span className="text-sm">{t('common.delete')}</span>
           </motion.div>
         </motion.div>
 
@@ -99,15 +99,15 @@ export function SwipeableTransactionItem({ children, onDelete, transactionId }: 
       <AlertDialog open={showConfirm} onOpenChange={setShowConfirm}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Confirmare ștergere</AlertDialogTitle>
+            <AlertDialogTitle>{t('transactions.deleteConfirmTitle')}</AlertDialogTitle>
             <AlertDialogDescription>
-              Ești sigur că vrei să ștergi această tranzacție? Acțiunea nu poate fi anulată.
+              {t('transactions.deleteConfirmMessage')}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Anulează</AlertDialogCancel>
+            <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
             <AlertDialogAction onClick={handleConfirmDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-              Șterge
+              {t('common.delete')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
