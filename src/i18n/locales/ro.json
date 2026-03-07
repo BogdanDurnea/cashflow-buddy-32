@@ -80,6 +80,8 @@
     "transactionUpdated": "Tranzacție actualizată",
     "transactionDeleted": "Tranzacție ștearsă",
     "transactionError": "Eroare la adăugarea tranzacției",
+    "deleteConfirmTitle": "Confirmare ștergere",
+    "deleteConfirmMessage": "Ești sigur că vrei să ștergi această tranzacție? Acțiunea nu poate fi anulată.",
     "selectCategory": "Selectează categoria",
     "descriptionPlaceholder": "Descriere tranzacție...",
     "currency": "Valută",

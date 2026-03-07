@@ -80,6 +80,8 @@
     "transactionUpdated": "Transação atualizada",
     "transactionDeleted": "Transação excluída",
     "transactionError": "Erro ao adicionar transação",
+    "deleteConfirmTitle": "Confirmação de exclusão",
+    "deleteConfirmMessage": "Tem certeza de que deseja excluir esta transação? Esta ação não pode ser desfeita.",
     "selectCategory": "Selecionar categoria",
     "descriptionPlaceholder": "Descrição da transação...",
     "currency": "Moeda",

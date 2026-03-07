@@ -80,6 +80,8 @@
     "transactionUpdated": "Transakcja zaktualizowana",
     "transactionDeleted": "Transakcja usunięta",
     "transactionError": "Błąd podczas dodawania transakcji",
+    "deleteConfirmTitle": "Potwierdzenie usunięcia",
+    "deleteConfirmMessage": "Czy na pewno chcesz usunąć tę transakcję? Tej akcji nie można cofnąć.",
     "selectCategory": "Wybierz kategorię",
     "descriptionPlaceholder": "Opis transakcji...",
     "currency": "Waluta",
