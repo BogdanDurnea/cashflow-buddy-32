@@ -79,6 +79,8 @@
     "willSyncOnline": "Wordt gesynchroniseerd wanneer je weer online bent.",
     "transactionUpdated": "Transactie bijgewerkt",
     "transactionDeleted": "Transactie verwijderd",
+    "deleteConfirmTitle": "Verwijdering bevestigen",
+    "deleteConfirmMessage": "Weet u zeker dat u deze transactie wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt.",
     "transactionError": "Fout bij toevoegen transactie",
     "selectCategory": "Selecteer categorie",
     "descriptionPlaceholder": "Transactiebeschrijving...",
