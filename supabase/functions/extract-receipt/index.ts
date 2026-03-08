@@ -12,10 +12,8 @@ serve(async (req) => {
   }
 
   try {
-    // Validate authentication
     const authHeader = req.headers.get('Authorization');
     if (!authHeader?.startsWith('Bearer ')) {
-      console.error("Missing or invalid Authorization header");
       return new Response(
         JSON.stringify({ error: "Authentication required" }),
         { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -32,7 +30,6 @@ serve(async (req) => {
     const { data: claimsData, error: claimsError } = await supabaseClient.auth.getClaims(token);
     
     if (claimsError || !claimsData?.claims) {
-      console.error("JWT validation failed:", claimsError?.message);
       return new Response(
         JSON.stringify({ error: "Invalid or expired token" }),
         { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -40,9 +37,8 @@ serve(async (req) => {
     }
 
     const userId = claimsData.claims.sub;
-    console.log("Authenticated user:", userId);
 
-    const { imageBase64 } = await req.json();
+    const { imageBase64, availableCategories, recentTransactions } = await req.json();
     
     if (!imageBase64) {
       return new Response(
@@ -56,7 +52,22 @@ serve(async (req) => {
       throw new Error("LOVABLE_API_KEY is not configured");
     }
 
-    console.log("Processing receipt image for OCR extraction for user:", userId);
+    // Build context about user's transaction history for smart suggestions
+    let historyContext = "";
+    if (recentTransactions && recentTransactions.length > 0) {
+      const txSummary = recentTransactions
+        .slice(0, 20)
+        .map((tx: any) => `- ${tx.description || 'N/A'} → categorie: ${tx.category}, sumă: ${tx.amount}`)
+        .join("\n");
+      historyContext = `\n\nIstoricul recent al utilizatorului (pentru a sugera categorie similară):\n${txSummary}`;
+    }
+
+    let categoriesContext = "";
+    if (availableCategories && availableCategories.length > 0) {
+      categoriesContext = `\n\nCategoriile disponibile (alege DOAR din acestea): ${availableCategories.join(", ")}`;
+    }
+
+    console.log("Processing receipt for user:", userId);
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -76,16 +87,21 @@ serve(async (req) => {
 1. Suma totală (valoarea finală de plătit)
 2. Data tranzacției (dacă este vizibilă)
 3. Descrierea sau numele magazinului/comerciantului
+4. Sugerează o categorie potrivită din lista disponibilă, bazându-te pe conținutul chitanței și pe istoricul utilizatorului
+5. Sugerează o descriere scurtă și utilă pentru tranzacție (ex: "Kaufland - cumpărături alimentare")
+${categoriesContext}${historyContext}
 
 Returnează DOAR un JSON valid cu următoarea structură (fără text adițional):
 {
   "amount": <număr sau null>,
   "date": "<data în format YYYY-MM-DD sau null>",
-  "description": "<descriere scurtă sau null>",
+  "description": "<descriere scurtă și utilă sau null>",
+  "suggested_category": "<categorie din lista disponibilă sau null>",
   "confidence": "<high/medium/low>"
 }
 
-Dacă nu poți extrage o valoare, folosește null. Câmpul confidence indică cât de sigur ești de rezultate.`
+Dacă nu poți extrage o valoare, folosește null. Câmpul confidence indică cât de sigur ești de rezultate.
+Pentru suggested_category, alege cea mai potrivită categorie din lista disponibilă bazându-te pe tipul de comerciant/produs.`
               },
               {
                 type: "image_url",
@@ -122,10 +138,8 @@ Dacă nu poți extrage o valoare, folosește null. Câmpul confidence indică c�
 
     console.log("AI response for user", userId, ":", content);
 
-    // Parse the JSON response from the AI
     let extractedData;
     try {
-      // Remove markdown code blocks if present
       const jsonStr = content.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
       extractedData = JSON.parse(jsonStr);
     } catch (parseError) {
@@ -134,6 +148,7 @@ Dacă nu poți extrage o valoare, folosește null. Câmpul confidence indică c�
         amount: null,
         date: null,
         description: null,
+        suggested_category: null,
         confidence: "low"
       };
     }

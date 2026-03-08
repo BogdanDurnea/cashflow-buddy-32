@@ -68,6 +68,21 @@ export function TransactionForm({ onAddTransaction }: TransactionFormProps) {
     }
   });
 
+  const { data: recentTransactions = [] } = useQuery({
+    queryKey: ["recent-transactions-for-ocr"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("transactions")
+        .select("description, category, amount")
+        .eq("type", "expense")
+        .order("date", { ascending: false })
+        .limit(20);
+      
+      if (error) throw error;
+      return data;
+    }
+  });
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!amount || !category) return;
