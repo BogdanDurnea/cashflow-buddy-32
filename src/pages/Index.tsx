@@ -651,10 +651,10 @@ const Index = () => {
               <div className="flex-1 w-full lg:max-w-sm">
                 <div className="p-3 rounded-xl bg-card/50 backdrop-blur border border-border/50 hover-card-scale">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-xs font-medium text-muted-foreground capitalize">Cheltuieli {currentMonthName}</span>
+                    <span className="text-xs font-medium text-muted-foreground capitalize">{t("dashboard.expensesMonth", { month: currentMonthName })}</span>
                     <div className="flex items-center gap-1 text-danger">
                       <TrendingDown className="h-3 w-3" />
-                      <span className="text-xs font-semibold">{monthlyTotal.toLocaleString('ro-RO')} RON</span>
+                      <span className="text-xs font-semibold">{monthlyTotal.toLocaleString(i18n.language)} {t("common.currency")}</span>
                     </div>
                   </div>
                   <div className="h-12">
