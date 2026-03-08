@@ -68,6 +68,31 @@ export function TransactionForm({ onAddTransaction }: TransactionFormProps) {
     }
   });
 
+  const { data: recentTransactions = [] } = useQuery({
+    queryKey: ["recent-transactions-for-ocr"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("transactions")
+        .select("description, category, amount")
+        .eq("type", "expense")
+        .order("date", { ascending: false })
+        .limit(20);
+      
+      if (error) throw error;
+      return data;
+    }
+  });
+
+  const defaultCategories = type === "income" ? incomeCategories : expenseCategories;
+  const allCategories = [
+    ...defaultCategories,
+    ...customCategories.map(cat => ({
+      name: cat.name,
+      icon: cat.icon,
+      color: cat.color || "#3b82f6",
+      lightColor: cat.color ? `${cat.color}20` : "#3b82f620"
+    }))
+  ];
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!amount || !category) return;
@@ -168,8 +193,15 @@ export function TransactionForm({ onAddTransaction }: TransactionFormProps) {
     try {
       const base64 = await fileToBase64(file);
       
+      // Build available category names for the AI
+      const categoryNames = allCategories.map(c => c.name);
+
       const { data, error } = await supabase.functions.invoke('extract-receipt', {
-        body: { imageBase64: base64 }
+        body: { 
+          imageBase64: base64,
+          availableCategories: categoryNames,
+          recentTransactions: recentTransactions
+        }
       });
 
       if (error) throw error;
@@ -184,11 +216,17 @@ export function TransactionForm({ onAddTransaction }: TransactionFormProps) {
         setDescription(data.description);
       }
 
+      // Auto-set category if AI suggested one
+      if (data.suggested_category && categoryNames.includes(data.suggested_category)) {
+        setCategory(data.suggested_category);
+      }
+
       setOcrConfidence(data.confidence || null);
 
       const extractedItems = [];
       if (data.amount) extractedItems.push(`${data.amount} RON`);
       if (data.description) extractedItems.push(data.description);
+      if (data.suggested_category) extractedItems.push(`→ ${data.suggested_category}`);
 
       if (extractedItems.length > 0) {
         toast({
@@ -244,16 +282,6 @@ export function TransactionForm({ onAddTransaction }: TransactionFormProps) {
     }
   };
 
-  const defaultCategories = type === "income" ? incomeCategories : expenseCategories;
-  const allCategories = [
-    ...defaultCategories,
-    ...customCategories.map(cat => ({
-      name: cat.name,
-      icon: cat.icon,
-      color: cat.color || "#3b82f6",
-      lightColor: cat.color ? `${cat.color}20` : "#3b82f620"
-    }))
-  ];
 
   return (
     <Card className="shadow-card transition-smooth">
