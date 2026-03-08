@@ -42,6 +42,8 @@ import { LanguageSelector } from "@/components/LanguageSelector";
 import { LanguageSettings } from "@/components/LanguageSettings";
 import { QuickStatsDonut } from "@/components/QuickStatsDonut";
 import { WeeklyComparisonWidget } from "@/components/WeeklyComparisonWidget";
+import { QuickAddShortcuts } from "@/components/QuickAddShortcuts";
+import { MobileBottomNav } from "@/components/MobileBottomNav";
 import { Button } from "@/components/ui/button";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
@@ -739,6 +741,11 @@ const Index = () => {
                 </div>
               </div>
             </div>
+
+            {/* Quick Add Shortcuts */}
+            <div className="mt-4">
+              <QuickAddShortcuts transactions={transactions} onAddTransaction={handleAddTransaction} />
+            </div>
           </div>
         </section>
 
@@ -916,6 +923,12 @@ const Index = () => {
         </footer>
 
         <MobileTransactionFAB onAddTransaction={handleAddTransaction} />
+        <MobileBottomNav activeSection={activeSection} onSectionChange={(section) => {
+          setActiveSection(section);
+          if (!expandedSections.includes(section)) {
+            setExpandedSections(prev => [...prev, section]);
+          }
+        }} />
       </div>
     </div>;
 };

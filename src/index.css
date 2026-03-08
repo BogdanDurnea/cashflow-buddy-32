@@ -281,5 +281,15 @@ All colors MUST be HSL.
     * {
       -webkit-overflow-scrolling: touch;
     }
+    
+    /* Bottom nav safe area */
+    .safe-area-bottom {
+      padding-bottom: env(safe-area-inset-bottom, 0px);
+    }
+    
+    /* Add padding for bottom nav */
+    main {
+      padding-bottom: 4.5rem !important;
+    }
   }
 }
