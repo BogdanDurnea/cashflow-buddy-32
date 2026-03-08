@@ -23,6 +23,7 @@
     "all": "Tous",
     "none": "Aucun",
     "select": "Sélectionner",
+    "undo": "Annuler",
     "currency": "EUR"
   },
   "nav": {
@@ -79,6 +80,7 @@
     "willSyncOnline": "Elle sera synchronisée lorsque vous serez de nouveau en ligne.",
     "transactionUpdated": "Transaction mise à jour",
     "transactionDeleted": "Transaction supprimée",
+    "deleteError": "Erreur lors de la suppression de la transaction",
     "deleteConfirmTitle": "Confirmation de suppression",
     "deleteConfirmMessage": "Êtes-vous sûr de vouloir supprimer cette transaction ? Cette action ne peut pas être annulée.",
     "transactionError": "Erreur lors de l'ajout de la transaction",

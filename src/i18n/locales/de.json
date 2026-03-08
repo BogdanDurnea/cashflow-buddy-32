@@ -23,6 +23,7 @@
     "all": "Alle",
     "none": "Keine",
     "select": "Auswählen",
+    "undo": "Rückgängig",
     "currency": "EUR"
   },
   "nav": {
@@ -79,6 +80,7 @@
     "willSyncOnline": "Wird synchronisiert, wenn Sie wieder online sind.",
     "transactionUpdated": "Transaktion aktualisiert",
     "transactionDeleted": "Transaktion gelöscht",
+    "deleteError": "Fehler beim Löschen der Transaktion",
     "deleteConfirmTitle": "Löschbestätigung",
     "deleteConfirmMessage": "Sind Sie sicher, dass Sie diese Transaktion löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.",
     "transactionError": "Fehler beim Hinzufügen der Transaktion",

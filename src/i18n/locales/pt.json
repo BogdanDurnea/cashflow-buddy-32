@@ -23,6 +23,7 @@
     "all": "Todos",
     "none": "Nenhum",
     "select": "Selecionar",
+    "undo": "Desfazer",
     "currency": "EUR"
   },
   "nav": {
@@ -79,6 +80,7 @@
     "willSyncOnline": "Será sincronizada quando você voltar a ficar online.",
     "transactionUpdated": "Transação atualizada",
     "transactionDeleted": "Transação excluída",
+    "deleteError": "Erro ao excluir a transação",
     "transactionError": "Erro ao adicionar transação",
     "deleteConfirmTitle": "Confirmação de exclusão",
     "deleteConfirmMessage": "Tem certeza de que deseja excluir esta transação? Esta ação não pode ser desfeita.",

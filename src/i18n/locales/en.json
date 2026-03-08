@@ -23,6 +23,7 @@
     "all": "All",
     "none": "None",
     "select": "Select",
+    "undo": "Undo",
     "currency": "EUR"
   },
   "nav": {
@@ -80,6 +81,7 @@
     "transactionUpdated": "Transaction updated",
     "transactionDeleted": "Transaction deleted",
     "transactionError": "Error adding transaction",
+    "deleteError": "Error deleting transaction",
     "deleteConfirmTitle": "Delete confirmation",
     "deleteConfirmMessage": "Are you sure you want to delete this transaction? This action cannot be undone.",
     "selectCategory": "Select category",

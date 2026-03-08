@@ -483,15 +483,15 @@ const Index = () => {
         console.error("Eroare la ștergerea tranzacției:", error);
         // Restore on failure
         setTransactions(prev => [...prev, deletedTx]);
-        toast.error("Eroare la ștergerea tranzacției");
+        toast.error(t('transactions.deleteError'));
       }
     }, 5000);
 
     deleteTimeoutRef.current[id] = timeoutId;
 
-    toast("Tranzacție ștearsă", {
+    toast(t('transactions.transactionDeleted'), {
       action: {
-        label: "Anulează",
+        label: t('common.undo'),
         onClick: () => {
           clearTimeout(deleteTimeoutRef.current[id]);
           delete deleteTimeoutRef.current[id];

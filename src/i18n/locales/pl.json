@@ -23,6 +23,7 @@
     "all": "Wszystkie",
     "none": "Brak",
     "select": "Wybierz",
+    "undo": "Cofnij",
     "currency": "PLN"
   },
   "nav": {
@@ -79,6 +80,7 @@
     "willSyncOnline": "Zostanie zsynchronizowana, gdy wrócisz online.",
     "transactionUpdated": "Transakcja zaktualizowana",
     "transactionDeleted": "Transakcja usunięta",
+    "deleteError": "Błąd podczas usuwania transakcji",
     "transactionError": "Błąd podczas dodawania transakcji",
     "deleteConfirmTitle": "Potwierdzenie usunięcia",
     "deleteConfirmMessage": "Czy na pewno chcesz usunąć tę transakcję? Tej akcji nie można cofnąć.",
