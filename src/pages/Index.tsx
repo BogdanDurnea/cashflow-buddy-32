@@ -688,9 +688,9 @@ const Index = () => {
                       <TrendingUp className="h-5 w-5 text-success" />
                     </div>
                     <div>
-                      <p className="text-xs text-success/80 font-medium">Venituri</p>
+                      <p className="text-xs text-success/80 font-medium">{t("transactions.income")}</p>
                       <p className="text-xl font-bold text-success">
-                        +{transactions.filter(t => t.type === 'income' && new Date(t.date).getMonth() === new Date().getMonth() && new Date(t.date).getFullYear() === new Date().getFullYear()).reduce((sum, t) => sum + Number(t.amount), 0).toLocaleString('ro-RO')} RON
+                        +{transactions.filter(t => t.type === 'income' && new Date(t.date).getMonth() === new Date().getMonth() && new Date(t.date).getFullYear() === new Date().getFullYear()).reduce((sum, t) => sum + Number(t.amount), 0).toLocaleString(i18n.language)} {t("common.currency")}
                       </p>
                     </div>
                   </div>
