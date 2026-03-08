@@ -722,9 +722,9 @@ const Index = () => {
                           <BarChart3 className={`h-5 w-5 ${isPositive ? 'text-primary' : 'text-warning'}`} />
                         </div>
                         <div>
-                          <p className={`text-xs font-medium ${isPositive ? 'text-primary/80' : 'text-warning/80'}`}>Balanță netă</p>
+                          <p className={`text-xs font-medium ${isPositive ? 'text-primary/80' : 'text-warning/80'}`}>{t("dashboard.netBalance")}</p>
                           <p className={`text-xl font-bold ${isPositive ? 'text-primary' : 'text-warning'}`}>
-                            {isPositive ? '+' : ''}{netBalance.toLocaleString('ro-RO')} RON
+                            {isPositive ? '+' : ''}{netBalance.toLocaleString(i18n.language)} {t("common.currency")}
                           </p>
                         </div>
                       </div>
