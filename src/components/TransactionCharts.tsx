@@ -4,12 +4,16 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip, BarChart, Ba
 import { getCategoryConfig } from "@/lib/categoryConfig";
 import { BalanceEvolutionChart } from "./BalanceEvolutionChart";
 import { motion } from "framer-motion";
+import { useTranslation } from "react-i18next";
 
 interface TransactionChartsProps {
   transactions: Transaction[];
 }
 
 export function TransactionCharts({ transactions }: TransactionChartsProps) {
+  const { t, i18n } = useTranslation();
+  const currency = t("common.currency");
+
   // Prepare data for expense pie chart
   const expensesByCategory = transactions
     .filter(t => t.type === "expense")
@@ -46,7 +50,8 @@ export function TransactionCharts({ transactions }: TransactionChartsProps) {
 
   // Prepare data for monthly bar chart
   const monthlyData = transactions.reduce((acc, t) => {
-    const monthKey = new Date(t.date).toLocaleDateString('ro-RO', { month: 'short', year: 'numeric' });
+    const locale = i18n.language === 'ro' ? 'ro-RO' : i18n.language;
+    const monthKey = new Date(t.date).toLocaleDateString(locale, { month: 'short', year: 'numeric' });
     if (!acc[monthKey]) {
       acc[monthKey] = { month: monthKey, income: 0, expense: 0 };
     }
@@ -65,9 +70,9 @@ export function TransactionCharts({ transactions }: TransactionChartsProps) {
   });
 
   const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('ro-RO', {
+    return new Intl.NumberFormat(i18n.language === 'ro' ? 'ro-RO' : i18n.language, {
       style: 'currency',
-      currency: 'RON',
+      currency: currency === 'RON' ? 'RON' : currency === 'PLN' ? 'PLN' : 'EUR',
       maximumFractionDigits: 0
     }).format(value);
   };
@@ -108,12 +113,12 @@ export function TransactionCharts({ transactions }: TransactionChartsProps) {
       >
         <Card className="shadow-card h-full">
           <CardHeader>
-            <CardTitle className="text-lg">Cheltuieli pe categorii</CardTitle>
+            <CardTitle className="text-lg">{t("analytics.expensesByCategory")}</CardTitle>
           </CardHeader>
           <CardContent>
             {expensePieData.length === 0 ? (
               <div className="h-[300px] flex items-center justify-center text-muted-foreground text-sm">
-                Nu există cheltuieli înregistrate
+                {t("analytics.noExpensesRecorded")}
               </div>
             ) : (
               <ResponsiveContainer width="100%" height={300}>
@@ -150,12 +155,12 @@ export function TransactionCharts({ transactions }: TransactionChartsProps) {
       >
         <Card className="shadow-card h-full">
           <CardHeader>
-            <CardTitle className="text-lg">Venituri pe categorii</CardTitle>
+            <CardTitle className="text-lg">{t("analytics.incomeByCategory")}</CardTitle>
           </CardHeader>
           <CardContent>
             {incomePieData.length === 0 ? (
               <div className="h-[300px] flex items-center justify-center text-muted-foreground text-sm">
-                Nu există venituri înregistrate
+                {t("analytics.noIncomeRecorded")}
               </div>
             ) : (
               <ResponsiveContainer width="100%" height={300}>
@@ -193,12 +198,12 @@ export function TransactionCharts({ transactions }: TransactionChartsProps) {
       >
         <Card className="shadow-card">
           <CardHeader>
-            <CardTitle className="text-lg">Comparație lunară: Venituri vs Cheltuieli</CardTitle>
+            <CardTitle className="text-lg">{t("analytics.monthlyComparisonChart")}</CardTitle>
           </CardHeader>
           <CardContent>
             {barData.length === 0 ? (
               <div className="h-[300px] flex items-center justify-center text-muted-foreground text-sm">
-                Nu există date pentru afișare
+                {t("analytics.noDataToDisplay")}
               </div>
             ) : (
               <ResponsiveContainer width="100%" height={300}>
@@ -208,8 +213,8 @@ export function TransactionCharts({ transactions }: TransactionChartsProps) {
                   <YAxis stroke="hsl(var(--muted-foreground))" />
                   <Tooltip formatter={(value) => formatCurrency(value as number)} />
                   <Legend />
-                  <Bar dataKey="income" name="Venituri" fill="hsl(142 76% 36%)" />
-                  <Bar dataKey="expense" name="Cheltuieli" fill="hsl(0 84% 60%)" />
+                  <Bar dataKey="income" name={t("transactions.income")} fill="hsl(142 76% 36%)" />
+                  <Bar dataKey="expense" name={t("transactions.expense")} fill="hsl(0 84% 60%)" />
                 </BarChart>
               </ResponsiveContainer>
             )}

@@ -147,17 +147,37 @@
     "selectCategory": "Sélectionner la catégorie",
     "enterMonthlyBudget": "Entrer le budget mensuel"
   },
+  "dashboard": {
+    "greeting": "Bonjour, {{name}} !",
+    "transactionCount": "Vous avez {{count}} transactions enregistrées",
+    "subtitle": "Suivez vos finances",
+    "appName": "MoneyTracker",
+    "expensesMonth": "Dépenses {{month}}",
+    "day": "Jour {{day}}",
+    "netBalance": "Solde net",
+    "weeklyComparison": "Comparaison hebdomadaire",
+    "thisWeek": "Cette semaine",
+    "lastWeek": "Semaine dernière",
+    "moreSpent": "de plus",
+    "lessSpent": "de moins"
+  },
   "analytics": {
     "title": "Analyses",
-    "overview": "Aperçu",
+    "overview": "Vue d'ensemble",
     "trends": "Tendances",
-    "categoryBreakdown": "Répartition par catégorie",
+    "categoryBreakdown": "Répartition par catégories",
     "incomeVsExpense": "Revenus vs Dépenses",
     "balanceEvolution": "Évolution du solde",
     "topCategories": "Catégories principales",
     "monthlyComparison": "Comparaison mensuelle",
+    "monthlyComparisonChart": "Comparaison mensuelle : Revenus vs Dépenses",
+    "expensesByCategory": "Dépenses par catégories",
+    "incomeByCategory": "Revenus par catégories",
+    "noExpensesRecorded": "Aucune dépense enregistrée",
+    "noIncomeRecorded": "Aucun revenu enregistré",
+    "noDataToDisplay": "Aucune donnée à afficher",
     "aiInsights": "Perspectives IA",
-    "noData": "Données insuffisantes pour l'analyse"
+    "noData": "Pas assez de données pour l'analyse"
   },
   "reports": {
     "title": "Rapports",

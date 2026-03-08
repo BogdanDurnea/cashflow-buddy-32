@@ -147,17 +147,37 @@
     "selectCategory": "Seleccionar categoría",
     "enterMonthlyBudget": "Introduce el presupuesto mensual"
   },
+  "dashboard": {
+    "greeting": "¡Hola, {{name}}!",
+    "transactionCount": "Tienes {{count}} transacciones registradas",
+    "subtitle": "Controla tus finanzas",
+    "appName": "MoneyTracker",
+    "expensesMonth": "Gastos {{month}}",
+    "day": "Día {{day}}",
+    "netBalance": "Balance neto",
+    "weeklyComparison": "Comparación semanal",
+    "thisWeek": "Esta semana",
+    "lastWeek": "Semana pasada",
+    "moreSpent": "más",
+    "lessSpent": "menos"
+  },
   "analytics": {
     "title": "Análisis",
     "overview": "Resumen",
     "trends": "Tendencias",
-    "categoryBreakdown": "Desglose por categoría",
+    "categoryBreakdown": "Desglose por categorías",
     "incomeVsExpense": "Ingresos vs Gastos",
     "balanceEvolution": "Evolución del saldo",
     "topCategories": "Categorías principales",
     "monthlyComparison": "Comparación mensual",
+    "monthlyComparisonChart": "Comparación mensual: Ingresos vs Gastos",
+    "expensesByCategory": "Gastos por categorías",
+    "incomeByCategory": "Ingresos por categorías",
+    "noExpensesRecorded": "No hay gastos registrados",
+    "noIncomeRecorded": "No hay ingresos registrados",
+    "noDataToDisplay": "No hay datos para mostrar",
     "aiInsights": "Perspectivas IA",
-    "noData": "Datos insuficientes para análisis"
+    "noData": "No hay suficientes datos para el análisis"
   },
   "reports": {
     "title": "Informes",

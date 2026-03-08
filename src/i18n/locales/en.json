@@ -147,6 +147,20 @@
     "selectCategory": "Select category",
     "enterMonthlyBudget": "Enter monthly budget"
   },
+  "dashboard": {
+    "greeting": "Hello, {{name}}!",
+    "transactionCount": "You have {{count}} transactions recorded",
+    "subtitle": "Track your finances",
+    "appName": "MoneyTracker",
+    "expensesMonth": "Expenses {{month}}",
+    "day": "Day {{day}}",
+    "netBalance": "Net Balance",
+    "weeklyComparison": "Weekly Comparison",
+    "thisWeek": "This week",
+    "lastWeek": "Last week",
+    "moreSpent": "more",
+    "lessSpent": "less"
+  },
   "analytics": {
     "title": "Analytics",
     "overview": "Overview",
@@ -156,6 +170,12 @@
     "balanceEvolution": "Balance Evolution",
     "topCategories": "Top Categories",
     "monthlyComparison": "Monthly Comparison",
+    "monthlyComparisonChart": "Monthly Comparison: Income vs Expenses",
+    "expensesByCategory": "Expenses by Category",
+    "incomeByCategory": "Income by Category",
+    "noExpensesRecorded": "No expenses recorded",
+    "noIncomeRecorded": "No income recorded",
+    "noDataToDisplay": "No data to display",
     "aiInsights": "AI Insights",
     "noData": "Not enough data for analysis"
   },

@@ -40,6 +40,8 @@ import { AchievementsLeaderboard } from "@/components/AchievementsLeaderboard";
 import { useAchievements } from "@/hooks/useAchievements";
 import { LanguageSelector } from "@/components/LanguageSelector";
 import { LanguageSettings } from "@/components/LanguageSettings";
+import { QuickStatsDonut } from "@/components/QuickStatsDonut";
+import { WeeklyComparisonWidget } from "@/components/WeeklyComparisonWidget";
 import { Button } from "@/components/ui/button";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
@@ -99,7 +101,7 @@ const fadeInUp = {
 };
 const Index = () => {
   const navigate = useNavigate();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const {
     user,
     loading: authLoading,
@@ -599,8 +601,8 @@ const Index = () => {
                 <TrendingUp className="h-5 w-5 sm:h-6 sm:w-6 text-primary-foreground" />
               </div>
               <div className="min-w-0">
-                <h1 className="text-lg sm:text-xl md:text-2xl font-bold truncate">MoneyTracker</h1>
-                <p className="text-xs sm:text-sm text-muted-foreground hidden sm:block">Monitorizează-ți finanțele</p>
+                <h1 className="text-lg sm:text-xl md:text-2xl font-bold truncate">{t("dashboard.appName")}</h1>
+                <p className="text-xs sm:text-sm text-muted-foreground hidden sm:block">{t("dashboard.subtitle")}</p>
               </div>
             </div>
             <div className="flex items-center space-x-1.5 sm:space-x-2 shrink-0">
@@ -639,10 +641,10 @@ const Index = () => {
                 </div>
                 <div>
                   <h2 className="text-xl sm:text-2xl md:text-3xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text">
-                    Bună, {displayName || user?.email?.split('@')[0] || 'User'}! 👋
+                    {t("dashboard.greeting", { name: displayName || user?.email?.split('@')[0] || 'User' })} 👋
                   </h2>
                   <p className="text-sm sm:text-base text-muted-foreground">
-                    Ai <span className="font-semibold text-primary">{transactions.length}</span> tranzacții înregistrate
+                    {t("dashboard.transactionCount", { count: transactions.length })}
                   </p>
                 </div>
               </div>
@@ -651,10 +653,10 @@ const Index = () => {
               <div className="flex-1 w-full lg:max-w-sm">
                 <div className="p-3 rounded-xl bg-card/50 backdrop-blur border border-border/50 hover-card-scale">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-xs font-medium text-muted-foreground capitalize">Cheltuieli {currentMonthName}</span>
+                    <span className="text-xs font-medium text-muted-foreground capitalize">{t("dashboard.expensesMonth", { month: currentMonthName })}</span>
                     <div className="flex items-center gap-1 text-danger">
                       <TrendingDown className="h-3 w-3" />
-                      <span className="text-xs font-semibold">{monthlyTotal.toLocaleString('ro-RO')} RON</span>
+                      <span className="text-xs font-semibold">{monthlyTotal.toLocaleString(i18n.language)} {t("common.currency")}</span>
                     </div>
                   </div>
                   <div className="h-12">
@@ -671,7 +673,7 @@ const Index = () => {
                         border: '1px solid hsl(var(--border))',
                         borderRadius: '8px',
                         fontSize: '12px'
-                      }} formatter={(value: number) => [`${value.toLocaleString('ro-RO')} RON`, 'Cheltuieli']} labelFormatter={label => `Ziua ${label}`} />
+                      }} formatter={(value: number) => [`${value.toLocaleString(i18n.language)} ${t("common.currency")}`, t("transactions.expense")]} labelFormatter={label => t("dashboard.day", { day: label })} />
                         <Area type="monotone" dataKey="amount" stroke="hsl(var(--danger))" strokeWidth={2} fill="url(#sparklineGradient)" />
                       </AreaChart>
                     </ResponsiveContainer>
@@ -688,9 +690,9 @@ const Index = () => {
                       <TrendingUp className="h-5 w-5 text-success" />
                     </div>
                     <div>
-                      <p className="text-xs text-success/80 font-medium">Venituri</p>
+                      <p className="text-xs text-success/80 font-medium">{t("transactions.income")}</p>
                       <p className="text-xl font-bold text-success">
-                        +{transactions.filter(t => t.type === 'income' && new Date(t.date).getMonth() === new Date().getMonth() && new Date(t.date).getFullYear() === new Date().getFullYear()).reduce((sum, t) => sum + Number(t.amount), 0).toLocaleString('ro-RO')} RON
+                        +{transactions.filter(t => t.type === 'income' && new Date(t.date).getMonth() === new Date().getMonth() && new Date(t.date).getFullYear() === new Date().getFullYear()).reduce((sum, t) => sum + Number(t.amount), 0).toLocaleString(i18n.language)} {t("common.currency")}
                       </p>
                     </div>
                   </div>
@@ -703,9 +705,9 @@ const Index = () => {
                       <TrendingDown className="h-5 w-5 text-danger" />
                     </div>
                     <div>
-                      <p className="text-xs text-danger/80 font-medium">Cheltuieli</p>
+                      <p className="text-xs text-danger/80 font-medium">{t("transactions.expense")}</p>
                       <p className="text-xl font-bold text-danger">
-                        -{monthlyTotal.toLocaleString('ro-RO')} RON
+                        -{monthlyTotal.toLocaleString(i18n.language)} {t("common.currency")}
                       </p>
                     </div>
                   </div>
@@ -722,9 +724,9 @@ const Index = () => {
                           <BarChart3 className={`h-5 w-5 ${isPositive ? 'text-primary' : 'text-warning'}`} />
                         </div>
                         <div>
-                          <p className={`text-xs font-medium ${isPositive ? 'text-primary/80' : 'text-warning/80'}`}>Balanță netă</p>
+                          <p className={`text-xs font-medium ${isPositive ? 'text-primary/80' : 'text-warning/80'}`}>{t("dashboard.netBalance")}</p>
                           <p className={`text-xl font-bold ${isPositive ? 'text-primary' : 'text-warning'}`}>
-                            {isPositive ? '+' : ''}{netBalance.toLocaleString('ro-RO')} RON
+                            {isPositive ? '+' : ''}{netBalance.toLocaleString(i18n.language)} {t("common.currency")}
                           </p>
                         </div>
                       </div>
@@ -761,6 +763,10 @@ const Index = () => {
                   <div className="lg:col-span-2 md:col-span-1">
                     <TransactionList transactions={filteredTransactions} onEditTransaction={handleEditTransaction} onDeleteTransaction={handleDeleteTransaction} onRefresh={loadTransactions} />
                   </div>
+                </div>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <QuickStatsDonut transactions={transactions} />
+                  <WeeklyComparisonWidget transactions={transactions} />
                 </div>
                 <StatsCards transactions={transactions} />
                 <TransactionFilters selectedType={filterType} selectedCategory={filterCategory} selectedPeriod={filterPeriod} onTypeChange={setFilterType} onCategoryChange={setFilterCategory} onPeriodChange={setFilterPeriod} onReset={resetFilters} />
