@@ -93,7 +93,7 @@ export function TransactionForm({ onAddTransaction }: TransactionFormProps) {
       lightColor: cat.color ? `${cat.color}20` : "#3b82f620"
     }))
   ];
-
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!amount || !category) return;
 
