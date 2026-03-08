@@ -147,6 +147,20 @@
     "selectCategory": "Selectează categoria",
     "enterMonthlyBudget": "Introdu bugetul lunar"
   },
+  "dashboard": {
+    "greeting": "Bună, {{name}}!",
+    "transactionCount": "Ai {{count}} tranzacții înregistrate",
+    "subtitle": "Monitorizează-ți finanțele",
+    "appName": "MoneyTracker",
+    "expensesMonth": "Cheltuieli {{month}}",
+    "day": "Ziua {{day}}",
+    "netBalance": "Balanță netă",
+    "weeklyComparison": "Comparație săptămânală",
+    "thisWeek": "Săptămâna aceasta",
+    "lastWeek": "Săptămâna trecută",
+    "moreSpent": "mai mult",
+    "lessSpent": "mai puțin"
+  },
   "analytics": {
     "title": "Analize",
     "overview": "Prezentare generală",
@@ -156,6 +170,12 @@
     "balanceEvolution": "Evoluția soldului",
     "topCategories": "Categorii principale",
     "monthlyComparison": "Comparație lunară",
+    "monthlyComparisonChart": "Comparație lunară: Venituri vs Cheltuieli",
+    "expensesByCategory": "Cheltuieli pe categorii",
+    "incomeByCategory": "Venituri pe categorii",
+    "noExpensesRecorded": "Nu există cheltuieli înregistrate",
+    "noIncomeRecorded": "Nu există venituri înregistrate",
+    "noDataToDisplay": "Nu există date pentru afișare",
     "aiInsights": "Perspective AI",
     "noData": "Nu sunt suficiente date pentru analiză"
   },
