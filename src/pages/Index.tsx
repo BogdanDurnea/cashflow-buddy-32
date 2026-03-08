@@ -40,6 +40,8 @@ import { AchievementsLeaderboard } from "@/components/AchievementsLeaderboard";
 import { useAchievements } from "@/hooks/useAchievements";
 import { LanguageSelector } from "@/components/LanguageSelector";
 import { LanguageSettings } from "@/components/LanguageSettings";
+import { QuickStatsDonut } from "@/components/QuickStatsDonut";
+import { WeeklyComparisonWidget } from "@/components/WeeklyComparisonWidget";
 import { Button } from "@/components/ui/button";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
