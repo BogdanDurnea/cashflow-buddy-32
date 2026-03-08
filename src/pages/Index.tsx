@@ -639,10 +639,10 @@ const Index = () => {
                 </div>
                 <div>
                   <h2 className="text-xl sm:text-2xl md:text-3xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text">
-                    Bună, {displayName || user?.email?.split('@')[0] || 'User'}! 👋
+                    {t("dashboard.greeting", { name: displayName || user?.email?.split('@')[0] || 'User' })} 👋
                   </h2>
                   <p className="text-sm sm:text-base text-muted-foreground">
-                    Ai <span className="font-semibold text-primary">{transactions.length}</span> tranzacții înregistrate
+                    {t("dashboard.transactionCount", { count: transactions.length })}
                   </p>
                 </div>
               </div>
