@@ -23,6 +23,7 @@
     "all": "Todos",
     "none": "Nenhum",
     "select": "Selecionar",
+    "undo": "Desfazer",
     "currency": "EUR"
   },
   "nav": {
