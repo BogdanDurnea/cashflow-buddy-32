@@ -42,6 +42,8 @@ import { LanguageSelector } from "@/components/LanguageSelector";
 import { LanguageSettings } from "@/components/LanguageSettings";
 import { QuickStatsDonut } from "@/components/QuickStatsDonut";
 import { WeeklyComparisonWidget } from "@/components/WeeklyComparisonWidget";
+import { QuickAddShortcuts } from "@/components/QuickAddShortcuts";
+import { MobileBottomNav } from "@/components/MobileBottomNav";
 import { Button } from "@/components/ui/button";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
