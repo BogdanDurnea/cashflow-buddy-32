@@ -183,8 +183,15 @@ export function TransactionForm({ onAddTransaction }: TransactionFormProps) {
     try {
       const base64 = await fileToBase64(file);
       
+      // Build available category names for the AI
+      const categoryNames = allCategories.map(c => c.name);
+
       const { data, error } = await supabase.functions.invoke('extract-receipt', {
-        body: { imageBase64: base64 }
+        body: { 
+          imageBase64: base64,
+          availableCategories: categoryNames,
+          recentTransactions: recentTransactions
+        }
       });
 
       if (error) throw error;
@@ -199,11 +206,17 @@ export function TransactionForm({ onAddTransaction }: TransactionFormProps) {
         setDescription(data.description);
       }
 
+      // Auto-set category if AI suggested one
+      if (data.suggested_category && categoryNames.includes(data.suggested_category)) {
+        setCategory(data.suggested_category);
+      }
+
       setOcrConfidence(data.confidence || null);
 
       const extractedItems = [];
       if (data.amount) extractedItems.push(`${data.amount} RON`);
       if (data.description) extractedItems.push(data.description);
+      if (data.suggested_category) extractedItems.push(`→ ${data.suggested_category}`);
 
       if (extractedItems.length > 0) {
         toast({
