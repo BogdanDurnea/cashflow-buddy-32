@@ -374,6 +374,14 @@ export type Database = {
         Args: { token_param: string }
         Returns: undefined
       }
+      is_shared_budget_member: {
+        Args: { _budget_id: string; _user_id: string }
+        Returns: boolean
+      }
+      is_shared_budget_owner: {
+        Args: { _budget_id: string; _user_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never
