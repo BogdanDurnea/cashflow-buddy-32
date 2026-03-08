@@ -671,7 +671,7 @@ const Index = () => {
                         border: '1px solid hsl(var(--border))',
                         borderRadius: '8px',
                         fontSize: '12px'
-                      }} formatter={(value: number) => [`${value.toLocaleString('ro-RO')} RON`, 'Cheltuieli']} labelFormatter={label => `Ziua ${label}`} />
+                      }} formatter={(value: number) => [`${value.toLocaleString(i18n.language)} ${t("common.currency")}`, t("transactions.expense")]} labelFormatter={label => t("dashboard.day", { day: label })} />
                         <Area type="monotone" dataKey="amount" stroke="hsl(var(--danger))" strokeWidth={2} fill="url(#sparklineGradient)" />
                       </AreaChart>
                     </ResponsiveContainer>
