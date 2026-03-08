@@ -483,7 +483,7 @@ const Index = () => {
         console.error("Eroare la ștergerea tranzacției:", error);
         // Restore on failure
         setTransactions(prev => [...prev, deletedTx]);
-        toast.error("Eroare la ștergerea tranzacției");
+        toast.error(t('transactions.deleteError'));
       }
     }, 5000);
 
