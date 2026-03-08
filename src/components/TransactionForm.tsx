@@ -282,16 +282,6 @@ export function TransactionForm({ onAddTransaction }: TransactionFormProps) {
     }
   };
 
-  const defaultCategories = type === "income" ? incomeCategories : expenseCategories;
-  const allCategories = [
-    ...defaultCategories,
-    ...customCategories.map(cat => ({
-      name: cat.name,
-      icon: cat.icon,
-      color: cat.color || "#3b82f6",
-      lightColor: cat.color ? `${cat.color}20` : "#3b82f620"
-    }))
-  ];
 
   return (
     <Card className="shadow-card transition-smooth">
