@@ -703,9 +703,9 @@ const Index = () => {
                       <TrendingDown className="h-5 w-5 text-danger" />
                     </div>
                     <div>
-                      <p className="text-xs text-danger/80 font-medium">Cheltuieli</p>
+                      <p className="text-xs text-danger/80 font-medium">{t("transactions.expense")}</p>
                       <p className="text-xl font-bold text-danger">
-                        -{monthlyTotal.toLocaleString('ro-RO')} RON
+                        -{monthlyTotal.toLocaleString(i18n.language)} {t("common.currency")}
                       </p>
                     </div>
                   </div>
