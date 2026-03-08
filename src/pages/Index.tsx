@@ -923,6 +923,12 @@ const Index = () => {
         </footer>
 
         <MobileTransactionFAB onAddTransaction={handleAddTransaction} />
+        <MobileBottomNav activeSection={activeSection} onSectionChange={(section) => {
+          setActiveSection(section);
+          if (!expandedSections.includes(section)) {
+            setExpandedSections(prev => [...prev, section]);
+          }
+        }} />
       </div>
     </div>;
 };
