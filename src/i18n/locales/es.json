@@ -80,6 +80,7 @@
     "willSyncOnline": "Se sincronizará cuando vuelvas a estar en línea.",
     "transactionUpdated": "Transacción actualizada",
     "transactionDeleted": "Transacción eliminada",
+    "deleteError": "Error al eliminar la transacción",
     "deleteConfirmTitle": "Confirmar eliminación",
     "deleteConfirmMessage": "¿Está seguro de que desea eliminar esta transacción? Esta acción no se puede deshacer.",
     "transactionError": "Error al agregar la transacción",

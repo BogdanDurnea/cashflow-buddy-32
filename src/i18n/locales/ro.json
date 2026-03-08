@@ -81,6 +81,7 @@
     "transactionUpdated": "Tranzacție actualizată",
     "transactionDeleted": "Tranzacție ștearsă",
     "transactionError": "Eroare la adăugarea tranzacției",
+    "deleteError": "Eroare la ștergerea tranzacției",
     "deleteConfirmTitle": "Confirmare ștergere",
     "deleteConfirmMessage": "Ești sigur că vrei să ștergi această tranzacție? Acțiunea nu poate fi anulată.",
     "selectCategory": "Selectează categoria",

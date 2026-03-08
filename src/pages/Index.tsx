@@ -489,9 +489,9 @@ const Index = () => {
 
     deleteTimeoutRef.current[id] = timeoutId;
 
-    toast("Tranzacție ștearsă", {
+    toast(t('transactions.transactionDeleted'), {
       action: {
-        label: "Anulează",
+        label: t('common.undo'),
         onClick: () => {
           clearTimeout(deleteTimeoutRef.current[id]);
           delete deleteTimeoutRef.current[id];
