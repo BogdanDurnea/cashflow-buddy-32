@@ -99,7 +99,7 @@ const fadeInUp = {
 };
 const Index = () => {
   const navigate = useNavigate();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const {
     user,
     loading: authLoading,
