@@ -764,6 +764,10 @@ const Index = () => {
                     <TransactionList transactions={filteredTransactions} onEditTransaction={handleEditTransaction} onDeleteTransaction={handleDeleteTransaction} onRefresh={loadTransactions} />
                   </div>
                 </div>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <QuickStatsDonut transactions={transactions} />
+                  <WeeklyComparisonWidget transactions={transactions} />
+                </div>
                 <StatsCards transactions={transactions} />
                 <TransactionFilters selectedType={filterType} selectedCategory={filterCategory} selectedPeriod={filterPeriod} onTypeChange={setFilterType} onCategoryChange={setFilterCategory} onPeriodChange={setFilterPeriod} onReset={resetFilters} />
               </AccordionContent>
