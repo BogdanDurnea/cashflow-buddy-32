@@ -27,25 +27,18 @@ export default function SharedReport() {
       }
 
       try {
-        // Fetch report by token (RLS policy allows anon access with valid token)
+        // Fetch report via secure RPC (no enumerable public SELECT policy)
         const { data, error: fetchError } = await supabase
-          .from("report_shares")
-          .select("title, report_data, created_at, expires_at")
-          .eq("share_token", token)
-          .single();
+          .rpc('get_shared_report', { p_token: token });
 
-        if (fetchError || !data) {
+        if (fetchError || !data || data.length === 0) {
           setError("Raportul nu a fost găsit, a expirat sau a fost revocat");
           return;
         }
 
-        // Check expiration (note: revoked check is handled by RLS policy)
-        if (data.expires_at && new Date(data.expires_at) < new Date()) {
-          setError("Acest link a expirat");
-          return;
-        }
+        const reportRow = data[0];
 
-        setReport(data);
+        setReport(reportRow as ReportData);
 
         // Increment view count atomically using RPC function
         try {
