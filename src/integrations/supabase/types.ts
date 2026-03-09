@@ -362,6 +362,15 @@ export type Database = {
           user_id: string
         }[]
       }
+      get_shared_report: {
+        Args: { p_token: string }
+        Returns: {
+          created_at: string
+          expires_at: string
+          report_data: Json
+          title: string
+        }[]
+      }
       get_user_achievement_rank: {
         Args: { target_user_id: string }
         Returns: {
