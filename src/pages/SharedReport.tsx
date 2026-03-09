@@ -38,7 +38,7 @@ export default function SharedReport() {
 
         const reportRow = data[0];
 
-        setReport(data);
+        setReport(reportRow as ReportData);
 
         // Increment view count atomically using RPC function
         try {
