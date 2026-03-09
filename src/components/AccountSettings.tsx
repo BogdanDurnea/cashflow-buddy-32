@@ -4,6 +4,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { User, Mail, Lock, KeyRound, Loader2, Shield, Trash2, Save } from "lucide-react";
+import { z } from "zod";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -66,14 +67,23 @@ export function AccountSettings() {
     }
   };
 
+  // Password validation schema matching signup requirements
+  const passwordSchema = z.string()
+    .min(8, { message: "Parola trebuie să aibă cel puțin 8 caractere" })
+    .max(72, { message: "Parola nu poate depăși 72 de caractere" })
+    .regex(/[a-z]/, { message: "Parola trebuie să conțină cel puțin o literă mică" })
+    .regex(/[A-Z]/, { message: "Parola trebuie să conțină cel puțin o literă mare" })
+    .regex(/[0-9]/, { message: "Parola trebuie să conțină cel puțin o cifră" });
+
   const handlePasswordChange = async () => {
     if (!newPassword || !confirmPassword) {
       toast.error("Te rog completează toate câmpurile");
       return;
     }
 
-    if (newPassword.length < 6) {
-      toast.error("Parola trebuie să aibă minim 6 caractere");
+    const validation = passwordSchema.safeParse(newPassword);
+    if (!validation.success) {
+      toast.error(validation.error.errors[0].message);
       return;
     }
 
