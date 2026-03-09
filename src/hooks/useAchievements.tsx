@@ -244,9 +244,8 @@ export const useAchievements = () => {
 
       try {
         const { error } = await supabase.rpc("unlock_achievement", {
-          _user_id: user.id,
           _achievement_id: achievementId,
-        });
+        } as any);
 
         if (error) throw error;
 
