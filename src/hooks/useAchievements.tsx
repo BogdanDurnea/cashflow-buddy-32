@@ -243,9 +243,9 @@ export const useAchievements = () => {
       if (!achievement) return false;
 
       try {
-        const { error } = await supabase.from("user_achievements").insert({
-          user_id: user.id,
-          achievement_id: achievementId,
+        const { error } = await supabase.rpc("unlock_achievement", {
+          _user_id: user.id,
+          _achievement_id: achievementId,
         });
 
         if (error) throw error;
