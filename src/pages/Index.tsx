@@ -465,7 +465,7 @@ const Index = () => {
       console.error(error);
     }
   };
-  const deleteTimeoutRef = useRef<Record<string, NodeJS.Timeout>>({});
+  const deleteTimeoutRef = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
 
   const handleDeleteTransaction = (id: string) => {
     if (!user) return;
