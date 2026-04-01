@@ -6,6 +6,51 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+// Validation constants
+const MAX_BASE64_SIZE = 7 * 1024 * 1024; // ~5 MB raw
+const MAX_CATEGORIES = 100;
+const MAX_CATEGORY_LENGTH = 100;
+const MAX_RECENT_TRANSACTIONS = 50;
+const ALLOWED_DATA_URI_PREFIXES = ['data:image/jpeg', 'data:image/png', 'data:image/webp', 'data:application/pdf'];
+
+function isValidBase64DataUri(value: string): boolean {
+  if (!value.startsWith('data:')) {
+    // Raw base64 — just check it's base64-like characters
+    return /^[A-Za-z0-9+/=\s]+$/.test(value.slice(0, 100));
+  }
+  return ALLOWED_DATA_URI_PREFIXES.some(prefix => value.startsWith(prefix));
+}
+
+function validateCategories(categories: unknown): { valid: boolean; error?: string } {
+  if (!Array.isArray(categories)) {
+    return { valid: false, error: 'availableCategories must be an array' };
+  }
+  if (categories.length > MAX_CATEGORIES) {
+    return { valid: false, error: `Maximum ${MAX_CATEGORIES} categories allowed` };
+  }
+  for (const cat of categories) {
+    if (typeof cat !== 'string' || cat.length > MAX_CATEGORY_LENGTH) {
+      return { valid: false, error: 'Invalid category value' };
+    }
+  }
+  return { valid: true };
+}
+
+function validateRecentTransactions(txs: unknown): { valid: boolean; error?: string } {
+  if (!Array.isArray(txs)) {
+    return { valid: false, error: 'recentTransactions must be an array' };
+  }
+  if (txs.length > MAX_RECENT_TRANSACTIONS) {
+    return { valid: false, error: `Maximum ${MAX_RECENT_TRANSACTIONS} recent transactions allowed` };
+  }
+  for (const t of txs) {
+    if (typeof t !== 'object' || t === null) {
+      return { valid: false, error: 'Each transaction must be an object' };
+    }
+  }
+  return { valid: true };
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -38,22 +83,68 @@ serve(async (req) => {
 
     const userId = claimsData.claims.sub;
 
-    const { imageBase64, availableCategories, recentTransactions } = await req.json();
-    
-    if (!imageBase64) {
+    // Parse and validate request body
+    let body: unknown;
+    try {
+      body = await req.json();
+    } catch {
+      return new Response(
+        JSON.stringify({ error: "Invalid JSON body" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    if (typeof body !== 'object' || body === null) {
+      return new Response(
+        JSON.stringify({ error: "Request body must be an object" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const { imageBase64, availableCategories, recentTransactions } = body as any;
+
+    // Validate imageBase64
+    if (!imageBase64 || typeof imageBase64 !== 'string') {
       return new Response(
         JSON.stringify({ error: "No image provided" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    // Server-side size guard (~5 MB raw + base64 encoding overhead)
-    const MAX_BASE64_SIZE = 7 * 1024 * 1024;
-    if (typeof imageBase64 !== 'string' || imageBase64.length > MAX_BASE64_SIZE) {
+    if (imageBase64.length > MAX_BASE64_SIZE) {
       return new Response(
         JSON.stringify({ error: "Image too large. Maximum size is 5 MB." }),
         { status: 413, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
+    }
+
+    if (!isValidBase64DataUri(imageBase64)) {
+      return new Response(
+        JSON.stringify({ error: "Invalid image format. Allowed: JPEG, PNG, WebP, PDF." }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Validate optional availableCategories
+    if (availableCategories !== undefined && availableCategories !== null) {
+      const catValidation = validateCategories(availableCategories);
+      if (!catValidation.valid) {
+        return new Response(
+          JSON.stringify({ error: catValidation.error }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+    }
+
+    // Validate optional recentTransactions
+    if (recentTransactions !== undefined && recentTransactions !== null) {
+      const txValidation = validateRecentTransactions(recentTransactions);
+      if (!txValidation.valid) {
+        return new Response(
+          JSON.stringify({ error: txValidation.error }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
     }
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
@@ -63,17 +154,17 @@ serve(async (req) => {
 
     // Build context about user's transaction history for smart suggestions
     let historyContext = "";
-    if (recentTransactions && recentTransactions.length > 0) {
+    if (recentTransactions && Array.isArray(recentTransactions) && recentTransactions.length > 0) {
       const txSummary = recentTransactions
         .slice(0, 20)
-        .map((tx: any) => `- ${tx.description || 'N/A'} → categorie: ${tx.category}, sumă: ${tx.amount}`)
+        .map((tx: any) => `- ${String(tx.description || 'N/A').slice(0, 200)} → categorie: ${String(tx.category || 'N/A').slice(0, MAX_CATEGORY_LENGTH)}, sumă: ${tx.amount}`)
         .join("\n");
       historyContext = `\n\nIstoricul recent al utilizatorului (pentru a sugera categorie similară):\n${txSummary}`;
     }
 
     let categoriesContext = "";
-    if (availableCategories && availableCategories.length > 0) {
-      categoriesContext = `\n\nCategoriile disponibile (alege DOAR din acestea): ${availableCategories.join(", ")}`;
+    if (availableCategories && Array.isArray(availableCategories) && availableCategories.length > 0) {
+      categoriesContext = `\n\nCategoriile disponibile (alege DOAR din acestea): ${availableCategories.map((c: string) => String(c).slice(0, MAX_CATEGORY_LENGTH)).join(", ")}`;
     }
 
     console.log("Processing receipt for user:", userId);
@@ -170,7 +261,7 @@ Pentru suggested_category, alege cea mai potrivită categorie din lista disponib
   } catch (error) {
     console.error("Error in extract-receipt function:", error);
     return new Response(
-      JSON.stringify({ error: error instanceof Error ? error.message : "Unknown error" }),
+      JSON.stringify({ error: "Internal server error" }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
