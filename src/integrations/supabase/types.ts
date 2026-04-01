@@ -391,12 +391,10 @@ export type Database = {
         Args: { _budget_id: string; _user_id: string }
         Returns: boolean
       }
-      unlock_achievement:
-        | { Args: { _achievement_id: string }; Returns: boolean }
-        | {
-            Args: { _achievement_id: string; _user_id: string }
-            Returns: boolean
-          }
+      unlock_achievement: {
+        Args: { _achievement_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never
