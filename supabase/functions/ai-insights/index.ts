@@ -7,16 +7,71 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Input validation constants
+const MAX_TRANSACTIONS = 500;
+const MAX_DESCRIPTION_LENGTH = 500;
+const MAX_CATEGORY_LENGTH = 100;
+const MAX_BUDGET_VALUE = 1_000_000_000;
+const VALID_TRANSACTION_TYPES = ['income', 'expense'];
+
+function validateTransactions(transactions: unknown): { valid: boolean; error?: string } {
+  if (!Array.isArray(transactions)) {
+    return { valid: false, error: 'transactions must be an array' };
+  }
+  if (transactions.length > MAX_TRANSACTIONS) {
+    return { valid: false, error: `Maximum ${MAX_TRANSACTIONS} transactions allowed` };
+  }
+  for (const t of transactions) {
+    if (typeof t !== 'object' || t === null) {
+      return { valid: false, error: 'Each transaction must be an object' };
+    }
+    if (typeof t.amount !== 'number' || !isFinite(t.amount) || t.amount < 0 || t.amount > MAX_BUDGET_VALUE) {
+      return { valid: false, error: 'Invalid transaction amount' };
+    }
+    if (typeof t.category !== 'string' || t.category.length > MAX_CATEGORY_LENGTH) {
+      return { valid: false, error: 'Invalid transaction category' };
+    }
+    if (!VALID_TRANSACTION_TYPES.includes(t.type)) {
+      return { valid: false, error: 'Invalid transaction type' };
+    }
+    if (t.description !== undefined && t.description !== null) {
+      if (typeof t.description !== 'string' || t.description.length > MAX_DESCRIPTION_LENGTH) {
+        return { valid: false, error: 'Invalid transaction description' };
+      }
+    }
+    if (t.date !== undefined && t.date !== null) {
+      if (typeof t.date !== 'string' || !/^\d{4}-\d{2}-\d{2}/.test(t.date)) {
+        return { valid: false, error: 'Invalid transaction date format' };
+      }
+    }
+  }
+  return { valid: true };
+}
+
+function validateCategoryBudgets(budgets: unknown): { valid: boolean; error?: string } {
+  if (typeof budgets !== 'object' || budgets === null || Array.isArray(budgets)) {
+    return { valid: false, error: 'categoryBudgets must be an object' };
+  }
+  for (const [key, value] of Object.entries(budgets as Record<string, unknown>)) {
+    if (key.length > MAX_CATEGORY_LENGTH) {
+      return { valid: false, error: 'Category name too long' };
+    }
+    if (typeof value !== 'number' || !isFinite(value) || value < 0 || value > MAX_BUDGET_VALUE) {
+      return { valid: false, error: `Invalid budget value for category: ${key}` };
+    }
+  }
+  return { valid: true };
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    // Verify authentication
+    // Verify authentication using getClaims
     const authHeader = req.headers.get('Authorization');
-    if (!authHeader) {
-      console.error('No authorization header provided');
+    if (!authHeader?.startsWith('Bearer ')) {
       return new Response(
         JSON.stringify({ error: 'Authentication required' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -29,31 +84,77 @@ serve(async (req) => {
       { global: { headers: { Authorization: authHeader } } }
     );
 
-    const { data: { user }, error: authError } = await supabaseClient.auth.getUser();
-    if (authError || !user) {
-      console.error('Authentication failed:', authError?.message);
+    const token = authHeader.replace('Bearer ', '');
+    const { data: claimsData, error: claimsError } = await supabaseClient.auth.getClaims(token);
+    
+    if (claimsError || !claimsData?.claims) {
       return new Response(
         JSON.stringify({ error: 'Invalid or expired token' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    console.log('Authenticated user:', user.id);
+    const userId = claimsData.claims.sub;
+    console.log('Authenticated user:', userId);
 
-    const { transactions, categoryBudgets, monthlyBudget } = await req.json();
+    // Parse and validate request body
+    let body: unknown;
+    try {
+      body = await req.json();
+    } catch {
+      return new Response(
+        JSON.stringify({ error: 'Invalid JSON body' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    if (typeof body !== 'object' || body === null) {
+      return new Response(
+        JSON.stringify({ error: 'Request body must be an object' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const { transactions, categoryBudgets, monthlyBudget } = body as any;
+
+    // Validate transactions
+    const txValidation = validateTransactions(transactions);
+    if (!txValidation.valid) {
+      return new Response(
+        JSON.stringify({ error: txValidation.error }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Validate categoryBudgets
+    const budgetValidation = validateCategoryBudgets(categoryBudgets);
+    if (!budgetValidation.valid) {
+      return new Response(
+        JSON.stringify({ error: budgetValidation.error }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Validate monthlyBudget
+    if (typeof monthlyBudget !== 'number' || !isFinite(monthlyBudget) || monthlyBudget < 0 || monthlyBudget > MAX_BUDGET_VALUE) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid monthlyBudget value' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
-    
     if (!LOVABLE_API_KEY) {
       throw new Error('LOVABLE_API_KEY is not configured');
     }
 
-    // Pregătim datele pentru AI
-    const transactionsSummary = transactions.map((t: any) => ({
+    // Sanitize data for AI prompt - only pass safe fields
+    const transactionsSummary = (transactions as any[]).map((t) => ({
       amount: t.amount,
-      category: t.category,
+      category: String(t.category).slice(0, MAX_CATEGORY_LENGTH),
       type: t.type,
-      date: t.date,
-      description: t.description
+      date: t.date ? String(t.date).slice(0, 10) : null,
+      description: t.description ? String(t.description).slice(0, MAX_DESCRIPTION_LENGTH) : null,
     }));
 
     const prompt = `Analizează următoarele date financiare și oferă insights detaliate:
@@ -134,7 +235,7 @@ Oferă un răspuns în format JSON cu următoarea structură:
     const data = await response.json();
     const content = data.choices[0].message.content;
     
-    // Extragem JSON-ul din răspuns
+    // Extract JSON from response
     const jsonMatch = content.match(/\{[\s\S]*\}/);
     const insights = jsonMatch ? JSON.parse(jsonMatch[0]) : JSON.parse(content);
 
@@ -144,7 +245,7 @@ Oferă un răspuns în format JSON cu următoarea structură:
   } catch (error) {
     console.error('Error in ai-insights function:', error);
     return new Response(
-      JSON.stringify({ error: error.message }), 
+      JSON.stringify({ error: 'Internal server error' }), 
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
