@@ -360,7 +360,7 @@ export function TransactionForm({ onAddTransaction }: TransactionFormProps) {
                     : cat.icon;
                   
                   return (
-                    <SelectItem key={cat.name} value={cat.name} className="py-3">
+                    <SelectItem key={cat.name} value={cat.name} className="py-3" textValue={cat.name}>
                       <div className="flex items-center gap-2">
                         <div 
                           className="p-1.5 rounded"

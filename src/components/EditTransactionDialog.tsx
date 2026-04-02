@@ -111,7 +111,7 @@ export function EditTransactionDialog({
                   {categories.map((cat) => {
                     const Icon = cat.icon;
                     return (
-                      <SelectItem key={cat.name} value={cat.name}>
+                      <SelectItem key={cat.name} value={cat.name} textValue={cat.name}>
                         <div className="flex items-center gap-2">
                           <div 
                             className="p-1 rounded"
