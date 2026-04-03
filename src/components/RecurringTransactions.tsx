@@ -142,7 +142,7 @@ export function RecurringTransactions({
                       {(type === "income" ? incomeCategories : expenseCategories).map((cat) => {
                         const Icon = cat.icon;
                         return (
-                          <SelectItem key={cat.name} value={cat.name}>
+                          <SelectItem key={cat.name} value={cat.name} textValue={cat.name}>
                             <div className="flex items-center gap-2">
                               <Icon className="h-4 w-4" style={{ color: cat.color }} />
                               <span>{cat.name}</span>

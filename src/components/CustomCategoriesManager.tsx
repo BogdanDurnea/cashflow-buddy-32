@@ -217,7 +217,7 @@ export function CustomCategoriesManager() {
                     </SelectTrigger>
                     <SelectContent>
                       {availableIcons.map((icon) => (
-                        <SelectItem key={icon} value={icon}>
+                        <SelectItem key={icon} value={icon} textValue={icon}>
                           <div className="flex items-center gap-2">
                             {getIconComponent(icon)}
                             {icon}

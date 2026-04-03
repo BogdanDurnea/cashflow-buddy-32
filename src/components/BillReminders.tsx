@@ -298,7 +298,7 @@ export function BillReminders({
                           const config = getCategoryConfig(t.category, t.type);
                           const Icon = config.icon;
                           return (
-                            <SelectItem key={t.id} value={t.id}>
+                            <SelectItem key={t.id} value={t.id} textValue={t.description || t.category}>
                               <div className="flex items-center gap-2">
                                 <Icon className="h-4 w-4" style={{ color: config.color }} />
                                 <span>{t.description || t.category}</span>
