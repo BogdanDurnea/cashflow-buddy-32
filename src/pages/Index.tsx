@@ -42,6 +42,8 @@ import { LanguageSelector } from "@/components/LanguageSelector";
 import { LanguageSettings } from "@/components/LanguageSettings";
 import { QuickStatsDonut } from "@/components/QuickStatsDonut";
 import { WeeklyComparisonWidget } from "@/components/WeeklyComparisonWidget";
+import { DashboardWidgets } from "@/components/DashboardWidgets";
+import { AdvancedPDFExport } from "@/components/AdvancedPDFExport";
 import { QuickAddShortcuts } from "@/components/QuickAddShortcuts";
 import { MobileBottomNav } from "@/components/MobileBottomNav";
 import { Button } from "@/components/ui/button";
@@ -746,6 +748,11 @@ const Index = () => {
             <div className="mt-4">
               <QuickAddShortcuts transactions={transactions} onAddTransaction={handleAddTransaction} />
             </div>
+
+            {/* Dashboard Widgets */}
+            <div className="mt-6">
+              <DashboardWidgets transactions={transactions} />
+            </div>
           </div>
         </section>
 
@@ -852,6 +859,13 @@ const Index = () => {
                   <ReportsSection transactions={transactions} />
                   <div className="grid gap-4 sm:gap-6 lg:grid-cols-2">
                     <ExportData transactions={transactions} />
+                    <AdvancedPDFExport 
+                      transactions={transactions} 
+                      monthlyBudget={monthlyBudget}
+                      categoryBudgets={Object.fromEntries(categoryBudgets.map(b => [b.category, b.limit]))}
+                    />
+                  </div>
+                  <div className="grid gap-4 sm:gap-6 lg:grid-cols-2">
                     <ShareReport transactions={transactions} />
                   </div>
                   <ShareReportPublic reportData={{
