@@ -1,0 +1,1 @@
+DROP POLICY "Public can view non-revoked non-expired report shares by token" ON public.report_shares;
