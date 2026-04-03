@@ -859,6 +859,13 @@ const Index = () => {
                   <ReportsSection transactions={transactions} />
                   <div className="grid gap-4 sm:gap-6 lg:grid-cols-2">
                     <ExportData transactions={transactions} />
+                    <AdvancedPDFExport 
+                      transactions={transactions} 
+                      monthlyBudget={monthlyBudget}
+                      categoryBudgets={Object.fromEntries(categoryBudgets.map(b => [b.category, b.limit]))}
+                    />
+                  </div>
+                  <div className="grid gap-4 sm:gap-6 lg:grid-cols-2">
                     <ShareReport transactions={transactions} />
                   </div>
                   <ShareReportPublic reportData={{
