@@ -42,6 +42,8 @@ import { LanguageSelector } from "@/components/LanguageSelector";
 import { LanguageSettings } from "@/components/LanguageSettings";
 import { QuickStatsDonut } from "@/components/QuickStatsDonut";
 import { WeeklyComparisonWidget } from "@/components/WeeklyComparisonWidget";
+import { DashboardWidgets } from "@/components/DashboardWidgets";
+import { AdvancedPDFExport } from "@/components/AdvancedPDFExport";
 import { QuickAddShortcuts } from "@/components/QuickAddShortcuts";
 import { MobileBottomNav } from "@/components/MobileBottomNav";
 import { Button } from "@/components/ui/button";
