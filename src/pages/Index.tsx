@@ -748,6 +748,11 @@ const Index = () => {
             <div className="mt-4">
               <QuickAddShortcuts transactions={transactions} onAddTransaction={handleAddTransaction} />
             </div>
+
+            {/* Dashboard Widgets */}
+            <div className="mt-6">
+              <DashboardWidgets transactions={transactions} />
+            </div>
           </div>
         </section>
 
