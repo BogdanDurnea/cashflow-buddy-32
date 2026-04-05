@@ -751,7 +751,7 @@ const Index = () => {
 
             {/* Dashboard Widgets */}
             <div className="mt-6">
-              <DashboardWidgets transactions={transactions} />
+              <DashboardWidgets transactions={transactions} savingsGoals={savingsGoals} categoryBudgets={categoryBudgets} />
             </div>
           </div>
         </section>
