@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { motion, Reorder } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { GripVertical, Eye, EyeOff, Settings2, X, Target, PiggyBank, Clock, BarChart3 } from "lucide-react";
+import { GripVertical, Settings2, Target, PiggyBank, Clock } from "lucide-react";
 import { Transaction } from "./TransactionForm";
 import { QuickStatsDonut } from "./QuickStatsDonut";
 import { BalanceEvolutionChart } from "./BalanceEvolutionChart";
