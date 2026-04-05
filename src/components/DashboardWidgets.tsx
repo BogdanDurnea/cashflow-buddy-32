@@ -160,10 +160,13 @@ function RecentTransactionsWidget({ transactions }: { transactions: Transaction[
       <CardContent className="space-y-2">
         {recent.map((tx) => {
           const config = getCategoryConfig(tx.category, tx.type);
+          const IconComponent = config.icon;
           const isExpense = tx.type === "expense";
           return (
             <div key={tx.id} className="flex items-center gap-3 py-1.5 border-b border-border/50 last:border-0">
-              <div className="text-lg shrink-0">{config.icon}</div>
+              <div className="shrink-0 p-1.5 rounded-md" style={{ backgroundColor: config.lightColor }}>
+                <IconComponent className="h-4 w-4" style={{ color: config.color }} />
+              </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium truncate">
                   {tx.description || tx.category}
