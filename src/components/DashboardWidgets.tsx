@@ -8,6 +8,7 @@ import { Transaction } from "./TransactionForm";
 import { QuickStatsDonut } from "./QuickStatsDonut";
 import { BalanceEvolutionChart } from "./BalanceEvolutionChart";
 import { SavingsGoal } from "@/hooks/useSavingsGoals";
+import { CategoryTrendsSparkline } from "./CategoryTrendsSparkline";
 import { Progress } from "@/components/ui/progress";
 import {
   Dialog,
