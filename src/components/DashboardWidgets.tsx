@@ -39,6 +39,7 @@ const defaultWidgets: WidgetConfig[] = [
   { id: "savings-goals", label: "Obiective de economii", visible: true },
   { id: "recent-transactions", label: "Tranzacții recente", visible: true },
   { id: "budget-vs-actual", label: "Buget vs Real", visible: true },
+  { id: "category-trends", label: "Tendințe categorii", visible: true },
 ];
 
 function loadConfig(): WidgetConfig[] {
