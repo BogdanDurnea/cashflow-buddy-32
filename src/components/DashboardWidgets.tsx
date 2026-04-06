@@ -351,6 +351,8 @@ export function DashboardWidgets({ transactions, savingsGoals = [], categoryBudg
         return <RecentTransactionsWidget transactions={transactions} />;
       case "budget-vs-actual":
         return <BudgetVsActualWidget transactions={transactions} categoryBudgets={categoryBudgets} />;
+      case "category-trends":
+        return <CategoryTrendsSparkline transactions={transactions} />;
       default:
         return null;
     }
