@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TrendingUp, TrendingDown, Minus } from "lucide-react";
@@ -9,7 +9,9 @@ interface CategoryTrendsSparklineProps {
   transactions: Transaction[];
 }
 
-function Sparkline({ data, color }: { data: number[]; color: string }) {
+function Sparkline({ data, color, months }: { data: number[]; color: string; months: { month: number; year: number }[] }) {
+  const [hovered, setHovered] = useState<number | null>(null);
+
   if (data.length < 2) return null;
 
   const max = Math.max(...data, 1);
@@ -19,40 +21,63 @@ function Sparkline({ data, color }: { data: number[]; color: string }) {
   const h = 24;
   const padding = 2;
 
-  const points = data.map((v, i) => {
+  const pointsData = data.map((v, i) => {
     const x = padding + (i / (data.length - 1)) * (w - padding * 2);
     const y = h - padding - ((v - min) / range) * (h - padding * 2);
-    return `${x},${y}`;
+    return { x, y, value: v };
   });
 
-  const pathD = points.reduce((acc, p, i) => (i === 0 ? `M${p}` : `${acc} L${p}`), "");
+  const pathD = pointsData.reduce((acc, p, i) => (i === 0 ? `M${p.x},${p.y}` : `${acc} L${p.x},${p.y}`), "");
+
+  const monthNames = ["Ian", "Feb", "Mar", "Apr", "Mai", "Iun", "Iul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
   return (
-    <svg width={w} height={h} className="shrink-0">
-      <motion.path
-        d={pathD}
-        fill="none"
-        stroke={color}
-        strokeWidth={1.5}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        initial={{ pathLength: 0, opacity: 0 }}
-        animate={{ pathLength: 1, opacity: 1 }}
-        transition={{ duration: 0.8, ease: "easeOut" }}
-      />
-      {/* End dot */}
-      {data.length > 0 && (
-        <motion.circle
-          cx={parseFloat(points[points.length - 1].split(",")[0])}
-          cy={parseFloat(points[points.length - 1].split(",")[1])}
-          r={2.5}
-          fill={color}
-          initial={{ scale: 0 }}
-          animate={{ scale: 1 }}
-          transition={{ delay: 0.7, duration: 0.2 }}
+    <div className="relative shrink-0">
+      <svg
+        width={w}
+        height={h}
+        className="shrink-0 cursor-crosshair"
+        onMouseLeave={() => setHovered(null)}
+      >
+        <motion.path
+          d={pathD}
+          fill="none"
+          stroke={color}
+          strokeWidth={1.5}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          initial={{ pathLength: 0, opacity: 0 }}
+          animate={{ pathLength: 1, opacity: 1 }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
         />
-      )}
-    </svg>
+        {pointsData.map((p, i) => (
+          <circle
+            key={i}
+            cx={p.x}
+            cy={p.y}
+            r={hovered === i ? 3 : i === data.length - 1 ? 2.5 : 6}
+            fill={hovered === i || i === data.length - 1 ? color : "transparent"}
+            stroke="none"
+            className="cursor-pointer"
+            onMouseEnter={() => setHovered(i)}
+          />
+        ))}
+      </svg>
+      <AnimatePresence>
+        {hovered !== null && (
+          <motion.div
+            initial={{ opacity: 0, y: 4 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 4 }}
+            transition={{ duration: 0.15 }}
+            className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 z-50 rounded-md border bg-popover px-2 py-1 text-xs text-popover-foreground shadow-md whitespace-nowrap pointer-events-none"
+          >
+            <span className="font-semibold">{monthNames[months[hovered].month]}</span>{" "}
+            <span className="tabular-nums">{data[hovered].toFixed(0)} RON</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
   );
 }
 
