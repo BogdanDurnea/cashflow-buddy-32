@@ -178,7 +178,7 @@ export function CategoryTrendsSparkline({ transactions }: CategoryTrendsSparklin
                   <Icon className="h-4 w-4" style={{ color: trend.config.color }} />
                 </div>
                 <span className="text-sm font-medium truncate flex-1 min-w-0">{trend.category}</span>
-                <Sparkline data={trend.data} color={trend.config.color} />
+                <Sparkline data={trend.data} color={trend.config.color} months={trend.months} />
                 <div className="flex items-center gap-1 shrink-0 min-w-[60px] justify-end">
                   <TrendIcon
                     className={`h-3 w-3 ${isUp ? "text-destructive" : isDown ? "text-success" : "text-muted-foreground"}`}
