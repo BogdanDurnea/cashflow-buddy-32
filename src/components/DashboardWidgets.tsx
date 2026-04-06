@@ -95,24 +95,39 @@ function SavingsGoalsWidget({ goals }: { goals: SavingsGoal[] }) {
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
-        {goals.slice(0, 4).map((goal) => {
-          const percentage = Math.min(100, (goal.currentAmount / goal.targetAmount) * 100);
-          return (
-            <div key={goal.id} className="space-y-1.5">
-              <div className="flex items-center justify-between text-sm">
-                <span className="font-medium truncate">{goal.name}</span>
-                <span className="text-muted-foreground shrink-0 ml-2">
-                  {percentage.toFixed(0)}%
-                </span>
-              </div>
-              <Progress value={percentage} className="h-2" />
-              <div className="flex justify-between text-xs text-muted-foreground">
-                <span>{goal.currentAmount.toLocaleString('ro-RO')} RON</span>
-                <span>{goal.targetAmount.toLocaleString('ro-RO')} RON</span>
-              </div>
-            </div>
-          );
-        })}
+        <AnimatePresence mode="popLayout">
+          {goals.slice(0, 4).map((goal, i) => {
+            const percentage = Math.min(100, (goal.currentAmount / goal.targetAmount) * 100);
+            return (
+              <motion.div
+                key={goal.id}
+                className="space-y-1.5"
+                initial={{ opacity: 0, x: -12 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 12 }}
+                transition={{ duration: 0.3, delay: i * 0.05 }}
+              >
+                <div className="flex items-center justify-between text-sm">
+                  <span className="font-medium truncate">{goal.name}</span>
+                  <motion.span
+                    key={percentage}
+                    className="text-muted-foreground shrink-0 ml-2"
+                    initial={{ scale: 1.3, color: "hsl(var(--primary))" }}
+                    animate={{ scale: 1, color: "hsl(var(--muted-foreground))" }}
+                    transition={{ duration: 0.4 }}
+                  >
+                    {percentage.toFixed(0)}%
+                  </motion.span>
+                </div>
+                <Progress value={percentage} className="h-2 transition-all duration-500" />
+                <div className="flex justify-between text-xs text-muted-foreground">
+                  <span>{goal.currentAmount.toLocaleString('ro-RO')} RON</span>
+                  <span>{goal.targetAmount.toLocaleString('ro-RO')} RON</span>
+                </div>
+              </motion.div>
+            );
+          })}
+        </AnimatePresence>
         {goals.length > 4 && (
           <p className="text-xs text-muted-foreground text-center">
             +{goals.length - 4} obiective
