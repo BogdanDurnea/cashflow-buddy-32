@@ -173,29 +173,44 @@ function RecentTransactionsWidget({ transactions }: { transactions: Transaction[
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-2">
-        {recent.map((tx) => {
-          const config = getCategoryConfig(tx.category, tx.type);
-          const IconComponent = config.icon;
-          const isExpense = tx.type === "expense";
-          return (
-            <div key={tx.id} className="flex items-center gap-3 py-1.5 border-b border-border/50 last:border-0">
-              <div className="shrink-0 p-1.5 rounded-md" style={{ backgroundColor: config.lightColor }}>
-                <IconComponent className="h-4 w-4" style={{ color: config.color }} />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium truncate">
-                  {tx.description || tx.category}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  {format(new Date(tx.date), "d MMM yyyy", { locale: ro })}
-                </p>
-              </div>
-              <span className={`text-sm font-semibold shrink-0 ${isExpense ? "text-destructive" : "text-success"}`}>
-                {isExpense ? "-" : "+"}{tx.amount.toLocaleString('ro-RO')} RON
-              </span>
-            </div>
-          );
-        })}
+        <AnimatePresence mode="popLayout">
+          {recent.map((tx, i) => {
+            const config = getCategoryConfig(tx.category, tx.type);
+            const IconComponent = config.icon;
+            const isExpense = tx.type === "expense";
+            return (
+              <motion.div
+                key={tx.id}
+                className="flex items-center gap-3 py-1.5 border-b border-border/50 last:border-0"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.25, delay: i * 0.04 }}
+              >
+                <div className="shrink-0 p-1.5 rounded-md" style={{ backgroundColor: config.lightColor }}>
+                  <IconComponent className="h-4 w-4" style={{ color: config.color }} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium truncate">
+                    {tx.description || tx.category}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {format(new Date(tx.date), "d MMM yyyy", { locale: ro })}
+                  </p>
+                </div>
+                <motion.span
+                  key={`${tx.id}-${tx.amount}`}
+                  className={`text-sm font-semibold shrink-0 ${isExpense ? "text-destructive" : "text-success"}`}
+                  initial={{ scale: 1.2 }}
+                  animate={{ scale: 1 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  {isExpense ? "-" : "+"}{tx.amount.toLocaleString('ro-RO')} RON
+                </motion.span>
+              </motion.div>
+            );
+          })}
+        </AnimatePresence>
       </CardContent>
     </Card>
   );
