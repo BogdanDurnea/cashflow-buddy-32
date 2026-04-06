@@ -23,7 +23,7 @@ import { getCategoryConfig } from "@/lib/categoryConfig";
 import { format } from "date-fns";
 import { ro } from "date-fns/locale";
 
-type WidgetId = "balance-evolution" | "category-donut" | "savings-goals" | "recent-transactions" | "budget-vs-actual";
+type WidgetId = "balance-evolution" | "category-donut" | "savings-goals" | "recent-transactions" | "budget-vs-actual" | "category-trends";
 
 interface WidgetConfig {
   id: WidgetId;
