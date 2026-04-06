@@ -270,30 +270,47 @@ function BudgetVsActualWidget({ transactions, categoryBudgets }: { transactions:
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
-        {data.slice(0, 5).map((item) => {
-          const isOver = item.percentage > 100;
-          const isNear = item.percentage > 80 && !isOver;
-          return (
-            <div key={item.category} className="space-y-1">
-              <div className="flex items-center justify-between text-sm">
-                <span className="font-medium truncate">{item.category}</span>
-                <span className={`shrink-0 ml-2 font-semibold ${isOver ? "text-destructive" : isNear ? "text-warning" : "text-success"}`}>
-                  {item.percentage.toFixed(0)}%
-                </span>
-              </div>
-              <div className="relative h-2 rounded-full bg-secondary overflow-hidden">
-                <div
-                  className={`h-full rounded-full transition-all ${isOver ? "bg-destructive" : isNear ? "bg-warning" : "bg-primary"}`}
-                  style={{ width: `${Math.min(100, item.percentage)}%` }}
-                />
-              </div>
-              <div className="flex justify-between text-xs text-muted-foreground">
-                <span>{item.actual.toLocaleString('ro-RO')} RON</span>
-                <span>{item.budget.toLocaleString('ro-RO')} RON</span>
-              </div>
-            </div>
-          );
-        })}
+        <AnimatePresence mode="popLayout">
+          {data.slice(0, 5).map((item, i) => {
+            const isOver = item.percentage > 100;
+            const isNear = item.percentage > 80 && !isOver;
+            return (
+              <motion.div
+                key={item.category}
+                className="space-y-1"
+                initial={{ opacity: 0, x: -12 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 12 }}
+                transition={{ duration: 0.3, delay: i * 0.05 }}
+              >
+                <div className="flex items-center justify-between text-sm">
+                  <span className="font-medium truncate">{item.category}</span>
+                  <motion.span
+                    key={item.percentage.toFixed(0)}
+                    className={`shrink-0 ml-2 font-semibold ${isOver ? "text-destructive" : isNear ? "text-warning" : "text-success"}`}
+                    initial={{ scale: 1.3 }}
+                    animate={{ scale: 1 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    {item.percentage.toFixed(0)}%
+                  </motion.span>
+                </div>
+                <div className="relative h-2 rounded-full bg-secondary overflow-hidden">
+                  <motion.div
+                    className={`h-full rounded-full ${isOver ? "bg-destructive" : isNear ? "bg-warning" : "bg-primary"}`}
+                    initial={{ width: 0 }}
+                    animate={{ width: `${Math.min(100, item.percentage)}%` }}
+                    transition={{ duration: 0.6, delay: i * 0.08, ease: "easeOut" }}
+                  />
+                </div>
+                <div className="flex justify-between text-xs text-muted-foreground">
+                  <span>{item.actual.toLocaleString('ro-RO')} RON</span>
+                  <span>{item.budget.toLocaleString('ro-RO')} RON</span>
+                </div>
+              </motion.div>
+            );
+          })}
+        </AnimatePresence>
       </CardContent>
     </Card>
   );
