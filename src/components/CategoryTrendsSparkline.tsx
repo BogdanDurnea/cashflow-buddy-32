@@ -129,6 +129,7 @@ export function CategoryTrendsSparkline({ transactions }: CategoryTrendsSparklin
         changePercent,
         config: getCategoryConfig(category, "expense"),
       };
+    });
   }, [transactions]);
 
   if (trends.length === 0) {
