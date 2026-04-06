@@ -3,11 +3,12 @@ import { useTranslation } from "react-i18next";
 import { motion, Reorder, AnimatePresence } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { GripVertical, Settings2, Target, PiggyBank, Clock } from "lucide-react";
+import { GripVertical, Settings2, Target, PiggyBank, Clock, TrendingUp } from "lucide-react";
 import { Transaction } from "./TransactionForm";
 import { QuickStatsDonut } from "./QuickStatsDonut";
 import { BalanceEvolutionChart } from "./BalanceEvolutionChart";
 import { SavingsGoal } from "@/hooks/useSavingsGoals";
+import { CategoryTrendsSparkline } from "./CategoryTrendsSparkline";
 import { Progress } from "@/components/ui/progress";
 import {
   Dialog,
@@ -22,7 +23,7 @@ import { getCategoryConfig } from "@/lib/categoryConfig";
 import { format } from "date-fns";
 import { ro } from "date-fns/locale";
 
-type WidgetId = "balance-evolution" | "category-donut" | "savings-goals" | "recent-transactions" | "budget-vs-actual";
+type WidgetId = "balance-evolution" | "category-donut" | "savings-goals" | "recent-transactions" | "budget-vs-actual" | "category-trends";
 
 interface WidgetConfig {
   id: WidgetId;
@@ -38,6 +39,7 @@ const defaultWidgets: WidgetConfig[] = [
   { id: "savings-goals", label: "Obiective de economii", visible: true },
   { id: "recent-transactions", label: "Tranzacții recente", visible: true },
   { id: "budget-vs-actual", label: "Buget vs Real", visible: true },
+  { id: "category-trends", label: "Tendințe categorii", visible: true },
 ];
 
 function loadConfig(): WidgetConfig[] {
@@ -349,6 +351,8 @@ export function DashboardWidgets({ transactions, savingsGoals = [], categoryBudg
         return <RecentTransactionsWidget transactions={transactions} />;
       case "budget-vs-actual":
         return <BudgetVsActualWidget transactions={transactions} categoryBudgets={categoryBudgets} />;
+      case "category-trends":
+        return <CategoryTrendsSparkline transactions={transactions} />;
       default:
         return null;
     }
