@@ -124,11 +124,11 @@ export function CategoryTrendsSparkline({ transactions }: CategoryTrendsSparklin
       return {
         category,
         data: monthlyData,
+        months,
         current,
         changePercent,
         config: getCategoryConfig(category, "expense"),
       };
-    });
   }, [transactions]);
 
   if (trends.length === 0) {
