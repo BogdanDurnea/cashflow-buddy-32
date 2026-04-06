@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { motion, Reorder } from "framer-motion";
+import { motion, Reorder, AnimatePresence } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { GripVertical, Settings2, Target, PiggyBank, Clock } from "lucide-react";
@@ -95,24 +95,39 @@ function SavingsGoalsWidget({ goals }: { goals: SavingsGoal[] }) {
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
-        {goals.slice(0, 4).map((goal) => {
-          const percentage = Math.min(100, (goal.currentAmount / goal.targetAmount) * 100);
-          return (
-            <div key={goal.id} className="space-y-1.5">
-              <div className="flex items-center justify-between text-sm">
-                <span className="font-medium truncate">{goal.name}</span>
-                <span className="text-muted-foreground shrink-0 ml-2">
-                  {percentage.toFixed(0)}%
-                </span>
-              </div>
-              <Progress value={percentage} className="h-2" />
-              <div className="flex justify-between text-xs text-muted-foreground">
-                <span>{goal.currentAmount.toLocaleString('ro-RO')} RON</span>
-                <span>{goal.targetAmount.toLocaleString('ro-RO')} RON</span>
-              </div>
-            </div>
-          );
-        })}
+        <AnimatePresence mode="popLayout">
+          {goals.slice(0, 4).map((goal, i) => {
+            const percentage = Math.min(100, (goal.currentAmount / goal.targetAmount) * 100);
+            return (
+              <motion.div
+                key={goal.id}
+                className="space-y-1.5"
+                initial={{ opacity: 0, x: -12 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 12 }}
+                transition={{ duration: 0.3, delay: i * 0.05 }}
+              >
+                <div className="flex items-center justify-between text-sm">
+                  <span className="font-medium truncate">{goal.name}</span>
+                  <motion.span
+                    key={percentage}
+                    className="text-muted-foreground shrink-0 ml-2"
+                    initial={{ scale: 1.3, color: "hsl(var(--primary))" }}
+                    animate={{ scale: 1, color: "hsl(var(--muted-foreground))" }}
+                    transition={{ duration: 0.4 }}
+                  >
+                    {percentage.toFixed(0)}%
+                  </motion.span>
+                </div>
+                <Progress value={percentage} className="h-2 transition-all duration-500" />
+                <div className="flex justify-between text-xs text-muted-foreground">
+                  <span>{goal.currentAmount.toLocaleString('ro-RO')} RON</span>
+                  <span>{goal.targetAmount.toLocaleString('ro-RO')} RON</span>
+                </div>
+              </motion.div>
+            );
+          })}
+        </AnimatePresence>
         {goals.length > 4 && (
           <p className="text-xs text-muted-foreground text-center">
             +{goals.length - 4} obiective
@@ -158,29 +173,44 @@ function RecentTransactionsWidget({ transactions }: { transactions: Transaction[
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-2">
-        {recent.map((tx) => {
-          const config = getCategoryConfig(tx.category, tx.type);
-          const IconComponent = config.icon;
-          const isExpense = tx.type === "expense";
-          return (
-            <div key={tx.id} className="flex items-center gap-3 py-1.5 border-b border-border/50 last:border-0">
-              <div className="shrink-0 p-1.5 rounded-md" style={{ backgroundColor: config.lightColor }}>
-                <IconComponent className="h-4 w-4" style={{ color: config.color }} />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium truncate">
-                  {tx.description || tx.category}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  {format(new Date(tx.date), "d MMM yyyy", { locale: ro })}
-                </p>
-              </div>
-              <span className={`text-sm font-semibold shrink-0 ${isExpense ? "text-destructive" : "text-success"}`}>
-                {isExpense ? "-" : "+"}{tx.amount.toLocaleString('ro-RO')} RON
-              </span>
-            </div>
-          );
-        })}
+        <AnimatePresence mode="popLayout">
+          {recent.map((tx, i) => {
+            const config = getCategoryConfig(tx.category, tx.type);
+            const IconComponent = config.icon;
+            const isExpense = tx.type === "expense";
+            return (
+              <motion.div
+                key={tx.id}
+                className="flex items-center gap-3 py-1.5 border-b border-border/50 last:border-0"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.25, delay: i * 0.04 }}
+              >
+                <div className="shrink-0 p-1.5 rounded-md" style={{ backgroundColor: config.lightColor }}>
+                  <IconComponent className="h-4 w-4" style={{ color: config.color }} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium truncate">
+                    {tx.description || tx.category}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {format(new Date(tx.date), "d MMM yyyy", { locale: ro })}
+                  </p>
+                </div>
+                <motion.span
+                  key={`${tx.id}-${tx.amount}`}
+                  className={`text-sm font-semibold shrink-0 ${isExpense ? "text-destructive" : "text-success"}`}
+                  initial={{ scale: 1.2 }}
+                  animate={{ scale: 1 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  {isExpense ? "-" : "+"}{tx.amount.toLocaleString('ro-RO')} RON
+                </motion.span>
+              </motion.div>
+            );
+          })}
+        </AnimatePresence>
       </CardContent>
     </Card>
   );
@@ -240,30 +270,47 @@ function BudgetVsActualWidget({ transactions, categoryBudgets }: { transactions:
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
-        {data.slice(0, 5).map((item) => {
-          const isOver = item.percentage > 100;
-          const isNear = item.percentage > 80 && !isOver;
-          return (
-            <div key={item.category} className="space-y-1">
-              <div className="flex items-center justify-between text-sm">
-                <span className="font-medium truncate">{item.category}</span>
-                <span className={`shrink-0 ml-2 font-semibold ${isOver ? "text-destructive" : isNear ? "text-warning" : "text-success"}`}>
-                  {item.percentage.toFixed(0)}%
-                </span>
-              </div>
-              <div className="relative h-2 rounded-full bg-secondary overflow-hidden">
-                <div
-                  className={`h-full rounded-full transition-all ${isOver ? "bg-destructive" : isNear ? "bg-warning" : "bg-primary"}`}
-                  style={{ width: `${Math.min(100, item.percentage)}%` }}
-                />
-              </div>
-              <div className="flex justify-between text-xs text-muted-foreground">
-                <span>{item.actual.toLocaleString('ro-RO')} RON</span>
-                <span>{item.budget.toLocaleString('ro-RO')} RON</span>
-              </div>
-            </div>
-          );
-        })}
+        <AnimatePresence mode="popLayout">
+          {data.slice(0, 5).map((item, i) => {
+            const isOver = item.percentage > 100;
+            const isNear = item.percentage > 80 && !isOver;
+            return (
+              <motion.div
+                key={item.category}
+                className="space-y-1"
+                initial={{ opacity: 0, x: -12 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 12 }}
+                transition={{ duration: 0.3, delay: i * 0.05 }}
+              >
+                <div className="flex items-center justify-between text-sm">
+                  <span className="font-medium truncate">{item.category}</span>
+                  <motion.span
+                    key={item.percentage.toFixed(0)}
+                    className={`shrink-0 ml-2 font-semibold ${isOver ? "text-destructive" : isNear ? "text-warning" : "text-success"}`}
+                    initial={{ scale: 1.3 }}
+                    animate={{ scale: 1 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    {item.percentage.toFixed(0)}%
+                  </motion.span>
+                </div>
+                <div className="relative h-2 rounded-full bg-secondary overflow-hidden">
+                  <motion.div
+                    className={`h-full rounded-full ${isOver ? "bg-destructive" : isNear ? "bg-warning" : "bg-primary"}`}
+                    initial={{ width: 0 }}
+                    animate={{ width: `${Math.min(100, item.percentage)}%` }}
+                    transition={{ duration: 0.6, delay: i * 0.08, ease: "easeOut" }}
+                  />
+                </div>
+                <div className="flex justify-between text-xs text-muted-foreground">
+                  <span>{item.actual.toLocaleString('ro-RO')} RON</span>
+                  <span>{item.budget.toLocaleString('ro-RO')} RON</span>
+                </div>
+              </motion.div>
+            );
+          })}
+        </AnimatePresence>
       </CardContent>
     </Card>
   );
