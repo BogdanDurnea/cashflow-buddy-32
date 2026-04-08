@@ -7,6 +7,23 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Rate limiting
+const RATE_LIMIT_WINDOW_MS = 60_000; // 1 minute
+const RATE_LIMIT_MAX_REQUESTS = 5;
+const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
+
+function checkRateLimit(userId: string): boolean {
+  const now = Date.now();
+  const entry = rateLimitMap.get(userId);
+  if (!entry || now > entry.resetAt) {
+    rateLimitMap.set(userId, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS });
+    return true;
+  }
+  if (entry.count >= RATE_LIMIT_MAX_REQUESTS) return false;
+  entry.count++;
+  return true;
+}
+
 // Input validation constants
 const MAX_TRANSACTIONS = 500;
 const MAX_DESCRIPTION_LENGTH = 500;
@@ -95,6 +112,15 @@ serve(async (req) => {
     }
 
     const userId = claimsData.claims.sub;
+
+    // Rate limit check
+    if (!checkRateLimit(userId)) {
+      return new Response(
+        JSON.stringify({ error: 'Too many requests. Please wait a moment.' }),
+        { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     console.log('Authenticated user:', userId);
 
     // Parse and validate request body
