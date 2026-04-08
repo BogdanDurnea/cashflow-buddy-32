@@ -100,8 +100,18 @@ serve(async (req) => {
 
     const userId = claimsData.claims.sub;
 
-    // Rate limit check
-    if (!checkRateLimit(userId)) {
+    // Persistent rate limit check via database
+    const serviceClient = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+    );
+    const { data: allowed, error: rlError } = await serviceClient.rpc('check_rate_limit', {
+      _user_id: userId,
+      _function_name: 'ai-insights',
+      _max_requests: RATE_LIMIT_MAX_REQUESTS,
+      _window_seconds: RATE_LIMIT_WINDOW_SECONDS,
+    });
+    if (rlError || !allowed) {
       return new Response(
         JSON.stringify({ error: 'Too many requests. Please wait a moment.' }),
         { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
