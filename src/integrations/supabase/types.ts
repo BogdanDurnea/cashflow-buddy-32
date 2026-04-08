@@ -101,6 +101,30 @@ export type Database = {
         }
         Relationships: []
       }
+      rate_limits: {
+        Row: {
+          function_name: string
+          id: string
+          request_count: number
+          user_id: string
+          window_start: string
+        }
+        Insert: {
+          function_name: string
+          id?: string
+          request_count?: number
+          user_id: string
+          window_start?: string
+        }
+        Update: {
+          function_name?: string
+          id?: string
+          request_count?: number
+          user_id?: string
+          window_start?: string
+        }
+        Relationships: []
+      }
       recurring_transactions: {
         Row: {
           amount: number
@@ -353,6 +377,15 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      check_rate_limit: {
+        Args: {
+          _function_name: string
+          _max_requests: number
+          _user_id: string
+          _window_seconds: number
+        }
+        Returns: boolean
+      }
       get_achievements_leaderboard: {
         Args: { limit_count?: number }
         Returns: {
