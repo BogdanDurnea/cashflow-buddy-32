@@ -111,7 +111,7 @@ serve(async (req) => {
       _max_requests: RATE_LIMIT_MAX_REQUESTS,
       _window_seconds: RATE_LIMIT_WINDOW_SECONDS,
     });
-    console.log('Rate limit check:', JSON.stringify({ allowed, error: rlError }));
+    
     if (rlError || !allowed) {
       return new Response(
         JSON.stringify({ error: 'Too many requests. Please wait a moment.' }),
