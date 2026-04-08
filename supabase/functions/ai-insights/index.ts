@@ -7,22 +7,9 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// Rate limiting
-const RATE_LIMIT_WINDOW_MS = 60_000; // 1 minute
+// Rate limiting constants
 const RATE_LIMIT_MAX_REQUESTS = 5;
-const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
-
-function checkRateLimit(userId: string): boolean {
-  const now = Date.now();
-  const entry = rateLimitMap.get(userId);
-  if (!entry || now > entry.resetAt) {
-    rateLimitMap.set(userId, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS });
-    return true;
-  }
-  if (entry.count >= RATE_LIMIT_MAX_REQUESTS) return false;
-  entry.count++;
-  return true;
-}
+const RATE_LIMIT_WINDOW_SECONDS = 60;
 
 // Input validation constants
 const MAX_TRANSACTIONS = 500;
@@ -113,8 +100,19 @@ serve(async (req) => {
 
     const userId = claimsData.claims.sub;
 
-    // Rate limit check
-    if (!checkRateLimit(userId)) {
+    // Persistent rate limit check via database
+    const serviceClient = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+    );
+    const { data: allowed, error: rlError } = await serviceClient.rpc('check_rate_limit', {
+      _user_id: userId,
+      _function_name: 'ai-insights',
+      _max_requests: RATE_LIMIT_MAX_REQUESTS,
+      _window_seconds: RATE_LIMIT_WINDOW_SECONDS,
+    });
+    
+    if (rlError || !allowed) {
       return new Response(
         JSON.stringify({ error: 'Too many requests. Please wait a moment.' }),
         { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
