@@ -17,21 +17,28 @@ serve(async (req) => {
   }
 
   try {
-    // Verify cron API key for scheduled/external invocations
+    // Verify cron API key for scheduled/external invocations, OR require service role auth
     const cronKey = getCronApiKey();
     const providedKey = req.headers.get('X-Cron-Api-Key');
+    const authHeader = req.headers.get('Authorization');
 
-    if (cronKey && providedKey !== cronKey) {
-      // Also allow service role auth
-      const authHeader = req.headers.get('Authorization');
+    // If cron key is configured, it takes precedence
+    if (cronKey) {
+      if (providedKey !== cronKey) {
+        return new Response(
+          JSON.stringify({ error: 'Invalid cron API key' }),
+          { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+    } else {
+      // No cron key configured — require valid Bearer auth (service role or user token)
       if (!authHeader?.startsWith('Bearer ')) {
         return new Response(
-          JSON.stringify({ error: 'Unauthorized' }),
+          JSON.stringify({ error: 'Authentication required. Set RATE_LIMIT_CLEANUP_API_KEY for cron access, or provide a valid Bearer token.' }),
           { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
 
-      // Validate the bearer token as service role
       const supabaseClient = createClient(
         Deno.env.get('SUPABASE_URL')!,
         Deno.env.get('SUPABASE_ANON_KEY')!,
@@ -43,7 +50,7 @@ serve(async (req) => {
       
       if (claimsError || !claimsData?.claims) {
         return new Response(
-          JSON.stringify({ error: 'Invalid token' }),
+          JSON.stringify({ error: 'Invalid or expired token' }),
           { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
