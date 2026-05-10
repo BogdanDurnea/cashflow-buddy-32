@@ -386,6 +386,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      cleanup_expired_rate_limits: { Args: never; Returns: number }
       get_achievements_leaderboard: {
         Args: { limit_count?: number }
         Returns: {
@@ -393,6 +394,16 @@ export type Database = {
           display_name: string
           rank: number
           user_id: string
+        }[]
+      }
+      get_rate_limits_stats: {
+        Args: never
+        Returns: {
+          newest_window: string
+          oldest_window: string
+          total_rows: number
+          unique_functions: number
+          unique_users: number
         }[]
       }
       get_shared_report: {
@@ -424,6 +435,8 @@ export type Database = {
         Args: { _budget_id: string; _user_id: string }
         Returns: boolean
       }
+      purge_all_expired_rate_limits: { Args: never; Returns: number }
+      reset_user_rate_limits: { Args: { _user_id: string }; Returns: number }
       unlock_achievement: {
         Args: { _achievement_id: string }
         Returns: boolean
