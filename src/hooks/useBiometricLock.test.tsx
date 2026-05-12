@@ -77,6 +77,7 @@ describe("useBiometricLock module", () => {
 
   it("verifyBiometric short-circuits to true on web", async () => {
     isNativePlatform.mockReturnValue(false);
+    verifyIdentity.mockClear();
     await expect(verifyBiometric("x")).resolves.toBe(true);
     expect(verifyIdentity).not.toHaveBeenCalled();
   });
