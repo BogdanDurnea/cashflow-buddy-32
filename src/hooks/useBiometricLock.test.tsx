@@ -3,7 +3,7 @@ import { renderHook, act } from "@testing-library/react";
 
 const isNativePlatform = vi.fn(() => true);
 const isAvailable = vi.fn(async () => ({ isAvailable: true, biometryType: 3 }));
-const verifyIdentity = vi.fn(async () => undefined);
+const verifyIdentity = vi.fn(async (_opts?: any) => undefined);
 
 vi.mock("@capacitor/core", () => ({
   Capacitor: {
