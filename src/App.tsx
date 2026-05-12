@@ -9,6 +9,7 @@ import { Loader2 } from "lucide-react";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { OfflineIndicator } from "@/components/OfflineIndicator";
+import { BiometricGate } from "@/components/BiometricGate";
 
 // Lazy load pages for better performance
 const Index = lazy(() => import("./pages/Index"));
@@ -36,17 +37,19 @@ const App = () => (
           <Sonner />
           <BrowserRouter>
             <SidebarProvider defaultOpen={false}>
-              <Suspense fallback={<LoadingFallback />}>
-                <Routes>
-                  <Route path="/" element={<Index />} />
-                  <Route path="/auth" element={<Auth />} />
-                  <Route path="/reset-password" element={<ResetPassword />} />
-                  <Route path="/install" element={<Install />} />
-                  <Route path="/shared/:token" element={<SharedReport />} />
-                  {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-                  <Route path="*" element={<NotFound />} />
-                </Routes>
-              </Suspense>
+              <BiometricGate>
+                <Suspense fallback={<LoadingFallback />}>
+                  <Routes>
+                    <Route path="/" element={<Index />} />
+                    <Route path="/auth" element={<Auth />} />
+                    <Route path="/reset-password" element={<ResetPassword />} />
+                    <Route path="/install" element={<Install />} />
+                    <Route path="/shared/:token" element={<SharedReport />} />
+                    {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                    <Route path="*" element={<NotFound />} />
+                  </Routes>
+                </Suspense>
+              </BiometricGate>
             </SidebarProvider>
           </BrowserRouter>
         </TooltipProvider>
