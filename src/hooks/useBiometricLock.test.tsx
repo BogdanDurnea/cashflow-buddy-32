@@ -13,8 +13,8 @@ vi.mock("@capacitor/core", () => ({
 
 vi.mock("capacitor-native-biometric", () => ({
   NativeBiometric: {
-    isAvailable: (...a: any[]) => isAvailable(...a),
-    verifyIdentity: (...a: any[]) => verifyIdentity(...a),
+    isAvailable: () => isAvailable(),
+    verifyIdentity: (opts: any) => verifyIdentity(opts),
   },
   BiometryType: {
     TOUCH_ID: 1,
