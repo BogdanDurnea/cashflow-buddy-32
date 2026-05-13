@@ -52,6 +52,7 @@ import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { useAuth } from "@/hooks/useAuth";
 import { useBudgetAlerts } from "@/hooks/useBudgetAlerts";
+import { useSEO } from "@/hooks/useSEO";
 import { supabase } from "@/integrations/supabase/client";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { toast } from "sonner";
@@ -107,6 +108,11 @@ const fadeInUp = {
 const Index = () => {
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
+  useSEO({
+    title: "MoneyTracker — Dashboard finanțe personale",
+    description:
+      "Gestionează-ți finanțele personale: tranzacții, bugete pe categorii, rapoarte AI, scanare bonuri, sincronizare offline și export PDF/CSV.",
+  });
   const {
     user,
     loading: authLoading,
