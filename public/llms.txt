@@ -1,0 +1,15 @@
+# MoneyTracker
+
+> Aplicație modernă pentru gestionarea finanțelor personale: monitorizează venituri, cheltuieli, bugete, scanează bonuri cu AI, primește insights și sincronizează datele între dispozitive.
+
+MoneyTracker este o aplicație web și mobilă (PWA + Android) construită pentru utilizatori care vor să-și controleze cheltuielile, să-și seteze bugete pe categorii și să primească rapoarte detaliate. Suportă 9 limbi, autentificare email/parolă, blocare biometrică pe mobil și export PDF/CSV.
+
+## Pages
+
+- [Dashboard](/): Pagina principală cu tranzacții, statistici, bugete, rapoarte și setări.
+- [Autentificare](/auth): Creare cont sau autentificare cu email și parolă.
+- [Instalare aplicație](/install): Ghid pentru instalarea aplicației ca PWA pe iOS și Android.
+
+## Optional
+
+- [Resetare parolă](/reset-password): Formular pentru setarea unei parole noi din linkul primit pe email.
