@@ -126,7 +126,7 @@ const Install = () => {
           )}
         </div>
       </Card>
-    </div>
+    </main>
   );
 };
 
