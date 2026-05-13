@@ -107,6 +107,11 @@ const fadeInUp = {
 const Index = () => {
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
+  useSEO({
+    title: "MoneyTracker — Dashboard finanțe personale",
+    description:
+      "Gestionează-ți finanțele personale: tranzacții, bugete pe categorii, rapoarte AI, scanare bonuri, sincronizare offline și export PDF/CSV.",
+  });
   const {
     user,
     loading: authLoading,
