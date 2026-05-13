@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { KeyRound, Loader2, CheckCircle } from "lucide-react";
 import { z } from "zod";
+import { useSEO } from "@/hooks/useSEO";
 
 // Schema pentru validare parolă
 const passwordSchema = z.string()
@@ -26,6 +27,13 @@ export default function ResetPassword() {
   const [isValidSession, setIsValidSession] = useState(false);
   const [isChecking, setIsChecking] = useState(true);
   const [errors, setErrors] = useState<{ password?: string; confirmPassword?: string }>({});
+
+  useSEO({
+    title: "Resetare parolă — MoneyTracker",
+    description:
+      "Setează o parolă nouă pentru contul tău MoneyTracker folosind link-ul primit pe email.",
+    noIndex: true,
+  });
 
   useEffect(() => {
     // Check if we have a valid recovery session
@@ -245,6 +253,6 @@ export default function ResetPassword() {
           </form>
         </CardContent>
       </Card>
-    </div>
+    </main>
   );
 }
