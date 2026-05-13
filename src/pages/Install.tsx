@@ -3,10 +3,17 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Smartphone, Download, Check } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useSEO } from "@/hooks/useSEO";
 
 const Install = () => {
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [isInstalled, setIsInstalled] = useState(false);
+
+  useSEO({
+    title: "Instalează MoneyTracker — aplicație PWA pentru iOS și Android",
+    description:
+      "Ghid pas cu pas pentru instalarea aplicației MoneyTracker pe telefonul tău (iOS, Android) ca aplicație nativă PWA.",
+  });
 
   useEffect(() => {
     // Check if app is already installed
@@ -40,7 +47,7 @@ const Install = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-subtle flex items-center justify-center p-4">
+    <main className="min-h-screen bg-gradient-subtle flex items-center justify-center p-4">
       <Card className="max-w-2xl w-full p-6 sm:p-8 space-y-6">
         <div className="text-center space-y-4">
           <div className="gradient-primary w-20 h-20 rounded-full flex items-center justify-center mx-auto">
