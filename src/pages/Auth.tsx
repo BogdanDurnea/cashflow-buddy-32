@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { Wallet, Loader2, ArrowLeft } from "lucide-react";
 import { z } from "zod";
+import { useSEO } from "@/hooks/useSEO";
 
 // Schema pentru validare email
 const emailSchema = z.string()
@@ -37,6 +38,21 @@ export default function Auth() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
+
+  useSEO({
+    title:
+      mode === "signup"
+        ? "Înregistrare cont — MoneyTracker"
+        : mode === "forgot-password"
+        ? "Resetare parolă — MoneyTracker"
+        : "Autentificare — MoneyTracker",
+    description:
+      mode === "signup"
+        ? "Creează un cont MoneyTracker pentru a-ți gestiona finanțele personale, bugetele și rapoartele."
+        : mode === "forgot-password"
+        ? "Primește un link de resetare a parolei pentru contul tău MoneyTracker."
+        : "Autentifică-te în MoneyTracker pentru a-ți accesa tranzacțiile, bugetele și rapoartele.",
+  });
 
   useEffect(() => {
     // Check if user is already logged in
@@ -170,7 +186,7 @@ export default function Auth() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-primary/5 p-4">
+    <main className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-primary/5 p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1 text-center">
           <div className="flex justify-center mb-4">
@@ -323,6 +339,6 @@ export default function Auth() {
           )}
         </CardContent>
       </Card>
-    </div>
+    </main>
   );
 }
