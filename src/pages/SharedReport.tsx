@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, AlertCircle, Calendar, PieChart } from "lucide-react";
 import { PieChart as RechartsPieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from "recharts";
+import { useSEO } from "@/hooks/useSEO";
 
 interface ReportData {
   title: string;
@@ -17,6 +18,15 @@ export default function SharedReport() {
   const [report, setReport] = useState<ReportData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  useSEO({
+    title: report?.title
+      ? `${report.title} — Raport partajat MoneyTracker`
+      : "Raport partajat — MoneyTracker",
+    description:
+      "Raport financiar partajat public din MoneyTracker. Vizualizează venituri, cheltuieli, sold și distribuția pe categorii.",
+    noIndex: true,
+  });
 
   useEffect(() => {
     const loadReport = async () => {
@@ -88,7 +98,7 @@ export default function SharedReport() {
   const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d', '#ffc658', '#ff7c43'];
 
   return (
-    <div className="min-h-screen bg-background p-4 md:p-8">
+    <main className="min-h-screen bg-background p-4 md:p-8">
       <div className="max-w-4xl mx-auto space-y-6">
         <Card>
           <CardHeader>
@@ -186,6 +196,6 @@ export default function SharedReport() {
           Acest raport a fost partajat public. Datele sunt doar pentru vizualizare.
         </p>
       </div>
-    </div>
+    </main>
   );
 }
