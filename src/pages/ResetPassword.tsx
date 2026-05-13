@@ -118,7 +118,7 @@ export default function ResetPassword() {
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
           </CardContent>
         </Card>
-      </div>
+      </main>
     );
   }
 
@@ -143,7 +143,7 @@ export default function ResetPassword() {
             </Button>
           </CardContent>
         </Card>
-      </div>
+      </main>
     );
   }
 
@@ -165,7 +165,7 @@ export default function ResetPassword() {
             </CardDescription>
           </CardHeader>
         </Card>
-      </div>
+      </main>
     );
   }
 
