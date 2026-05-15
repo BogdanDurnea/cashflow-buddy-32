@@ -1,1 +1,4 @@
 project_id = "rvqnnxbtxyybtzqnwmbe"
+
+[functions.seo-status]
+verify_jwt = true
