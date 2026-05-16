@@ -1,9 +1,13 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { CheckCircle2, AlertTriangle, XCircle, RefreshCw, ExternalLink, Search, History, Download } from "lucide-react";
+import { CheckCircle2, AlertTriangle, XCircle, RefreshCw, ExternalLink, Search, History, Download, CalendarIcon, X } from "lucide-react";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { format } from "date-fns";
+import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -50,6 +54,17 @@ export function SEOStatus() {
   });
   const [autoRefresh, setAutoRefresh] = useState(true);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const [fromDate, setFromDate] = useState<Date | undefined>(undefined);
+  const [toDate, setToDate] = useState<Date | undefined>(undefined);
+
+  const filteredHistory = useMemo(() => {
+    return history.filter((h) => {
+      const t = new Date(h.checkedAt).getTime();
+      if (fromDate && t < new Date(fromDate).setHours(0, 0, 0, 0)) return false;
+      if (toDate && t > new Date(toDate).setHours(23, 59, 59, 999)) return false;
+      return true;
+    });
+  }, [history, fromDate, toDate]);
 
   const load = async (silent = false) => {
     setLoading(true);
@@ -105,10 +120,14 @@ export function SEOStatus() {
   }, [autoRefresh]);
 
   const exportHistoryCSV = () => {
-    if (history.length === 0) return;
+    const source = filteredHistory;
+    if (source.length === 0) {
+      toast.error("Nu există verificări în intervalul selectat");
+      return;
+    }
     const headers = ["checkedAt", "verified", "registered", "errors", "warnings"];
     const escape = (v: string) => `"${v.replace(/"/g, '""')}"`;
-    const rows = history.map((h) =>
+    const rows = source.map((h) =>
       [h.checkedAt, String(h.verified), String(h.registered), String(h.errors), String(h.warnings)]
         .map(escape)
         .join(",")
@@ -124,6 +143,38 @@ export function SEOStatus() {
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
   };
+
+  const DateField = ({
+    value,
+    onChange,
+    placeholder,
+  }: {
+    value: Date | undefined;
+    onChange: (d: Date | undefined) => void;
+    placeholder: string;
+  }) => (
+    <Popover>
+      <PopoverTrigger asChild>
+        <Button
+          variant="outline"
+          size="sm"
+          className={cn("h-7 text-xs justify-start font-normal", !value && "text-muted-foreground")}
+        >
+          <CalendarIcon className="w-3 h-3 mr-1" />
+          {value ? format(value, "dd MMM yyyy") : placeholder}
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-auto p-0" align="start">
+        <Calendar
+          mode="single"
+          selected={value}
+          onSelect={onChange}
+          initialFocus
+          className={cn("p-3 pointer-events-auto")}
+        />
+      </PopoverContent>
+    </Popover>
+  );
 
   const StatusBadge = ({ ok, labelOk, labelKo }: { ok: boolean; labelOk: string; labelKo: string }) =>
     ok ? (
@@ -276,10 +327,32 @@ export function SEOStatus() {
             {history.length > 0 && (
               <div className="space-y-2 pt-2 border-t">
                 <h4 className="text-sm font-semibold flex items-center gap-2">
-                  <History className="w-4 h-4" /> Istoric verificări ({history.length})
+                  <History className="w-4 h-4" /> Istoric verificări ({filteredHistory.length}/{history.length})
                 </h4>
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="text-xs text-muted-foreground">Filtrează:</span>
+                  <DateField value={fromDate} onChange={setFromDate} placeholder="De la" />
+                  <DateField value={toDate} onChange={setToDate} placeholder="Până la" />
+                  {(fromDate || toDate) && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-7 text-xs"
+                      onClick={() => {
+                        setFromDate(undefined);
+                        setToDate(undefined);
+                      }}
+                    >
+                      <X className="w-3 h-3 mr-1" /> Resetează
+                    </Button>
+                  )}
+                </div>
                 <div className="space-y-1 max-h-48 overflow-y-auto">
-                  {history.map((h, i) => (
+                  {filteredHistory.length === 0 ? (
+                    <p className="text-xs text-muted-foreground p-2">
+                      Nicio verificare în intervalul selectat.
+                    </p>
+                  ) : filteredHistory.map((h, i) => (
                     <div
                       key={`${h.checkedAt}-${i}`}
                       className="flex items-center justify-between text-xs p-2 rounded border bg-muted/20"
@@ -324,9 +397,9 @@ export function SEOStatus() {
                     size="sm"
                     className="h-7 text-xs"
                     onClick={exportHistoryCSV}
-                    disabled={history.length === 0}
+                    disabled={filteredHistory.length === 0}
                   >
-                    <Download className="w-3 h-3 mr-1" /> Export CSV
+                    <Download className="w-3 h-3 mr-1" /> Export CSV ({filteredHistory.length})
                   </Button>
                   <Button
                     variant="ghost"
