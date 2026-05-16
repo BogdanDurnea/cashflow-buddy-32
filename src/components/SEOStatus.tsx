@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { CheckCircle2, AlertTriangle, XCircle, RefreshCw, ExternalLink, Search, History } from "lucide-react";
+import { CheckCircle2, AlertTriangle, XCircle, RefreshCw, ExternalLink, Search, History, Download } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -103,6 +103,27 @@ export function SEOStatus() {
       timerRef.current = null;
     };
   }, [autoRefresh]);
+
+  const exportHistoryCSV = () => {
+    if (history.length === 0) return;
+    const headers = ["checkedAt", "verified", "registered", "errors", "warnings"];
+    const escape = (v: string) => `"${v.replace(/"/g, '""')}"`;
+    const rows = history.map((h) =>
+      [h.checkedAt, String(h.verified), String(h.registered), String(h.errors), String(h.warnings)]
+        .map(escape)
+        .join(",")
+    );
+    const csv = [headers.join(","), ...rows].join("\n");
+    const blob = new Blob([`\uFEFF${csv}`], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `seo-status-history-${new Date().toISOString().slice(0, 19).replace(/[:T]/g, "-")}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
 
   const StatusBadge = ({ ok, labelOk, labelKo }: { ok: boolean; labelOk: string; labelKo: string }) =>
     ok ? (
@@ -297,21 +318,32 @@ export function SEOStatus() {
                     </div>
                   ))}
                 </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-7 text-xs"
-                  onClick={() => {
-                    setHistory([]);
-                    try {
-                      localStorage.removeItem(HISTORY_KEY);
-                    } catch {
-                      /* ignore */
-                    }
-                  }}
-                >
-                  Șterge istoric
-                </Button>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-7 text-xs"
+                    onClick={exportHistoryCSV}
+                    disabled={history.length === 0}
+                  >
+                    <Download className="w-3 h-3 mr-1" /> Export CSV
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 text-xs"
+                    onClick={() => {
+                      setHistory([]);
+                      try {
+                        localStorage.removeItem(HISTORY_KEY);
+                      } catch {
+                        /* ignore */
+                      }
+                    }}
+                  >
+                    Șterge istoric
+                  </Button>
+                </div>
               </div>
             )}
           </>
