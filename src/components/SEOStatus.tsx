@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { CheckCircle2, AlertTriangle, XCircle, RefreshCw, ExternalLink, Search, History, Download, CalendarIcon, X } from "lucide-react";
+import { CheckCircle2, AlertTriangle, XCircle, RefreshCw, ExternalLink, Search, History, Download, CalendarIcon, X, Clock } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { format } from "date-fns";
@@ -56,15 +56,57 @@ export function SEOStatus() {
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const [fromDate, setFromDate] = useState<Date | undefined>(undefined);
   const [toDate, setToDate] = useState<Date | undefined>(undefined);
+  const [timeMode, setTimeMode] = useState<"local" | "utc">("local");
+
+  const tzLabel = useMemo(() => {
+    try {
+      return Intl.DateTimeFormat().resolvedOptions().timeZone || "local";
+    } catch {
+      return "local";
+    }
+  }, []);
+
+  const startOfDay = (d: Date) => {
+    if (timeMode === "utc") {
+      return Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate(), 0, 0, 0, 0);
+    }
+    const x = new Date(d);
+    x.setHours(0, 0, 0, 0);
+    return x.getTime();
+  };
+  const endOfDay = (d: Date) => {
+    if (timeMode === "utc") {
+      return Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate(), 23, 59, 59, 999);
+    }
+    const x = new Date(d);
+    x.setHours(23, 59, 59, 999);
+    return x.getTime();
+  };
+  const sameDay = (a: Date, b: Date) =>
+    timeMode === "utc"
+      ? a.getUTCFullYear() === b.getUTCFullYear() &&
+        a.getUTCMonth() === b.getUTCMonth() &&
+        a.getUTCDate() === b.getUTCDate()
+      : a.toDateString() === b.toDateString();
+  const formatDate = (d: Date) =>
+    timeMode === "utc"
+      ? `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}-${String(d.getUTCDate()).padStart(2, "0")}`
+      : format(d, "dd MMM yyyy");
+  const formatDateTime = (iso: string) => {
+    const d = new Date(iso);
+    return timeMode === "utc"
+      ? `${d.toISOString().slice(0, 19).replace("T", " ")} UTC`
+      : d.toLocaleString("ro-RO");
+  };
 
   const filteredHistory = useMemo(() => {
     return history.filter((h) => {
       const t = new Date(h.checkedAt).getTime();
-      if (fromDate && t < new Date(fromDate).setHours(0, 0, 0, 0)) return false;
-      if (toDate && t > new Date(toDate).setHours(23, 59, 59, 999)) return false;
+      if (fromDate && t < startOfDay(fromDate)) return false;
+      if (toDate && t > endOfDay(toDate)) return false;
       return true;
     });
-  }, [history, fromDate, toDate]);
+  }, [history, fromDate, toDate, timeMode]);
 
   const load = async (silent = false) => {
     setLoading(true);
@@ -147,7 +189,11 @@ export function SEOStatus() {
   const applyPreset = (days: number) => {
     const end = new Date();
     const start = new Date();
-    start.setDate(start.getDate() - days);
+    if (timeMode === "utc") {
+      start.setUTCDate(start.getUTCDate() - days);
+    } else {
+      start.setDate(start.getDate() - days);
+    }
     setFromDate(start);
     setToDate(end);
   };
@@ -155,12 +201,13 @@ export function SEOStatus() {
   const isPresetActive = (days: number) => {
     if (!fromDate || !toDate) return false;
     const expectedStart = new Date();
-    expectedStart.setDate(expectedStart.getDate() - days);
     const expectedEnd = new Date();
-    return (
-      fromDate.toDateString() === expectedStart.toDateString() &&
-      toDate.toDateString() === expectedEnd.toDateString()
-    );
+    if (timeMode === "utc") {
+      expectedStart.setUTCDate(expectedStart.getUTCDate() - days);
+    } else {
+      expectedStart.setDate(expectedStart.getDate() - days);
+    }
+    return sameDay(fromDate, expectedStart) && sameDay(toDate, expectedEnd);
   };
 
   const DateField = ({
@@ -180,7 +227,7 @@ export function SEOStatus() {
           className={cn("h-7 text-xs justify-start font-normal", !value && "text-muted-foreground")}
         >
           <CalendarIcon className="w-3 h-3 mr-1" />
-          {value ? format(value, "dd MMM yyyy") : placeholder}
+          {value ? formatDate(value) : placeholder}
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0" align="start">
@@ -340,7 +387,7 @@ export function SEOStatus() {
             </div>
 
             <p className="text-xs text-muted-foreground">
-              Verificat la {new Date(data.checkedAt).toLocaleString("ro-RO")}
+              Verificat la {formatDateTime(data.checkedAt)}
             </p>
 
             {history.length > 0 && (
@@ -378,6 +425,16 @@ export function SEOStatus() {
                   <span className="text-xs text-muted-foreground">Filtrează:</span>
                   <DateField value={fromDate} onChange={setFromDate} placeholder="De la" />
                   <DateField value={toDate} onChange={setToDate} placeholder="Până la" />
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-7 text-xs"
+                    onClick={() => setTimeMode((m) => (m === "local" ? "utc" : "local"))}
+                    title={timeMode === "local" ? `Fus local: ${tzLabel}` : "UTC"}
+                  >
+                    <Clock className="w-3 h-3 mr-1" />
+                    {timeMode === "local" ? `Local (${tzLabel})` : "UTC"}
+                  </Button>
                   {(fromDate || toDate) && (
                     <Button
                       variant="ghost"
@@ -403,7 +460,7 @@ export function SEOStatus() {
                       className="flex items-center justify-between text-xs p-2 rounded border bg-muted/20"
                     >
                       <span className="text-muted-foreground">
-                        {new Date(h.checkedAt).toLocaleString("ro-RO")}
+                        {formatDateTime(h.checkedAt)}
                       </span>
                       <div className="flex gap-1.5">
                         <Badge
