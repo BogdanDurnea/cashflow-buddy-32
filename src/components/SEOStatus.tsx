@@ -144,6 +144,25 @@ export function SEOStatus() {
     URL.revokeObjectURL(url);
   };
 
+  const applyPreset = (days: number) => {
+    const end = new Date();
+    const start = new Date();
+    start.setDate(start.getDate() - days);
+    setFromDate(start);
+    setToDate(end);
+  };
+
+  const isPresetActive = (days: number) => {
+    if (!fromDate || !toDate) return false;
+    const expectedStart = new Date();
+    expectedStart.setDate(expectedStart.getDate() - days);
+    const expectedEnd = new Date();
+    return (
+      fromDate.toDateString() === expectedStart.toDateString() &&
+      toDate.toDateString() === expectedEnd.toDateString()
+    );
+  };
+
   const DateField = ({
     value,
     onChange,
@@ -329,6 +348,32 @@ export function SEOStatus() {
                 <h4 className="text-sm font-semibold flex items-center gap-2">
                   <History className="w-4 h-4" /> Istoric verificări ({filteredHistory.length}/{history.length})
                 </h4>
+                <div className="flex flex-wrap gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className={cn("h-7 text-xs", isPresetActive(7) && "bg-primary text-primary-foreground")}
+                    onClick={() => applyPreset(7)}
+                  >
+                    7 zile
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className={cn("h-7 text-xs", isPresetActive(30) && "bg-primary text-primary-foreground")}
+                    onClick={() => applyPreset(30)}
+                  >
+                    30 zile
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className={cn("h-7 text-xs", isPresetActive(90) && "bg-primary text-primary-foreground")}
+                    onClick={() => applyPreset(90)}
+                  >
+                    90 zile
+                  </Button>
+                </div>
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="text-xs text-muted-foreground">Filtrează:</span>
                   <DateField value={fromDate} onChange={setFromDate} placeholder="De la" />
