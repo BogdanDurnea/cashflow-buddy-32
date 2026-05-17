@@ -144,6 +144,25 @@ export function SEOStatus() {
     URL.revokeObjectURL(url);
   };
 
+  const applyPreset = (days: number) => {
+    const end = new Date();
+    const start = new Date();
+    start.setDate(start.getDate() - days);
+    setFromDate(start);
+    setToDate(end);
+  };
+
+  const isPresetActive = (days: number) => {
+    if (!fromDate || !toDate) return false;
+    const expectedStart = new Date();
+    expectedStart.setDate(expectedStart.getDate() - days);
+    const expectedEnd = new Date();
+    return (
+      fromDate.toDateString() === expectedStart.toDateString() &&
+      toDate.toDateString() === expectedEnd.toDateString()
+    );
+  };
+
   const DateField = ({
     value,
     onChange,
