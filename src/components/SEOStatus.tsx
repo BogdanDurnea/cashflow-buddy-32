@@ -481,6 +481,52 @@ export function SEOStatus() {
                     </Button>
                   )}
                 </div>
+                {trendData.length > 1 && (
+                  <div className="h-24 -mx-1">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <AreaChart data={trendData} margin={{ top: 4, right: 8, left: 8, bottom: 0 }}>
+                        <defs>
+                          <linearGradient id="seoErr" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stopColor="hsl(var(--destructive))" stopOpacity={0.5} />
+                            <stop offset="100%" stopColor="hsl(var(--destructive))" stopOpacity={0} />
+                          </linearGradient>
+                          <linearGradient id="seoWarn" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stopColor="hsl(38 92% 50%)" stopOpacity={0.4} />
+                            <stop offset="100%" stopColor="hsl(38 92% 50%)" stopOpacity={0} />
+                          </linearGradient>
+                        </defs>
+                        <XAxis dataKey="t" hide />
+                        <ReTooltip
+                          contentStyle={{
+                            background: "hsl(var(--popover))",
+                            border: "1px solid hsl(var(--border))",
+                            borderRadius: 8,
+                            fontSize: 12,
+                          }}
+                          labelFormatter={(_, payload) =>
+                            payload?.[0]?.payload?.label ?? ""
+                          }
+                        />
+                        <Area
+                          type="monotone"
+                          dataKey="warnings"
+                          stroke="hsl(38 92% 50%)"
+                          strokeWidth={1.5}
+                          fill="url(#seoWarn)"
+                          name="Avertizări"
+                        />
+                        <Area
+                          type="monotone"
+                          dataKey="errors"
+                          stroke="hsl(var(--destructive))"
+                          strokeWidth={1.5}
+                          fill="url(#seoErr)"
+                          name="Erori"
+                        />
+                      </AreaChart>
+                    </ResponsiveContainer>
+                  </div>
+                )}
                 <div className="space-y-1 max-h-48 overflow-y-auto">
                   {filteredHistory.length === 0 ? (
                     <p className="text-xs text-muted-foreground p-2">
