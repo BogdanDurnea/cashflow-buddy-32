@@ -11,6 +11,9 @@ import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { AreaChart, Area, ResponsiveContainer, Tooltip as ReTooltip, XAxis } from "recharts";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+import html2canvas from "html2canvas";
 
 interface Sitemap {
   path: string;
@@ -55,6 +58,7 @@ export function SEOStatus() {
   });
   const [autoRefresh, setAutoRefresh] = useState(true);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const chartRef = useRef<HTMLDivElement | null>(null);
   const [nextRefreshAt, setNextRefreshAt] = useState<number | null>(null);
   const [now, setNow] = useState<number>(Date.now());
   const [fromDate, setFromDate] = useState<Date | undefined>(undefined);
@@ -214,6 +218,122 @@ export function SEOStatus() {
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
+  };
+
+  const exportHistoryPDF = async () => {
+    const source = filteredHistory;
+    if (source.length === 0) {
+      toast.error("Nu există verificări în intervalul selectat");
+      return;
+    }
+    try {
+      const doc = new jsPDF({ unit: "pt", format: "a4" });
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const margin = 40;
+      let y = margin;
+
+      doc.setFontSize(16);
+      doc.text("Raport monitorizare SEO", margin, y);
+      y += 20;
+      doc.setFontSize(10);
+      doc.setTextColor(120);
+      const site = data?.site ?? "";
+      const rangeLabel =
+        fromDate || toDate
+          ? `Interval: ${fromDate ? formatDate(fromDate) : "—"} → ${toDate ? formatDate(toDate) : "—"}`
+          : "Interval: tot istoricul";
+      doc.text(`Site: ${site}`, margin, y); y += 14;
+      doc.text(rangeLabel, margin, y); y += 14;
+      doc.text(`Generat: ${formatDateTime(new Date().toISOString())} (${timeMode === "utc" ? "UTC" : tzLabel})`, margin, y);
+      y += 18;
+      doc.setTextColor(0);
+
+      // Snapshot curent
+      if (data) {
+        doc.setFontSize(12);
+        doc.text("Snapshot curent", margin, y); y += 14;
+        doc.setFontSize(10);
+        doc.text(`Verificare: ${data.verification.verified ? "Verificat" : "Neverificat"}`, margin, y); y += 12;
+        doc.text(`Search Console: ${data.searchConsole.registered ? (data.searchConsole.permissionLevel ?? "Înregistrat") : "Lipsă"}`, margin, y); y += 12;
+        doc.text(`Erori: ${data.errors.length} · Avertizări: ${data.warnings.length}`, margin, y); y += 16;
+
+        if (data.errors.length) {
+          doc.setFontSize(11);
+          doc.setTextColor(180, 40, 40);
+          doc.text(`Erori (${data.errors.length})`, margin, y); y += 12;
+          doc.setTextColor(0);
+          doc.setFontSize(9);
+          for (const e of data.errors) {
+            const lines = doc.splitTextToSize(`• ${e}`, pageWidth - margin * 2);
+            doc.text(lines, margin, y);
+            y += lines.length * 11;
+            if (y > 760) { doc.addPage(); y = margin; }
+          }
+          y += 6;
+        }
+        if (data.warnings.length) {
+          doc.setFontSize(11);
+          doc.setTextColor(180, 120, 20);
+          doc.text(`Avertizări (${data.warnings.length})`, margin, y); y += 12;
+          doc.setTextColor(0);
+          doc.setFontSize(9);
+          for (const w of data.warnings) {
+            const lines = doc.splitTextToSize(`• ${w}`, pageWidth - margin * 2);
+            doc.text(lines, margin, y);
+            y += lines.length * 11;
+            if (y > 760) { doc.addPage(); y = margin; }
+          }
+          y += 6;
+        }
+      }
+
+      // Timeline chart snapshot
+      if (chartRef.current && trendData.length > 1) {
+        try {
+          const canvas = await html2canvas(chartRef.current, {
+            backgroundColor: "#ffffff",
+            scale: 2,
+          });
+          const img = canvas.toDataURL("image/png");
+          const imgW = pageWidth - margin * 2;
+          const imgH = (canvas.height / canvas.width) * imgW;
+          if (y + imgH > 780) { doc.addPage(); y = margin; }
+          doc.setFontSize(12);
+          doc.text("Timeline erori & avertizări", margin, y); y += 12;
+          doc.addImage(img, "PNG", margin, y, imgW, imgH);
+          y += imgH + 16;
+        } catch {
+          /* ignore chart capture errors */
+        }
+      }
+
+      // History table
+      if (y > 700) { doc.addPage(); y = margin; }
+      doc.setFontSize(12);
+      doc.text(`Istoric verificări (${source.length})`, margin, y); y += 8;
+
+      autoTable(doc, {
+        startY: y + 4,
+        head: [["Data", "Verificat", "GSC", "Erori", "Avertizări"]],
+        body: source.map((h) => [
+          formatDateTime(h.checkedAt),
+          h.verified ? "Da" : "Nu",
+          h.registered ? "Da" : "Nu",
+          String(h.errors),
+          String(h.warnings),
+        ]),
+        styles: { fontSize: 9, cellPadding: 4 },
+        headStyles: { fillColor: [30, 41, 59] },
+        margin: { left: margin, right: margin },
+      });
+
+      const stamp = new Date().toISOString().slice(0, 19).replace(/[:T]/g, "-");
+      doc.save(`seo-status-report-${stamp}.pdf`);
+    } catch (e) {
+      toast.error("Nu am putut genera PDF-ul", {
+        description: e instanceof Error ? e.message : "Eroare necunoscută",
+      });
+    }
   };
 
   const applyPreset = (days: number) => {
@@ -482,7 +602,7 @@ export function SEOStatus() {
                   )}
                 </div>
                 {trendData.length > 1 && (
-                  <div className="h-24 -mx-1">
+                  <div ref={chartRef} className="h-24 -mx-1">
                     <ResponsiveContainer width="100%" height="100%">
                       <AreaChart data={trendData} margin={{ top: 4, right: 8, left: 8, bottom: 0 }}>
                         <defs>
@@ -580,6 +700,15 @@ export function SEOStatus() {
                     disabled={filteredHistory.length === 0}
                   >
                     <Download className="w-3 h-3 mr-1" /> Export CSV ({filteredHistory.length})
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-7 text-xs"
+                    onClick={exportHistoryPDF}
+                    disabled={filteredHistory.length === 0}
+                  >
+                    <Download className="w-3 h-3 mr-1" /> Export PDF ({filteredHistory.length})
                   </Button>
                   <Button
                     variant="ghost"
