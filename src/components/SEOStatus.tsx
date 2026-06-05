@@ -10,6 +10,7 @@ import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { AreaChart, Area, ResponsiveContainer, Tooltip as ReTooltip, XAxis } from "recharts";
 
 interface Sitemap {
   path: string;
@@ -54,6 +55,8 @@ export function SEOStatus() {
   });
   const [autoRefresh, setAutoRefresh] = useState(true);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const [nextRefreshAt, setNextRefreshAt] = useState<number | null>(null);
+  const [now, setNow] = useState<number>(Date.now());
   const [fromDate, setFromDate] = useState<Date | undefined>(undefined);
   const [toDate, setToDate] = useState<Date | undefined>(undefined);
   const [timeMode, setTimeMode] = useState<"local" | "utc">("local");
@@ -115,6 +118,7 @@ export function SEOStatus() {
       if (error) throw error;
       const payload = res as SEOStatusData;
       setData(payload);
+      if (autoRefresh) setNextRefreshAt(Date.now() + REFRESH_INTERVAL_MS);
       setHistory((prev) => {
         const entry: HistoryEntry = {
           checkedAt: payload.checkedAt,
@@ -150,8 +154,10 @@ export function SEOStatus() {
     if (!autoRefresh) {
       if (timerRef.current) clearInterval(timerRef.current);
       timerRef.current = null;
+      setNextRefreshAt(null);
       return;
     }
+    setNextRefreshAt(Date.now() + REFRESH_INTERVAL_MS);
     timerRef.current = setInterval(() => {
       if (document.visibilityState === "visible") load(true);
     }, REFRESH_INTERVAL_MS);
@@ -160,6 +166,30 @@ export function SEOStatus() {
       timerRef.current = null;
     };
   }, [autoRefresh]);
+
+  // Tick every second to update countdown
+  useEffect(() => {
+    if (!autoRefresh) return;
+    const id = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(id);
+  }, [autoRefresh]);
+
+  const secondsToNext = nextRefreshAt
+    ? Math.max(0, Math.ceil((nextRefreshAt - now) / 1000))
+    : null;
+
+  // Trend data for sparkline (oldest -> newest)
+  const trendData = useMemo(() => {
+    return [...filteredHistory]
+      .slice()
+      .reverse()
+      .map((h) => ({
+        t: new Date(h.checkedAt).getTime(),
+        label: formatDateTime(h.checkedAt),
+        errors: h.errors,
+        warnings: h.warnings,
+      }));
+  }, [filteredHistory, timeMode]);
 
   const exportHistoryCSV = () => {
     const source = filteredHistory;
@@ -276,7 +306,9 @@ export function SEOStatus() {
             onClick={() => setAutoRefresh((v) => !v)}
             className="h-7 text-xs"
           >
-            Auto-refresh: {autoRefresh ? "ON (60s)" : "OFF"}
+            Auto-refresh: {autoRefresh
+              ? `ON (${secondsToNext ?? 60}s)`
+              : "OFF"}
           </Button>
         </div>
       </CardHeader>
@@ -449,6 +481,52 @@ export function SEOStatus() {
                     </Button>
                   )}
                 </div>
+                {trendData.length > 1 && (
+                  <div className="h-24 -mx-1">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <AreaChart data={trendData} margin={{ top: 4, right: 8, left: 8, bottom: 0 }}>
+                        <defs>
+                          <linearGradient id="seoErr" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stopColor="hsl(var(--destructive))" stopOpacity={0.5} />
+                            <stop offset="100%" stopColor="hsl(var(--destructive))" stopOpacity={0} />
+                          </linearGradient>
+                          <linearGradient id="seoWarn" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stopColor="hsl(38 92% 50%)" stopOpacity={0.4} />
+                            <stop offset="100%" stopColor="hsl(38 92% 50%)" stopOpacity={0} />
+                          </linearGradient>
+                        </defs>
+                        <XAxis dataKey="t" hide />
+                        <ReTooltip
+                          contentStyle={{
+                            background: "hsl(var(--popover))",
+                            border: "1px solid hsl(var(--border))",
+                            borderRadius: 8,
+                            fontSize: 12,
+                          }}
+                          labelFormatter={(_, payload) =>
+                            payload?.[0]?.payload?.label ?? ""
+                          }
+                        />
+                        <Area
+                          type="monotone"
+                          dataKey="warnings"
+                          stroke="hsl(38 92% 50%)"
+                          strokeWidth={1.5}
+                          fill="url(#seoWarn)"
+                          name="Avertizări"
+                        />
+                        <Area
+                          type="monotone"
+                          dataKey="errors"
+                          stroke="hsl(var(--destructive))"
+                          strokeWidth={1.5}
+                          fill="url(#seoErr)"
+                          name="Erori"
+                        />
+                      </AreaChart>
+                    </ResponsiveContainer>
+                  </div>
+                )}
                 <div className="space-y-1 max-h-48 overflow-y-auto">
                   {filteredHistory.length === 0 ? (
                     <p className="text-xs text-muted-foreground p-2">
