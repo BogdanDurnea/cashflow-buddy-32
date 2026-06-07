@@ -195,6 +195,15 @@ export function SEOStatus() {
       }));
   }, [filteredHistory, timeMode]);
 
+  const getExportFileSuffix = () => {
+    const rangePart =
+      fromDate || toDate
+        ? `${fromDate ? formatDate(fromDate) : "start"}_${toDate ? formatDate(toDate) : "end"}`
+        : "";
+    const stamp = new Date().toISOString().slice(0, 19).replace(/[:T]/g, "-");
+    return rangePart ? `${rangePart}_${stamp}` : stamp;
+  };
+
   const exportHistoryCSV = () => {
     const source = filteredHistory;
     if (source.length === 0) {
@@ -213,7 +222,7 @@ export function SEOStatus() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `seo-status-history-${new Date().toISOString().slice(0, 19).replace(/[:T]/g, "-")}.csv`;
+    a.download = `seo-status-history-${getExportFileSuffix()}.csv`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -327,8 +336,7 @@ export function SEOStatus() {
         margin: { left: margin, right: margin },
       });
 
-      const stamp = new Date().toISOString().slice(0, 19).replace(/[:T]/g, "-");
-      doc.save(`seo-status-report-${stamp}.pdf`);
+      doc.save(`seo-status-report-${getExportFileSuffix()}.pdf`);
     } catch (e) {
       toast.error("Nu am putut genera PDF-ul", {
         description: e instanceof Error ? e.message : "Eroare necunoscută",
