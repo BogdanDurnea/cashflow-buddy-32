@@ -192,6 +192,9 @@ export function SEOStatus() {
         label: formatDateTime(h.checkedAt),
         errors: h.errors,
         warnings: h.warnings,
+      }));
+  }, [filteredHistory, timeMode]);
+
   const getExportFileSuffix = () => {
     const rangePart =
       fromDate || toDate
