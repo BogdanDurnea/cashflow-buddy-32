@@ -200,7 +200,8 @@ export function SEOStatus() {
       fromDate || toDate
         ? `${fromDate ? formatDate(fromDate) : "start"}_${toDate ? formatDate(toDate) : "end"}`
         : "";
-    const stamp = new Date().toISOString().slice(0, 19).replace(/[:T]/g, "-");
+    const n = new Date();
+    const stamp = `${n.getFullYear()}-${String(n.getMonth() + 1).padStart(2, "0")}-${String(n.getDate()).padStart(2, "0")}_${String(n.getHours()).padStart(2, "0")}-${String(n.getMinutes()).padStart(2, "0")}-${String(n.getSeconds()).padStart(2, "0")}-${String(n.getMilliseconds()).padStart(3, "0")}`;
     return rangePart ? `${rangePart}_${stamp}` : stamp;
   };
 
