@@ -1,0 +1,143 @@
+{
+  "version": 1,
+  "sdk_version": "0.20.0",
+  "path": "/mcp",
+  "auth": {
+    "type": "oauth",
+    "issuer": "https://rvqnnxbtxyybtzqnwmbe.supabase.co/auth/v1",
+    "accepted_audiences": [
+      "authenticated"
+    ]
+  },
+  "mcp": {
+    "server": {
+      "name": "moneytracker-mcp",
+      "version": "0.1.0",
+      "title": "MoneyTracker MCP"
+    },
+    "tools": [
+      {
+        "name": "list_transactions",
+        "title": "List transactions",
+        "description": "List the signed-in user's finance transactions, most recent first. Optionally filter by type (income/expense) or category, and cap the number of rows returned.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "limit": {
+              "default": 50,
+              "description": "Maximum rows to return (1-200).",
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 200
+            },
+            "type": {
+              "description": "Filter by transaction type.",
+              "type": "string",
+              "enum": [
+                "income",
+                "expense"
+              ]
+            },
+            "category": {
+              "description": "Filter by exact category name.",
+              "type": "string"
+            }
+          }
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "create_transaction",
+        "title": "Create transaction",
+        "description": "Record a new income or expense for the signed-in user. Amount must be positive; type is 'income' or 'expense'.",
+        "annotations": {
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "idempotentHint": false,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "amount": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "description": "Absolute amount, positive number."
+            },
+            "type": {
+              "type": "string",
+              "enum": [
+                "income",
+                "expense"
+              ],
+              "description": "Transaction type."
+            },
+            "category": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Category name (e.g. 'Food', 'Salary')."
+            },
+            "description": {
+              "description": "Optional free-text note.",
+              "type": "string",
+              "maxLength": 500
+            },
+            "date": {
+              "description": "ISO date (YYYY-MM-DD). Defaults to today.",
+              "type": "string",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}"
+            },
+            "currency": {
+              "description": "ISO currency code (default RON).",
+              "type": "string",
+              "minLength": 3,
+              "maxLength": 3
+            }
+          },
+          "required": [
+            "amount",
+            "type",
+            "category"
+          ]
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "get_finance_summary",
+        "title": "Get finance summary",
+        "description": "Return the signed-in user's total income, total expense, net balance, and per-category expense breakdown for a given month (defaults to the current month).",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "year": {
+              "description": "Year (defaults to current year).",
+              "type": "integer",
+              "minimum": 2000,
+              "maximum": 2100
+            },
+            "month": {
+              "description": "Month 1-12 (defaults to current month).",
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 12
+            }
+          }
+        },
+        "outputSchema": null
+      }
+    ]
+  }
+}
