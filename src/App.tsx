@@ -17,6 +17,7 @@ const Auth = lazy(() => import("./pages/Auth"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const Install = lazy(() => import("./pages/Install"));
 const SharedReport = lazy(() => import("./pages/SharedReport"));
+const OAuthConsent = lazy(() => import("./pages/OAuthConsent"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient();
@@ -45,6 +46,7 @@ const App = () => (
                     <Route path="/reset-password" element={<ResetPassword />} />
                     <Route path="/install" element={<Install />} />
                     <Route path="/shared/:token" element={<SharedReport />} />
+                    <Route path="/.lovable/oauth/consent" element={<OAuthConsent />} />
                     {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                     <Route path="*" element={<NotFound />} />
                   </Routes>

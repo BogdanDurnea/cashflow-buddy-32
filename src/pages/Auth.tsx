@@ -33,6 +33,11 @@ type AuthMode = "login" | "signup" | "forgot-password";
 
 export default function Auth() {
   const navigate = useNavigate();
+  const nextParam = (() => {
+    if (typeof window === "undefined") return "/";
+    const n = new URLSearchParams(window.location.search).get("next");
+    return n && n.startsWith("/") && !n.startsWith("//") ? n : "/";
+  })();
   const [isLoading, setIsLoading] = useState(false);
   const [mode, setMode] = useState<AuthMode>("login");
   const [email, setEmail] = useState("");
@@ -59,7 +64,7 @@ export default function Auth() {
     const checkSession = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
-        navigate("/");
+        window.location.href = nextParam;
       }
     };
     checkSession();
@@ -67,17 +72,17 @@ export default function Auth() {
     // Listen for auth state changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'SIGNED_IN' && session) {
-        navigate("/");
+        window.location.href = nextParam;
       }
     });
 
     return () => subscription.unsubscribe();
-  }, [navigate]);
+  }, [navigate, nextParam]);
 
   const validateEmail = (value: string): boolean => {
     const result = emailSchema.safeParse(value);
     if (!result.success) {
-      setErrors(prev => ({ ...prev, email: result.error.errors[0].message }));
+      setErrors(prev => ({ ...prev, email: result.error.issues[0].message }));
       return false;
     }
     setErrors(prev => ({ ...prev, email: undefined }));
@@ -88,7 +93,7 @@ export default function Auth() {
     const schema = isLogin ? loginPasswordSchema : passwordSchema;
     const result = schema.safeParse(value);
     if (!result.success) {
-      setErrors(prev => ({ ...prev, password: result.error.errors[0].message }));
+      setErrors(prev => ({ ...prev, password: result.error.issues[0].message }));
       return false;
     }
     setErrors(prev => ({ ...prev, password: undefined }));
@@ -117,13 +122,13 @@ export default function Auth() {
 
         if (error) throw error;
         toast.success("Autentificare reușită!");
-        navigate("/");
+        window.location.href = nextParam;
       } else if (mode === "signup") {
         const { error } = await supabase.auth.signUp({
           email: email.trim(),
           password,
           options: {
-            emailRedirectTo: `${window.location.origin}/`,
+            emailRedirectTo: `${window.location.origin}${nextParam}`,
           },
         });
 
