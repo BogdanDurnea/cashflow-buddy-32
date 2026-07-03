@@ -68,7 +68,7 @@ export default function ResetPassword() {
   const validatePassword = (value: string): boolean => {
     const result = passwordSchema.safeParse(value);
     if (!result.success) {
-      setErrors(prev => ({ ...prev, password: result.error.errors[0].message }));
+      setErrors(prev => ({ ...prev, password: result.error.issues[0].message }));
       return false;
     }
     setErrors(prev => ({ ...prev, password: undefined }));

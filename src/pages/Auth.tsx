@@ -77,7 +77,7 @@ export default function Auth() {
   const validateEmail = (value: string): boolean => {
     const result = emailSchema.safeParse(value);
     if (!result.success) {
-      setErrors(prev => ({ ...prev, email: result.error.errors[0].message }));
+      setErrors(prev => ({ ...prev, email: result.error.issues[0].message }));
       return false;
     }
     setErrors(prev => ({ ...prev, email: undefined }));
@@ -88,7 +88,7 @@ export default function Auth() {
     const schema = isLogin ? loginPasswordSchema : passwordSchema;
     const result = schema.safeParse(value);
     if (!result.success) {
-      setErrors(prev => ({ ...prev, password: result.error.errors[0].message }));
+      setErrors(prev => ({ ...prev, password: result.error.issues[0].message }));
       return false;
     }
     setErrors(prev => ({ ...prev, password: undefined }));
