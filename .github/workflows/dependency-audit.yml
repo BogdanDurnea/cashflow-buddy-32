@@ -1,0 +1,47 @@
+name: Dependency Vulnerability Scan
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    # Daily at 06:00 UTC so newly disclosed advisories are caught even without commits
+    - cron: "0 6 * * *"
+  workflow_dispatch:
+
+jobs:
+  audit:
+    name: bun audit (fail on critical)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies (frozen lockfile)
+        run: bun install --frozen-lockfile
+
+      - name: Audit — fail on critical
+        run: bun audit --prod --severity critical
+
+      - name: Audit — report high (non-blocking)
+        if: always()
+        run: bun audit --prod --severity high || true
+
+      - name: Full JSON audit report (artifact)
+        if: always()
+        run: bun audit --json > audit-report.json || true
+
+      - name: Upload audit report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bun-audit-report
+          path: audit-report.json
+          retention-days: 30
