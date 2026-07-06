@@ -45,10 +45,3 @@ jobs:
           name: bun-audit-report
           path: audit-report.json
           retention-days: 30
-
-  codeql-not-used:
-    # Placeholder job kept intentionally empty; remove if you add CodeQL later.
-    if: false
-    runs-on: ubuntu-latest
-    steps:
-      - run: echo "noop"
