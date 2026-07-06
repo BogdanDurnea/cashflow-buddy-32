@@ -16,6 +16,8 @@ jobs:
     timeout-minutes: 15
     permissions:
       contents: read
+      pull-requests: write
+      security-events: write
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -63,6 +65,8 @@ jobs:
             --out licenses.csv || true
 
       - name: Fail on disallowed licenses (GPL/AGPL family)
+        id: license_gate
+        continue-on-error: true
         run: |
           npx --yes license-checker-rseidelsohn@latest \
             --production \
@@ -71,6 +75,7 @@ jobs:
       - name: Vulnerability scan of SBOM (Grype)
         uses: anchore/scan-action@v6
         id: grype
+        continue-on-error: true
         with:
           sbom: sbom.spdx.json
           fail-build: true
@@ -82,6 +87,65 @@ jobs:
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: ${{ steps.grype.outputs.sarif }}
+
+      - name: Build PR summary
+        id: summary
+        if: always()
+        run: |
+          set +e
+          COMPONENTS=$(node -e "try{const s=require('./sbom.cdx.json');console.log((s.components||[]).length)}catch(e){console.log('n/a')}")
+          SBOM_JSON_SIZE=$(du -h sbom.cdx.json 2>/dev/null | cut -f1 || echo 'n/a')
+          SBOM_XML_SIZE=$(du -h sbom.cdx.xml 2>/dev/null | cut -f1 || echo 'n/a')
+          SPDX_SIZE=$(du -h sbom.spdx.json 2>/dev/null | cut -f1 || echo 'n/a')
+
+          CVE_STATUS="${{ steps.grype.outcome }}"
+          LIC_STATUS="${{ steps.license_gate.outcome }}"
+          [ "$CVE_STATUS" = "success" ] && CVE_ICON="✅ pass" || CVE_ICON="❌ fail (critical CVEs found)"
+          [ "$LIC_STATUS" = "success" ] && LIC_ICON="✅ pass" || LIC_ICON="❌ fail (disallowed license found)"
+
+          LIC_SUMMARY=$(head -n 40 licenses-summary.txt 2>/dev/null || echo "(unavailable)")
+
+          {
+            echo "### 📦 SBOM Report — \`${GITHUB_SHA::7}\`"
+            echo ""
+            echo "| Item | Value |"
+            echo "|---|---|"
+            echo "| Components | \`$COMPONENTS\` |"
+            echo "| CycloneDX JSON | \`sbom.cdx.json\` ($SBOM_JSON_SIZE) |"
+            echo "| CycloneDX XML | \`sbom.cdx.xml\` ($SBOM_XML_SIZE) |"
+            echo "| SPDX JSON | \`sbom.spdx.json\` ($SPDX_SIZE) |"
+            echo "| License gate | $LIC_ICON |"
+            echo "| Grype CVE scan (critical) | $CVE_ICON |"
+            echo ""
+            echo "<details><summary>License summary (top 40 lines)</summary>"
+            echo ""
+            echo '```'
+            echo "$LIC_SUMMARY"
+            echo '```'
+            echo "</details>"
+            echo ""
+            echo "Full SBOMs, CSV, and SARIF are attached to the workflow run as the \`sbom-and-licenses\` artifact."
+          } > pr-comment.md
+
+          {
+            echo "## SBOM Report"
+            cat pr-comment.md
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Post/update PR comment
+        if: always() && github.event_name == 'pull_request'
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          header: sbom-report
+          path: pr-comment.md
+
+      - name: Enforce gates
+        if: always()
+        run: |
+          fail=0
+          [ "${{ steps.grype.outcome }}" != "success" ] && { echo "::error::Grype found critical vulnerabilities"; fail=1; }
+          [ "${{ steps.license_gate.outcome }}" != "success" ] && { echo "::error::Disallowed license detected"; fail=1; }
+          exit $fail
 
       - name: Upload SBOM + license artifacts
         if: always()
