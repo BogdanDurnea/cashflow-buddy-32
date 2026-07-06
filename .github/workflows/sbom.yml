@@ -1,0 +1,97 @@
+name: SBOM Generation
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: "0 6 * * 1"  # Weekly Monday 06:00 UTC
+  workflow_dispatch:
+
+jobs:
+  sbom:
+    name: Generate SBOM (CycloneDX) + license report
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node (for CycloneDX + license-checker CLIs)
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies (frozen lockfile)
+        run: bun install --frozen-lockfile
+
+      - name: Generate CycloneDX SBOM (JSON + XML)
+        run: |
+          npx --yes @cyclonedx/cyclonedx-npm@latest \
+            --output-format JSON \
+            --output-file sbom.cdx.json \
+            --spec-version 1.5
+          npx --yes @cyclonedx/cyclonedx-npm@latest \
+            --output-format XML \
+            --output-file sbom.cdx.xml \
+            --spec-version 1.5
+
+      - name: Generate SPDX SBOM via Anchore
+        uses: anchore/sbom-action@v0
+        with:
+          path: .
+          format: spdx-json
+          artifact-name: sbom.spdx.json
+          output-file: sbom.spdx.json
+
+      - name: License report (summary + full CSV)
+        run: |
+          npx --yes license-checker-rseidelsohn@latest \
+            --production \
+            --summary > licenses-summary.txt || true
+          npx --yes license-checker-rseidelsohn@latest \
+            --production \
+            --csv \
+            --out licenses.csv || true
+
+      - name: Fail on disallowed licenses (GPL/AGPL family)
+        run: |
+          npx --yes license-checker-rseidelsohn@latest \
+            --production \
+            --failOn "GPL-2.0;GPL-3.0;AGPL-1.0;AGPL-3.0;LGPL-2.0;LGPL-2.1;LGPL-3.0;SSPL-1.0"
+
+      - name: Vulnerability scan of SBOM (Grype)
+        uses: anchore/scan-action@v6
+        id: grype
+        with:
+          sbom: sbom.spdx.json
+          fail-build: true
+          severity-cutoff: critical
+          output-format: sarif
+
+      - name: Upload Grype SARIF to code scanning
+        if: always() && steps.grype.outputs.sarif != ''
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: ${{ steps.grype.outputs.sarif }}
+
+      - name: Upload SBOM + license artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sbom-and-licenses
+          path: |
+            sbom.cdx.json
+            sbom.cdx.xml
+            sbom.spdx.json
+            licenses-summary.txt
+            licenses.csv
+          retention-days: 90
