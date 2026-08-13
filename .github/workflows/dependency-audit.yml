@@ -10,11 +10,15 @@ on:
     - cron: "0 6 * * *"
   workflow_dispatch:
 
+concurrency:
+  group: dependency-audit-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   audit:
-    name: bun audit (fail on critical)
+    name: Dependency audit (fail on critical)
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -24,57 +28,80 @@ jobs:
         with:
           bun-version: latest
 
+      - name: Setup Node (npm audit fallback)
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
       - name: Install dependencies
         run: |
-          bun install --frozen-lockfile || {
+          set -o pipefail
+          bun install --frozen-lockfile 2>&1 | tee install.log || {
             echo "::warning::Frozen lockfile install failed; retrying with a regular install."
-            bun install
+            bun install 2>&1 | tee -a install.log
           }
 
-      - name: Full JSON audit report
+      # bun audit talks to the npm advisory endpoint; it can 404/503 transiently.
+      # Retry, then fall back to `npm audit` against a generated lockfile so the
+      # gate still has real data instead of silently passing.
+      - name: Run audit (bun, with npm fallback)
         id: audit
         run: |
           set +e
-          bun audit --json > audit-report.json 2> audit-error.log
-          code=$?
-          echo "status=$code" >> "$GITHUB_OUTPUT"
-          cat audit-error.log || true
-          if [ "$code" -ne 0 ] && [ ! -s audit-report.json ]; then
-            echo "::warning::bun audit could not reach the advisory registry (exit $code)."
+          source_used="none"
+          for attempt in 1 2 3; do
+            echo "=== bun audit attempt $attempt ==="
+            bun audit --json > audit-report.json 2> audit-error.log
+            code=$?
+            cat audit-error.log
+            if [ -s audit-report.json ]; then source_used="bun"; break; fi
+            sleep $((attempt * 5))
+          done
+
+          if [ "$source_used" = "none" ]; then
+            echo "::warning::bun audit unavailable (last exit $code); falling back to npm audit."
+            npm install --package-lock-only --ignore-scripts --no-audit --no-fund > npm-lock.log 2>&1
+            npm audit --json > audit-report.json 2> audit-error.log
+            cat audit-error.log
+            [ -s audit-report.json ] && source_used="npm"
           fi
+
+          echo "source=$source_used" >> "$GITHUB_OUTPUT"
+          echo "Audit source: $source_used"
           exit 0
 
-      - name: Report high & above (non-blocking)
-        if: always()
-        run: bun audit --audit-level=high || true
-
-      - name: Fail on critical advisories
+      - name: Human-readable audit log
         if: always()
         run: |
-          if [ ! -s audit-report.json ]; then
-            echo "::warning::bun audit produced no report (registry unreachable or unsupported); skipping the critical gate."
-            exit 0
-          fi
-          node -e '
-            const fs = require("fs");
-            let data;
-            try { data = JSON.parse(fs.readFileSync("audit-report.json", "utf8")); }
-            catch { console.log("::warning::audit-report.json is not valid JSON; skipping the critical gate."); process.exit(0); }
-            const advisories = data.advisories ?? data.vulnerabilities ?? data;
-            const list = Array.isArray(advisories) ? advisories : Object.values(advisories ?? {}).flat();
-            const critical = list.filter((a) => (a?.severity ?? "").toLowerCase() === "critical");
-            for (const a of critical) {
-              console.log(`::error::CRITICAL ${a.module_name ?? a.name ?? "package"} — ${a.title ?? a.url ?? ""}`);
-            }
-            if (critical.length) process.exit(1);
-            console.log(`No critical advisories (${list.length} total advisories).`);
-          '
+          echo "::group::bun audit (high and above)"
+          bun audit --audit-level=high 2>&1 | tee audit-human.log || true
+          echo "::endgroup::"
 
-      - name: Upload audit report
+      - name: Evaluate advisories and fail on critical
+        if: always()
+        run: |
+          node .github/scripts/check-audit.mjs
+        env:
+          AUDIT_SOURCE: ${{ steps.audit.outputs.source }}
+
+      - name: Print full logs on failure
+        if: failure()
+        run: |
+          echo "::group::install.log"; cat install.log 2>/dev/null || echo "(none)"; echo "::endgroup::"
+          echo "::group::audit-error.log"; cat audit-error.log 2>/dev/null || echo "(none)"; echo "::endgroup::"
+          echo "::group::audit-human.log"; cat audit-human.log 2>/dev/null || echo "(none)"; echo "::endgroup::"
+          echo "::group::audit-report.json"; head -c 200000 audit-report.json 2>/dev/null || echo "(none)"; echo "::endgroup::"
+
+      - name: Upload audit logs
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: bun-audit-report
-          path: audit-report.json
+          name: dependency-audit-${{ github.run_number }}
+          path: |
+            audit-report.json
+            audit-error.log
+            audit-human.log
+            install.log
+            npm-lock.log
           if-no-files-found: ignore
           retention-days: 30
