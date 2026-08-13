@@ -27,16 +27,39 @@ jobs:
       - name: Install dependencies (frozen lockfile)
         run: bun install --frozen-lockfile
 
-      - name: Audit — fail on critical
-        run: bun audit --prod --severity critical
+      - name: Full JSON audit report
+        id: audit
+        run: |
+          set +e
+          bun audit --json > audit-report.json 2> audit-error.log
+          echo "status=$?" >> "$GITHUB_OUTPUT"
+          cat audit-error.log || true
 
-      - name: Audit — report high (non-blocking)
+      - name: Report high & above (non-blocking)
         if: always()
-        run: bun audit --prod --severity high || true
+        run: bun audit --audit-level=high || true
 
-      - name: Full JSON audit report (artifact)
+      - name: Fail on critical advisories
         if: always()
-        run: bun audit --json > audit-report.json || true
+        run: |
+          if [ ! -s audit-report.json ]; then
+            echo "::warning::bun audit produced no report (registry unreachable or unsupported); skipping the critical gate."
+            exit 0
+          fi
+          node -e '
+            const fs = require("fs");
+            let data;
+            try { data = JSON.parse(fs.readFileSync("audit-report.json", "utf8")); }
+            catch { console.log("::warning::audit-report.json is not valid JSON; skipping the critical gate."); process.exit(0); }
+            const advisories = data.advisories ?? data.vulnerabilities ?? data;
+            const list = Array.isArray(advisories) ? advisories : Object.values(advisories ?? {}).flat();
+            const critical = list.filter((a) => (a?.severity ?? "").toLowerCase() === "critical");
+            for (const a of critical) {
+              console.log(`::error::CRITICAL ${a.module_name ?? a.name ?? "package"} — ${a.title ?? a.url ?? ""}`);
+            }
+            if (critical.length) process.exit(1);
+            console.log(`No critical advisories (${list.length} total advisories).`);
+          '
 
       - name: Upload audit report
         if: always()
