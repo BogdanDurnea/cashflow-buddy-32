@@ -9,16 +9,21 @@ const out = [];
 const log = (line = "") => { console.log(line); out.push(line); };
 
 if (source === "none" || !fs.existsSync(file) || !fs.statSync(file).size) {
-  console.log("::warning::No audit data was produced (registry unreachable). Gate skipped.");
-  process.exit(0);
+  console.log("::error::No audit data was produced. See audit-error.log in the workflow artifact.");
+  process.exit(2);
 }
 
 let data;
 try {
   data = JSON.parse(fs.readFileSync(file, "utf8"));
 } catch (err) {
-  console.log(`::warning::audit-report.json is not valid JSON (${err.message}). Gate skipped.`);
-  process.exit(0);
+  console.log(`::error::audit-report.json is not valid JSON (${err.message}).`);
+  process.exit(2);
+}
+
+if (!data?.vulnerabilities || !data?.metadata) {
+  console.log(`::error::The audit service returned an error instead of an advisory report: ${data?.message ?? "unknown response"}`);
+  process.exit(2);
 }
 
 /** @returns {{name:string,severity:string,title:string,url:string}[]} */
