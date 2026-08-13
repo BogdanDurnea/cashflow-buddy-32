@@ -22,7 +22,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Node (for CycloneDX + license-checker CLIs)
+      - name: Setup Node (for license-checker CLI)
         uses: actions/setup-node@v4
         with:
           node-version: "20"
@@ -35,16 +35,23 @@ jobs:
       - name: Install dependencies (frozen lockfile)
         run: bun install --frozen-lockfile
 
-      - name: Generate CycloneDX SBOM (JSON + XML)
-        run: |
-          npx --yes @cyclonedx/cyclonedx-npm@latest \
-            --output-format JSON \
-            --output-file sbom.cdx.json \
-            --spec-version 1.5
-          npx --yes @cyclonedx/cyclonedx-npm@latest \
-            --output-format XML \
-            --output-file sbom.cdx.xml \
-            --spec-version 1.5
+      # cyclonedx-npm executes `npm ls`, which rejects dependency trees
+      # installed from bun.lock. Syft catalogs the installed Bun tree directly.
+      - name: Generate CycloneDX SBOM (JSON)
+        uses: anchore/sbom-action@v0
+        with:
+          path: .
+          format: cyclonedx-json
+          artifact-name: sbom.cdx.json
+          output-file: sbom.cdx.json
+
+      - name: Generate CycloneDX SBOM (XML)
+        uses: anchore/sbom-action@v0
+        with:
+          path: .
+          format: cyclonedx-xml
+          artifact-name: sbom.cdx.xml
+          output-file: sbom.cdx.xml
 
       - name: Generate SPDX SBOM via Anchore
         uses: anchore/sbom-action@v0
