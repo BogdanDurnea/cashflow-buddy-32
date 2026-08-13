@@ -42,24 +42,27 @@ jobs:
         with:
           path: .
           format: cyclonedx-json
-          artifact-name: sbom.cdx.json
           output-file: sbom.cdx.json
+          upload-artifact: false
+          upload-release-assets: false
 
       - name: Generate CycloneDX SBOM (XML)
         uses: anchore/sbom-action@v0
         with:
           path: .
           format: cyclonedx-xml
-          artifact-name: sbom.cdx.xml
           output-file: sbom.cdx.xml
+          upload-artifact: false
+          upload-release-assets: false
 
       - name: Generate SPDX SBOM via Anchore
         uses: anchore/sbom-action@v0
         with:
           path: .
           format: spdx-json
-          artifact-name: sbom.spdx.json
           output-file: sbom.spdx.json
+          upload-artifact: false
+          upload-release-assets: false
 
       - name: License report (summary + full CSV)
         run: |
@@ -94,6 +97,28 @@ jobs:
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: ${{ steps.grype.outputs.sarif }}
+
+      - name: Collect artifacts into ./sbom-artifacts
+        if: always()
+        run: |
+          mkdir -p sbom-artifacts
+          for f in sbom.cdx.json sbom.cdx.xml sbom.spdx.json licenses-summary.txt licenses.csv; do
+            [ -f "$f" ] && cp "$f" sbom-artifacts/ || echo "::warning::$f missing, not bundled"
+          done
+          if [ -n "${{ steps.grype.outputs.sarif }}" ] && [ -f "${{ steps.grype.outputs.sarif }}" ]; then
+            cp "${{ steps.grype.outputs.sarif }}" sbom-artifacts/grype-results.sarif
+          fi
+          ls -lh sbom-artifacts
+
+      - name: Upload SBOM + license report artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sbom-and-licenses-${{ github.run_number }}-${{ github.sha }}
+          path: sbom-artifacts/**
+          if-no-files-found: warn
+          compression-level: 9
+          retention-days: 90
 
       - name: Build PR summary
         id: summary
@@ -131,7 +156,7 @@ jobs:
             echo '```'
             echo "</details>"
             echo ""
-            echo "Full SBOMs, CSV, and SARIF are attached to the workflow run as the \`sbom-and-licenses\` artifact."
+            echo "Full SBOMs, license CSV, and SARIF are attached to the workflow run as the \`sbom-and-licenses-${GITHUB_RUN_NUMBER}-${GITHUB_SHA}\` artifact."
           } > pr-comment.md
 
           {
@@ -153,16 +178,3 @@ jobs:
           [ "${{ steps.grype.outcome }}" != "success" ] && { echo "::error::Grype found critical vulnerabilities"; fail=1; }
           [ "${{ steps.license_gate.outcome }}" != "success" ] && { echo "::error::Disallowed license detected"; fail=1; }
           exit $fail
-
-      - name: Upload SBOM + license artifacts
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: sbom-and-licenses
-          path: |
-            sbom.cdx.json
-            sbom.cdx.xml
-            sbom.spdx.json
-            licenses-summary.txt
-            licenses.csv
-          retention-days: 90
