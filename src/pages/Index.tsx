@@ -26,7 +26,6 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { UserSettings } from "@/components/UserSettings";
 import { BiometricSettings } from "@/components/BiometricSettings";
 import { AccountSettings } from "@/components/AccountSettings";
-import { SEOStatus } from "@/components/SEOStatus";
 import { ImportData } from "@/components/ImportData";
 import { ShareReport } from "@/components/ShareReport";
 import { ShareReportPublic } from "@/components/ShareReportPublic";
@@ -914,7 +913,6 @@ const Index = () => {
                   <LanguageSettings />
                   <NotificationSettings />
                   <BiometricSettings />
-                  <SEOStatus />
                   <CustomCategoriesManager />
                   <AccountSettings />
                   <div className="grid gap-4 sm:gap-6 lg:grid-cols-2">
