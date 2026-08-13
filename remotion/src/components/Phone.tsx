@@ -11,8 +11,7 @@ export const Phone: React.FC<{ children: React.ReactNode; style?: React.CSSPrope
       height: 880,
       borderRadius: 54,
       padding: 12,
-      background: "linear-gradient(160deg, #2b4straight, #12283f)",
-      backgroundImage: "linear-gradient(160deg, #3a5group, #10243a)",
+      background: "linear-gradient(160deg, #3a5a7d, #10243a)",
       boxShadow: "0 60px 120px rgba(0,0,0,.55), inset 0 0 0 2px rgba(255,255,255,.12)",
       ...style,
     }}
