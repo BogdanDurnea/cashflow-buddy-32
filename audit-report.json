@@ -1,0 +1,39 @@
+{
+  "message": "404 Not Found - POST https://europe-west4-npm.pkg.dev/lovable-core-prod/sandbox-npm-cache/-/npm/v1/security/audits/quick - operation is not supported.",
+  "method": "POST",
+  "uri": "https://europe-west4-npm.pkg.dev/lovable-core-prod/sandbox-npm-cache/-/npm/v1/security/audits/quick",
+  "headers": {
+    "content-type": [
+      "application/json; charset=utf-8"
+    ],
+    "npm-notice": [
+      "operation is not supported."
+    ],
+    "x-content-type-options": [
+      "nosniff"
+    ],
+    "x-frame-options": [
+      "SAMEORIGIN"
+    ],
+    "x-xss-protection": [
+      "0"
+    ],
+    "date": [
+      "Thu, 13 Aug 2026 07:35:11 GMT"
+    ],
+    "content-length": [
+      "40"
+    ],
+    "x-fetch-attempts": [
+      "1"
+    ]
+  },
+  "statusCode": 404,
+  "body": {
+    "error": "operation is not supported."
+  },
+  "error": {
+    "summary": "",
+    "detail": ""
+  }
+}
