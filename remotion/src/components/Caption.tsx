@@ -25,6 +25,7 @@ export const Caption: React.FC<{
           lineHeight: 1.05,
           color: C.cream,
           letterSpacing: -1.5,
+          whiteSpace: "pre-line",
         }}
       >
         {ro}
