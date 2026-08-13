@@ -61,6 +61,24 @@
       ],
       "fixAvailable": true
     },
+    "@capacitor/cli": {
+      "name": "@capacitor/cli",
+      "severity": "moderate",
+      "isDirect": true,
+      "via": [
+        "xcode"
+      ],
+      "effects": [],
+      "range": "8.4.3-nightly-20260715T153327.0 - 8.5.1-nightly-20260812T152148.0",
+      "nodes": [
+        "node_modules/@capacitor/cli"
+      ],
+      "fixAvailable": {
+        "name": "@capacitor/cli",
+        "version": "8.4.2",
+        "isSemVerMajor": true
+      }
+    },
     "@isaacs/brace-expansion": {
       "name": "@isaacs/brace-expansion",
       "severity": "high",
@@ -1513,164 +1531,41 @@
       ],
       "fixAvailable": true
     },
-    "tar": {
-      "name": "tar",
-      "severity": "critical",
+    "uuid": {
+      "name": "uuid",
+      "severity": "moderate",
       "isDirect": false,
       "via": [
         {
-          "source": 1113375,
-          "name": "tar",
-          "dependency": "tar",
-          "title": "Arbitrary File Read/Write via Hardlink Target Escape Through Symlink Chain in node-tar Extraction",
-          "url": "https://github.com/advisories/GHSA-83g3-92jg-28cx",
-          "severity": "high",
-          "cwe": [
-            "CWE-22"
-          ],
-          "cvss": {
-            "score": 7.1,
-            "vectorString": "CVSS:3.1/AV:L/AC:L/PR:N/UI:R/S:U/C:H/I:H/A:N"
-          },
-          "range": "<7.5.8"
-        },
-        {
-          "source": 1114200,
-          "name": "tar",
-          "dependency": "tar",
-          "title": "tar has Hardlink Path Traversal via Drive-Relative Linkpath",
-          "url": "https://github.com/advisories/GHSA-qffp-2rhf-9h96",
-          "severity": "high",
-          "cwe": [
-            "CWE-22",
-            "CWE-59"
-          ],
-          "cvss": {
-            "score": 0,
-            "vectorString": null
-          },
-          "range": "<=7.5.9"
-        },
-        {
-          "source": 1114302,
-          "name": "tar",
-          "dependency": "tar",
-          "title": "node-tar Symlink Path Traversal via Drive-Relative Linkpath",
-          "url": "https://github.com/advisories/GHSA-9ppj-qmqm-q256",
-          "severity": "high",
-          "cwe": [
-            "CWE-22"
-          ],
-          "cvss": {
-            "score": 0,
-            "vectorString": null
-          },
-          "range": "<=7.5.10"
-        },
-        {
-          "source": 1120782,
-          "name": "tar",
-          "dependency": "tar",
-          "title": "node-tar applies PAX size override to intermediary GNU long-name/long-link headers, causing tar parser interpretation differential (file smuggling)",
-          "url": "https://github.com/advisories/GHSA-vmf3-w455-68vh",
+          "source": 1119441,
+          "name": "uuid",
+          "dependency": "uuid",
+          "title": "uuid: Missing buffer bounds check in v3/v5/v6 when buf is provided",
+          "url": "https://github.com/advisories/GHSA-w5hq-g745-h8pq",
           "severity": "moderate",
           "cwe": [
-            "CWE-436"
-          ],
-          "cvss": {
-            "score": 0,
-            "vectorString": null
-          },
-          "range": "<=7.5.15"
-        },
-        {
-          "source": 1123939,
-          "name": "tar",
-          "dependency": "tar",
-          "title": "node-tar: Process crash via PAX numeric path type confusion",
-          "url": "https://github.com/advisories/GHSA-w8wr-v893-vjvp",
-          "severity": "moderate",
-          "cwe": [
-            "CWE-704"
-          ],
-          "cvss": {
-            "score": 5.3,
-            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:L"
-          },
-          "range": "<=7.5.17"
-        },
-        {
-          "source": 1123940,
-          "name": "tar",
-          "dependency": "tar",
-          "title": "node-tar: Decompression/parse DoS via unlimited input",
-          "url": "https://github.com/advisories/GHSA-23hp-3jrh-7fpw",
-          "severity": "critical",
-          "cwe": [
-            "CWE-770"
+            "CWE-787",
+            "CWE-1285"
           ],
           "cvss": {
             "score": 7.5,
-            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:H/A:N"
           },
-          "range": "<=7.5.18"
-        },
-        {
-          "source": 1123941,
-          "name": "tar",
-          "dependency": "tar",
-          "title": "node-tar: Negative tar entry size causes infinite loop in archive replace",
-          "url": "https://github.com/advisories/GHSA-8x88-c5mf-7j5w",
-          "severity": "high",
-          "cwe": [
-            "CWE-835"
-          ],
-          "cvss": {
-            "score": 7.5,
-            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
-          },
-          "range": "<=7.5.17"
-        },
-        {
-          "source": 1123942,
-          "name": "tar",
-          "dependency": "tar",
-          "title": "node-tar: Uncaught Exception DoS via NUL byte in PAX path/linkpath records",
-          "url": "https://github.com/advisories/GHSA-gvwx-54wh-qm9j",
-          "severity": "moderate",
-          "cwe": [
-            "CWE-248"
-          ],
-          "cvss": {
-            "score": 5.3,
-            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:L"
-          },
-          "range": "<=7.5.16"
-        },
-        {
-          "source": 1124287,
-          "name": "tar",
-          "dependency": "tar",
-          "title": "node-tar: Uncontrolled recursion in mapHas/filesFilter allows uncatchable stack-overflow DoS via crafted long-path tar with member selection",
-          "url": "https://github.com/advisories/GHSA-r292-9mhp-454m",
-          "severity": "moderate",
-          "cwe": [
-            "CWE-400",
-            "CWE-674"
-          ],
-          "cvss": {
-            "score": 5.3,
-            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:L"
-          },
-          "range": "<=7.5.20"
+          "range": "<11.1.1"
         }
       ],
-      "effects": [],
-      "range": "<=7.5.20",
-      "nodes": [
-        "node_modules/tar"
+      "effects": [
+        "xcode"
       ],
-      "fixAvailable": true
+      "range": "<11.1.1",
+      "nodes": [
+        "node_modules/uuid"
+      ],
+      "fixAvailable": {
+        "name": "@capacitor/cli",
+        "version": "8.4.2",
+        "isSemVerMajor": true
+      }
     },
     "vite": {
       "name": "vite",
@@ -1850,6 +1745,26 @@
       ],
       "fixAvailable": true
     },
+    "xcode": {
+      "name": "xcode",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": [
+        "uuid"
+      ],
+      "effects": [
+        "@capacitor/cli"
+      ],
+      "range": ">=0.9.2",
+      "nodes": [
+        "node_modules/xcode"
+      ],
+      "fixAvailable": {
+        "name": "@capacitor/cli",
+        "version": "8.4.2",
+        "isSemVerMajor": true
+      }
+    },
     "yaml": {
       "name": "yaml",
       "severity": "moderate",
@@ -1884,18 +1799,18 @@
     "vulnerabilities": {
       "info": 0,
       "low": 1,
-      "moderate": 5,
+      "moderate": 8,
       "high": 17,
-      "critical": 1,
-      "total": 24
+      "critical": 0,
+      "total": 26
     },
     "dependencies": {
-      "prod": 763,
+      "prod": 769,
       "dev": 277,
       "optional": 176,
       "peer": 35,
       "peerOptional": 0,
-      "total": 1126
+      "total": 1132
     }
   }
 }
