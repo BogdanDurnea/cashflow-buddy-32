@@ -2,8 +2,9 @@ import { AbsoluteFill, useCurrentFrame, useVideoConfig, spring, interpolate } fr
 import { C } from "../theme";
 import { body, display } from "../components/fonts";
 import { Card } from "../components/UI";
+import { Icon } from "../components/Icon";
 
-const flags = ["🇷🇴", "🇬🇧", "🇩🇪", "🇫🇷", "🇪🇸", "🇮🇹", "🇳🇱", "🇵🇱", "🇵🇹"];
+const langs = ["RO", "EN", "DE", "FR", "ES", "IT", "NL", "PL", "PT"];
 
 export const Scene6CTA: React.FC = () => {
   const frame = useCurrentFrame();
@@ -15,7 +16,7 @@ export const Scene6CTA: React.FC = () => {
     <AbsoluteFill style={{ justifyContent: "center", alignItems: "center" }}>
       <div style={{ display: "flex", gap: 30, marginBottom: 46 }}>
         <Card delay={4} style={{ padding: 30, width: 380, transform: `scale(${0.9 + lock * 0.1})` }}>
-          <div style={{ fontSize: 52 }}>🔒</div>
+          <Icon name="lock" size={52} color={C.mint} />
           <div style={{ fontFamily: display, fontWeight: 700, color: C.cream, fontSize: 30, marginTop: 12 }}>
             Blocare biometrică
           </div>
@@ -24,14 +25,31 @@ export const Scene6CTA: React.FC = () => {
           </div>
         </Card>
         <Card delay={16} style={{ padding: 30, width: 380 }}>
-          <div style={{ fontSize: 40, letterSpacing: 4 }}>{flags.slice(0, 5).join(" ")}</div>
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+            {langs.map((l) => (
+              <span
+                key={l}
+                style={{
+                  fontFamily: body,
+                  fontWeight: 800,
+                  fontSize: 16,
+                  color: C.navyDeep,
+                  background: C.slate,
+                  borderRadius: 6,
+                  padding: "4px 8px",
+                }}
+              >
+                {l}
+              </span>
+            ))}
+          </div>
           <div style={{ fontFamily: display, fontWeight: 700, color: C.cream, fontSize: 30, marginTop: 12 }}>
             9 limbi
           </div>
           <div style={{ fontFamily: body, color: C.slate, fontSize: 20, marginTop: 8 }}>Available in 9 languages</div>
         </Card>
         <Card delay={28} style={{ padding: 30, width: 380 }}>
-          <div style={{ fontSize: 52 }}>📶</div>
+          <Icon name="wifi" size={52} color={C.mint} />
           <div style={{ fontFamily: display, fontWeight: 700, color: C.cream, fontSize: 30, marginTop: 12 }}>
             Funcționează offline
           </div>
