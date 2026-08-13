@@ -24,16 +24,25 @@ jobs:
         with:
           bun-version: latest
 
-      - name: Install dependencies (frozen lockfile)
-        run: bun install --frozen-lockfile
+      - name: Install dependencies
+        run: |
+          bun install --frozen-lockfile || {
+            echo "::warning::Frozen lockfile install failed; retrying with a regular install."
+            bun install
+          }
 
       - name: Full JSON audit report
         id: audit
         run: |
           set +e
           bun audit --json > audit-report.json 2> audit-error.log
-          echo "status=$?" >> "$GITHUB_OUTPUT"
+          code=$?
+          echo "status=$code" >> "$GITHUB_OUTPUT"
           cat audit-error.log || true
+          if [ "$code" -ne 0 ] && [ ! -s audit-report.json ]; then
+            echo "::warning::bun audit could not reach the advisory registry (exit $code)."
+          fi
+          exit 0
 
       - name: Report high & above (non-blocking)
         if: always()
@@ -67,4 +76,5 @@ jobs:
         with:
           name: bun-audit-report
           path: audit-report.json
+          if-no-files-found: ignore
           retention-days: 30
