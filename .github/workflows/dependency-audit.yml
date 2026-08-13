@@ -41,40 +41,44 @@ jobs:
             bun install 2>&1 | tee -a install.log
           }
 
-      # bun audit talks to the npm advisory endpoint; it can 404/503 transiently.
-      # Retry, then fall back to `npm audit` against a generated lockfile so the
-      # gate still has real data instead of silently passing.
-      - name: Run audit (bun, with npm fallback)
+      # Bun's configured package mirror does not expose npm's audit endpoint.
+      # Generate an npm lock from package.json and query the public advisory API.
+      - name: Generate audit lockfile
+        run: |
+          npm install --package-lock-only --ignore-scripts --no-audit --no-fund \
+            --registry=https://registry.npmjs.org 2>&1 | tee npm-lock.log
+
+      - name: Run dependency audit
         id: audit
         run: |
           set +e
-          source_used="none"
           for attempt in 1 2 3; do
-            echo "=== bun audit attempt $attempt ==="
-            bun audit --json > audit-report.json 2> audit-error.log
+            echo "=== npm audit attempt $attempt ==="
+            npm audit --json --registry=https://registry.npmjs.org \
+              > audit-report.json 2> audit-error.log
             code=$?
             cat audit-error.log
-            if [ -s audit-report.json ]; then source_used="bun"; break; fi
+            if node -e '
+              const fs = require("fs");
+              const data = JSON.parse(fs.readFileSync("audit-report.json", "utf8"));
+              process.exit(data.vulnerabilities && data.metadata ? 0 : 1);
+            ' 2>/dev/null; then
+              break
+            fi
+            echo "::warning::Attempt $attempt did not return a valid advisory report."
             sleep $((attempt * 5))
           done
 
-          if [ "$source_used" = "none" ]; then
-            echo "::warning::bun audit unavailable (last exit $code); falling back to npm audit."
-            npm install --package-lock-only --ignore-scripts --no-audit --no-fund > npm-lock.log 2>&1
-            npm audit --json > audit-report.json 2> audit-error.log
-            cat audit-error.log
-            [ -s audit-report.json ] && source_used="npm"
-          fi
-
-          echo "source=$source_used" >> "$GITHUB_OUTPUT"
-          echo "Audit source: $source_used"
+          echo "source=npm" >> "$GITHUB_OUTPUT"
+          echo "audit_exit_code=$code" >> "$GITHUB_OUTPUT"
           exit 0
 
       - name: Human-readable audit log
         if: always()
         run: |
-          echo "::group::bun audit (high and above)"
-          bun audit --audit-level=high 2>&1 | tee audit-human.log || true
+          echo "::group::npm audit (high and critical)"
+          npm audit --audit-level=high --registry=https://registry.npmjs.org \
+            2>&1 | tee audit-human.log || true
           echo "::endgroup::"
 
       - name: Evaluate advisories and fail on critical
