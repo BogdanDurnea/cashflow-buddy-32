@@ -3,6 +3,7 @@ import { C } from "../theme";
 import { body, display } from "../components/fonts";
 import { Caption } from "../components/Caption";
 import { Card } from "../components/UI";
+import { Icon } from "../components/Icon";
 
 const bars = [42, 68, 55, 88, 74, 96, 61, 80];
 
@@ -43,7 +44,7 @@ export const Scene5Reports: React.FC = () => {
       <div style={{ flex: 1 }}>
         <Caption ro={"Rapoarte PDF\nși grafice clare"} en="Clear charts and PDF reports" size={68} delay={16} />
         <Card delay={60} style={{ marginTop: 36, padding: 26, display: "flex", gap: 18, alignItems: "center" }}>
-          <div style={{ fontSize: 40 }}>📄</div>
+          <Icon name="doc" size={44} color={C.mint} />
           <div>
             <div style={{ fontFamily: display, fontWeight: 700, color: C.cream, fontSize: 28 }}>Raport lunar.pdf</div>
             <div style={{ fontFamily: body, color: C.slate, fontSize: 20, marginTop: 4 }}>

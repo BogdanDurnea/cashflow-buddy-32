@@ -3,6 +3,7 @@ import { C } from "../theme";
 import { body } from "../components/fonts";
 import { Caption } from "../components/Caption";
 import { Card, Bar } from "../components/UI";
+import { Icon } from "../components/Icon";
 
 export const Scene4Budgets: React.FC = () => {
   const frame = useCurrentFrame();
@@ -28,7 +29,10 @@ export const Scene4Budgets: React.FC = () => {
             transform: `scale(${0.9 + alert * 0.1}) rotate(${(1 - alert) * 3}deg)`,
           }}
         >
-          <div style={{ fontFamily: body, fontWeight: 800, color: C.amber, fontSize: 30 }}>⚠ Alertă buget</div>
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <Icon name="warn" size={34} color={C.amber} stroke={2} />
+            <span style={{ fontFamily: body, fontWeight: 800, color: C.amber, fontSize: 30 }}>Alertă buget</span>
+          </div>
           <div style={{ fontFamily: body, color: C.cream, fontSize: 26, marginTop: 12, lineHeight: 1.4 }}>
             Ai atins 96% din bugetul „Distracție”.
           </div>

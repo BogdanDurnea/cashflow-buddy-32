@@ -37,7 +37,7 @@ export const Scene2Dashboard: React.FC = () => {
       </div>
       <div style={{ transform: `translateY(${interpolate(frame, [0, 165], [26, -26])}px) rotate(-3deg)` }}>
         <Phone>
-          <div style={{ marginTop: 34, fontFamily: body, color: C.slate, fontSize: 18 }}>Bună, Bogdan 👋</div>
+          <div style={{ marginTop: 34, fontFamily: body, color: C.slate, fontSize: 18 }}>Bună, Bogdan</div>
           <div style={{ fontFamily: display, fontWeight: 700, color: C.cream, fontSize: 46 }}>
             <Counter to={3330} delay={16} />
           </div>
