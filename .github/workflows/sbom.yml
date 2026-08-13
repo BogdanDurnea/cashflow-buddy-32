@@ -156,7 +156,7 @@ jobs:
             echo '```'
             echo "</details>"
             echo ""
-            echo "Full SBOMs, CSV, and SARIF are attached to the workflow run as the \`sbom-and-licenses\` artifact."
+            echo "Full SBOMs, license CSV, and SARIF are attached to the workflow run as the \`sbom-and-licenses-${GITHUB_RUN_NUMBER}-${GITHUB_SHA}\` artifact."
           } > pr-comment.md
 
           {
