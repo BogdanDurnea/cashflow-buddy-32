@@ -17,43 +17,21 @@ serve(async (req) => {
   }
 
   try {
-    // Verify cron API key for scheduled/external invocations, OR require service role auth
+    // Admin/cron-only endpoint. Regular user sessions are never accepted.
     const cronKey = getCronApiKey();
     const providedKey = req.headers.get('X-Cron-Api-Key');
-    const authHeader = req.headers.get('Authorization');
+    const authHeader = req.headers.get('Authorization') ?? '';
+    const bearer = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : '';
+    const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
 
-    // If cron key is configured, it takes precedence
-    if (cronKey) {
-      if (providedKey !== cronKey) {
-        return new Response(
-          JSON.stringify({ error: 'Invalid cron API key' }),
-          { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
-    } else {
-      // No cron key configured — require valid Bearer auth (service role or user token)
-      if (!authHeader?.startsWith('Bearer ')) {
-        return new Response(
-          JSON.stringify({ error: 'Authentication required. Set RATE_LIMIT_CLEANUP_API_KEY for cron access, or provide a valid Bearer token.' }),
-          { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
+    const cronAuthorized = !!cronKey && !!providedKey && providedKey === cronKey;
+    const serviceAuthorized = !!serviceRoleKey && bearer === serviceRoleKey;
 
-      const supabaseClient = createClient(
-        Deno.env.get('SUPABASE_URL')!,
-        Deno.env.get('SUPABASE_ANON_KEY')!,
-        { global: { headers: { Authorization: authHeader } } }
+    if (!cronAuthorized && !serviceAuthorized) {
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
-
-      const token = authHeader.replace('Bearer ', '');
-      const { data: claimsData, error: claimsError } = await supabaseClient.auth.getClaims(token);
-      
-      if (claimsError || !claimsData?.claims) {
-        return new Response(
-          JSON.stringify({ error: 'Invalid or expired token' }),
-          { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
     }
 
     // Use service role client to call cleanup function
