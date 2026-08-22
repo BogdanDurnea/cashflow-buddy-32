@@ -1,6 +1,13 @@
 User-agent: *
 Allow: /
+
+# Private / user-specific areas — no value for search results
 Disallow: /shared/
 Disallow: /reset-password
+Disallow: /.lovable/
+
+# Avoid duplicate URLs from tracking parameters
+Disallow: /*?utm_
+Disallow: /*?ref=
 
 Sitemap: https://cashflow-buddy-32.lovable.app/sitemap.xml
