@@ -41,7 +41,13 @@ export function useSEO({ title, description, canonical, noIndex }: SEOOptions) {
     setMeta('meta[name="twitter:title"]', "content", title);
     if (description) setMeta('meta[name="twitter:description"]', "content", description);
 
-    const url = canonical || (typeof window !== "undefined" ? window.location.href : "/");
+    // Canonical must be the clean page URL: no query strings, no hash,
+    // otherwise Google treats ?foo=1 variants as separate duplicate pages.
+    const url =
+      canonical ||
+      (typeof window !== "undefined"
+        ? `${window.location.origin}${window.location.pathname.replace(/\/+$/, "") || "/"}`
+        : "/");
     setLink("canonical", url);
     setMeta('meta[property="og:url"]', "content", url);
 
