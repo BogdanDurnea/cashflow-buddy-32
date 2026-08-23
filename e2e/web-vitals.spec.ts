@@ -8,8 +8,10 @@ import { createRequire } from "node:module";
 import { expect, test } from "@playwright/test";
 
 const require = createRequire(import.meta.url);
+// Resolve the package root, then read the IIFE bundle directly: the package's
+// "exports" map doesn't expose ./dist/* subpaths.
 const webVitalsScript = readFileSync(
-  require.resolve("web-vitals/dist/web-vitals.iife.js"),
+  require.resolve("web-vitals").replace(/dist[/\\].*$/, "dist/web-vitals.iife.js"),
   "utf8",
 );
 
