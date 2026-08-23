@@ -284,26 +284,126 @@
       "6": "Legend"
     },
     "badge": {
-      "first_transaction": { "name": "First Step", "description": "Add your first transaction", "how": "Add your first transaction from the main form.", "detail": "Unlocked automatically when you record any transaction for the first time." },
-      "ten_transactions": { "name": "Organized", "description": "Record 10 transactions", "how": "Record 10 transactions in total.", "detail": "Keep adding transactions — the type doesn't matter." },
-      "fifty_transactions": { "name": "Junior Accountant", "description": "Record 50 transactions", "how": "Reach 50 recorded transactions.", "detail": "Be consistent and you'll earn this badge in a few weeks." },
-      "hundred_transactions": { "name": "Finance Master", "description": "Record 100 transactions", "how": "Record 100 transactions.", "detail": "The ultimate badge for dedicated users." },
-      "first_income": { "name": "First Pay", "description": "Add your first income", "how": "Add a transaction of type 'income'.", "detail": "Select 'Income' type when adding a new transaction." },
-      "first_expense": { "name": "First Expense", "description": "Record your first expense", "how": "Add a transaction of type 'expense'.", "detail": "Select 'Expense' type when adding a new transaction." },
-      "first_budget": { "name": "Planner", "description": "Set your first monthly budget", "how": "Set a monthly budget from the Budgets section.", "detail": "Define a spending limit for the current month." },
-      "budget_keeper": { "name": "Disciplined", "description": "Stay within budget for a whole month", "how": "Stay under the budget limit for a full month.", "detail": "Your spending must be below the set budget for the entire month." },
-      "category_budget": { "name": "Specialist", "description": "Create a category budget", "how": "Create a budget for a specific category.", "detail": "From the budgets section, set a budget for a category (e.g., food, transport)." },
-      "first_goal": { "name": "Dreamer", "description": "Create your first savings goal", "how": "Create a savings goal.", "detail": "Access the 'Savings Goals' section and create your first goal." },
-      "goal_achieved": { "name": "Achiever", "description": "Reach a savings goal", "how": "Complete a savings goal.", "detail": "The saved amount must equal or exceed the set target." },
-      "big_saver": { "name": "Big Saver", "description": "Save over 5000", "how": "Save over 5000 in total.", "detail": "The total amount in your savings goals must exceed 5000." },
-      "week_streak": { "name": "Consistent", "description": "Add transactions 7 consecutive days", "how": "Add transactions 7 days in a row.", "detail": "No breaks — record at least one transaction every day for 7 consecutive days." },
-      "month_streak": { "name": "Dedicated", "description": "Add transactions 30 consecutive days", "how": "Add transactions 30 days in a row.", "detail": "A full month of daily consecutive transactions." },
-      "first_receipt": { "name": "Collector", "description": "Attach your first receipt to a transaction", "how": "Attach a receipt to a transaction.", "detail": "Use the attachment button when adding or editing a transaction." },
-      "recurring_master": { "name": "Automator", "description": "Create a recurring transaction", "how": "Create a recurring transaction.", "detail": "From the 'Recurring Transactions' section, set up an automatic payment." },
-      "shared_budget": { "name": "Collaborator", "description": "Create a shared budget", "how": "Create a shared budget with another user.", "detail": "Access 'Shared Budgets' and invite someone." },
-      "report_shared": { "name": "Transparent", "description": "Share a financial report", "how": "Share a financial report.", "detail": "From the 'Reports' section, generate and share a public link." },
-      "night_owl": { "name": "Night Owl", "description": "Add a transaction after midnight", "how": "Add a transaction between 00:00 and 04:59.", "detail": "The badge is unlocked automatically based on the time of addition." },
-      "early_bird": { "name": "Early Bird", "description": "Add a transaction before 6 AM", "how": "Add a transaction between 05:00 and 05:59.", "detail": "Wake up early and record a transaction!" }
+      "first_transaction": {
+        "name": "First Step",
+        "description": "Add your first transaction",
+        "how": "Add your first transaction from the main form.",
+        "detail": "Unlocked automatically when you record any transaction for the first time."
+      },
+      "ten_transactions": {
+        "name": "Organized",
+        "description": "Record 10 transactions",
+        "how": "Record 10 transactions in total.",
+        "detail": "Keep adding transactions — the type doesn't matter."
+      },
+      "fifty_transactions": {
+        "name": "Junior Accountant",
+        "description": "Record 50 transactions",
+        "how": "Reach 50 recorded transactions.",
+        "detail": "Be consistent and you'll earn this badge in a few weeks."
+      },
+      "hundred_transactions": {
+        "name": "Finance Master",
+        "description": "Record 100 transactions",
+        "how": "Record 100 transactions.",
+        "detail": "The ultimate badge for dedicated users."
+      },
+      "first_income": {
+        "name": "First Pay",
+        "description": "Add your first income",
+        "how": "Add a transaction of type 'income'.",
+        "detail": "Select 'Income' type when adding a new transaction."
+      },
+      "first_expense": {
+        "name": "First Expense",
+        "description": "Record your first expense",
+        "how": "Add a transaction of type 'expense'.",
+        "detail": "Select 'Expense' type when adding a new transaction."
+      },
+      "first_budget": {
+        "name": "Planner",
+        "description": "Set your first monthly budget",
+        "how": "Set a monthly budget from the Budgets section.",
+        "detail": "Define a spending limit for the current month."
+      },
+      "budget_keeper": {
+        "name": "Disciplined",
+        "description": "Stay within budget for a whole month",
+        "how": "Stay under the budget limit for a full month.",
+        "detail": "Your spending must be below the set budget for the entire month."
+      },
+      "category_budget": {
+        "name": "Specialist",
+        "description": "Create a category budget",
+        "how": "Create a budget for a specific category.",
+        "detail": "From the budgets section, set a budget for a category (e.g., food, transport)."
+      },
+      "first_goal": {
+        "name": "Dreamer",
+        "description": "Create your first savings goal",
+        "how": "Create a savings goal.",
+        "detail": "Access the 'Savings Goals' section and create your first goal."
+      },
+      "goal_achieved": {
+        "name": "Achiever",
+        "description": "Reach a savings goal",
+        "how": "Complete a savings goal.",
+        "detail": "The saved amount must equal or exceed the set target."
+      },
+      "big_saver": {
+        "name": "Big Saver",
+        "description": "Save over 5000",
+        "how": "Save over 5000 in total.",
+        "detail": "The total amount in your savings goals must exceed 5000."
+      },
+      "week_streak": {
+        "name": "Consistent",
+        "description": "Add transactions 7 consecutive days",
+        "how": "Add transactions 7 days in a row.",
+        "detail": "No breaks — record at least one transaction every day for 7 consecutive days."
+      },
+      "month_streak": {
+        "name": "Dedicated",
+        "description": "Add transactions 30 consecutive days",
+        "how": "Add transactions 30 days in a row.",
+        "detail": "A full month of daily consecutive transactions."
+      },
+      "first_receipt": {
+        "name": "Collector",
+        "description": "Attach your first receipt to a transaction",
+        "how": "Attach a receipt to a transaction.",
+        "detail": "Use the attachment button when adding or editing a transaction."
+      },
+      "recurring_master": {
+        "name": "Automator",
+        "description": "Create a recurring transaction",
+        "how": "Create a recurring transaction.",
+        "detail": "From the 'Recurring Transactions' section, set up an automatic payment."
+      },
+      "shared_budget": {
+        "name": "Collaborator",
+        "description": "Create a shared budget",
+        "how": "Create a shared budget with another user.",
+        "detail": "Access 'Shared Budgets' and invite someone."
+      },
+      "report_shared": {
+        "name": "Transparent",
+        "description": "Share a financial report",
+        "how": "Share a financial report.",
+        "detail": "From the 'Reports' section, generate and share a public link."
+      },
+      "night_owl": {
+        "name": "Night Owl",
+        "description": "Add a transaction after midnight",
+        "how": "Add a transaction between 00:00 and 04:59.",
+        "detail": "The badge is unlocked automatically based on the time of addition."
+      },
+      "early_bird": {
+        "name": "Early Bird",
+        "description": "Add a transaction before 6 AM",
+        "how": "Add a transaction between 05:00 and 05:59.",
+        "detail": "Wake up early and record a transaction!"
+      }
     }
   },
   "errors": {
@@ -313,5 +413,22 @@
     "unauthorized": "Unauthorized",
     "notFound": "Not found",
     "serverError": "Server error"
+  },
+  "kpi": {
+    "healthTitle": "Cash flow health",
+    "healthDescription": "Score based on savings rate ({{rate}}%), spending discipline and income coverage.",
+    "level": {
+      "healthy": "Healthy",
+      "watch": "Watch",
+      "risk": "At risk"
+    },
+    "cashInOutTitle": "Cash in / cash out",
+    "netCashFlow": "Net cash flow",
+    "forecastTitle": "Forecast vs actual",
+    "actualToDate": "Actual to date",
+    "forecastMonthEnd": "Month-end forecast",
+    "aboveForecast": "{{amount}} above forecast pace ({{percent}}%)",
+    "belowForecast": "{{amount}} below forecast pace ({{percent}}%)",
+    "daysLeft": "{{count}} days left this month"
   }
 }
