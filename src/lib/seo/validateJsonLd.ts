@@ -125,6 +125,11 @@ export function validateJsonLdNode(node: unknown, where = "JSON-LD"): string[] {
       return [...errors, ...validateFaqPage(obj, where)];
     case "BreadcrumbList":
       return [...errors, ...validateBreadcrumbList(obj, where)];
+    case "Organization":
+      return [...errors, ...validateOrganization(obj, where)];
+    case "WebSite":
+      return [...errors, ...validateWebSite(obj, where)];
+
     default:
       return errors;
   }
