@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useSEO } from "@/hooks/useSEO";
 import { useAuth } from "@/hooks/useAuth";
+import { guides } from "@/data/guides";
 import heroDashboard from "@/assets/hero-dashboard.jpg";
 import {
   Wallet,
@@ -17,26 +18,6 @@ import {
   ArrowRight,
 } from "lucide-react";
 
-const guides = [
-  {
-    to: "/urmarirea-cheltuielilor",
-    icon: Wallet,
-    title: "Urmărirea cheltuielilor",
-    text: "Cum îți ții evidența cheltuielilor zilnice cu categorii, bonuri scanate și import CSV.",
-  },
-  {
-    to: "/bugete-personale",
-    icon: PieChart,
-    title: "Buget personal",
-    text: "Regula 50/30/20, bugete pe categorii, alerte de depășire și obiective de economii.",
-  },
-  {
-    to: "/rapoarte-financiare",
-    icon: FileText,
-    title: "Rapoarte financiare",
-    text: "Indicatorii lunari esențiali, comparații între luni și export PDF sau CSV.",
-  },
-];
 
 
 const features = [
@@ -110,6 +91,9 @@ export default function Landing() {
                 </Button>
                 <Button asChild size="lg" variant="outline">
                   <Link to="/install">Instalează aplicația</Link>
+                </Button>
+                <Button asChild size="lg" variant="ghost">
+                  <a href="#ghiduri">Citește ghidurile</a>
                 </Button>
               </div>
               <p className="text-sm text-muted-foreground">
@@ -208,7 +192,7 @@ export default function Landing() {
       </section>
 
       {/* Guides */}
-      <section className="border-y bg-muted/30">
+      <section id="ghiduri" className="scroll-mt-16 border-y bg-muted/30">
         <div className="mx-auto max-w-6xl px-4 py-16">
           <h2 className="text-2xl font-bold sm:text-3xl">Ghiduri de finanțe personale</h2>
           <p className="mt-2 max-w-2xl text-muted-foreground">
