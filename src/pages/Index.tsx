@@ -624,7 +624,7 @@ const Index = () => {
                   {expandedSections.length === allSections.length ? t("common.close") : t("common.all")}
                 </span>
               </Button>
-              <Button variant="outline" size="sm" onClick={requestNotificationPermission} className="h-8 sm:h-9 active:scale-95 transition-smooth" title={t("settings.notifications")}>
+              <Button variant="outline" size="sm" onClick={requestNotificationPermission} className="h-8 sm:h-9 active:scale-95 transition-smooth" title={t("settings.notifications")} aria-label={t("settings.notifications")}>
                 <Bell className="h-4 w-4" />
               </Button>
               <LanguageSelector variant="icon" aria-label={t("settings.language")} />
