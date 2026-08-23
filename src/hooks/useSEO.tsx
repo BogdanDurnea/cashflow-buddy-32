@@ -1,13 +1,19 @@
 import { useEffect } from "react";
+import { OG_IMAGE_HEIGHT, OG_IMAGE_WIDTH } from "@/data/seoRoutes";
 
 interface SEOOptions {
   title: string;
   description?: string;
   canonical?: string;
   noIndex?: boolean;
+  /** Absolute URL of the social preview image (1200x630). */
+  image?: string;
+  imageAlt?: string;
   /** Structured data objects rendered as <script type="application/ld+json"> */
   jsonLd?: Record<string, unknown>[];
 }
+
+
 
 
 function setMeta(selector: string, attr: string, value: string) {
@@ -31,7 +37,15 @@ function setLink(rel: string, href: string) {
   el.setAttribute("href", href);
 }
 
-export function useSEO({ title, description, canonical, noIndex, jsonLd }: SEOOptions) {
+export function useSEO({
+  title,
+  description,
+  canonical,
+  noIndex,
+  image,
+  imageAlt,
+  jsonLd,
+}: SEOOptions) {
   const jsonLdKey = jsonLd ? JSON.stringify(jsonLd) : "";
 
   useEffect(() => {
@@ -45,6 +59,22 @@ export function useSEO({ title, description, canonical, noIndex, jsonLd }: SEOOp
     setMeta('meta[property="og:title"]', "content", title);
     setMeta('meta[name="twitter:title"]', "content", title);
     if (description) setMeta('meta[name="twitter:description"]', "content", description);
+
+    // Social preview: OG and Twitter always stay in sync, with the recommended
+    // 1200x630 dimensions declared so scrapers don't have to fetch the file.
+    if (image) {
+      setMeta('meta[property="og:image"]', "content", image);
+      setMeta('meta[property="og:image:width"]', "content", String(OG_IMAGE_WIDTH));
+      setMeta('meta[property="og:image:height"]', "content", String(OG_IMAGE_HEIGHT));
+      if (imageAlt) {
+        setMeta('meta[property="og:image:alt"]', "content", imageAlt);
+        setMeta('meta[name="twitter:image:alt"]', "content", imageAlt);
+      }
+      setMeta('meta[name="twitter:card"]', "content", "summary_large_image");
+      setMeta('meta[name="twitter:image"]', "content", image);
+    }
+
+
 
     // Canonical must be the clean page URL: no query strings, no hash,
     // otherwise Google treats ?foo=1 variants as separate duplicate pages.
@@ -84,6 +114,6 @@ export function useSEO({ title, description, canonical, noIndex, jsonLd }: SEOOp
         .querySelectorAll('script[data-seo-jsonld="true"]')
         .forEach((el) => el.remove());
     };
-  }, [title, description, canonical, noIndex, jsonLdKey]);
+  }, [title, description, canonical, noIndex, image, imageAlt, jsonLdKey]);
 }
 
