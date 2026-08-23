@@ -62,6 +62,45 @@ function validateBreadcrumbList(node: JsonLdNode, where: string): string[] {
   return errors;
 }
 
+function validateOrganization(node: JsonLdNode, where: string): string[] {
+  const errors: string[] = [];
+  if (!isNonEmptyString(node.name)) errors.push(`${where}: Organization needs a "name"`);
+  if (!isAbsoluteUrl(node.url)) errors.push(`${where}: Organization.url must be an absolute https URL`);
+
+  const logo = node.logo;
+  const logoUrl = typeof logo === "object" && logo ? (logo as JsonLdNode).url : logo;
+  if (!isAbsoluteUrl(logoUrl)) {
+    errors.push(`${where}: Organization.logo must resolve to an absolute https URL`);
+  }
+
+  if (node.sameAs !== undefined) {
+    if (!Array.isArray(node.sameAs) || node.sameAs.length === 0) {
+      errors.push(`${where}: Organization.sameAs must be a non-empty array when present`);
+    } else {
+      node.sameAs.forEach((link, i) => {
+        if (!isAbsoluteUrl(link)) {
+          errors.push(`${where}: Organization.sameAs[${i}] must be an absolute https URL`);
+        }
+      });
+    }
+  }
+
+  return errors;
+}
+
+function validateWebSite(node: JsonLdNode, where: string): string[] {
+  const errors: string[] = [];
+  if (!isNonEmptyString(node.name)) errors.push(`${where}: WebSite needs a "name"`);
+  if (!isAbsoluteUrl(node.url)) errors.push(`${where}: WebSite.url must be an absolute https URL`);
+
+  const publisher = node.publisher as JsonLdNode | undefined;
+  if (publisher && !isNonEmptyString(publisher["@id"]) && !isNonEmptyString(publisher.name)) {
+    errors.push(`${where}: WebSite.publisher needs an @id reference or a name`);
+  }
+
+  return errors;
+}
+
 /** Validates a single JSON-LD node. Returns human-readable error strings. */
 export function validateJsonLdNode(node: unknown, where = "JSON-LD"): string[] {
   if (!node || typeof node !== "object" || Array.isArray(node)) {
@@ -86,6 +125,11 @@ export function validateJsonLdNode(node: unknown, where = "JSON-LD"): string[] {
       return [...errors, ...validateFaqPage(obj, where)];
     case "BreadcrumbList":
       return [...errors, ...validateBreadcrumbList(obj, where)];
+    case "Organization":
+      return [...errors, ...validateOrganization(obj, where)];
+    case "WebSite":
+      return [...errors, ...validateWebSite(obj, where)];
+
     default:
       return errors;
   }

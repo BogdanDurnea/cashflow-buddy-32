@@ -79,6 +79,24 @@ describe("guide pages emit valid JSON-LD", () => {
     }
   });
 
+  it.each(GUIDE_PAGES)("$name includes Organization + WebSite entities", ({ path, Component }) => {
+    render(
+      <MemoryRouter initialEntries={[path]}>
+        <Component />
+      </MemoryRouter>,
+    );
+
+    const nodes = readJsonLd();
+    const org = nodes.find((n) => n["@type"] === "Organization");
+    const site = nodes.find((n) => n["@type"] === "WebSite");
+
+    expect(org, "Organization missing").toBeTruthy();
+    expect(site, "WebSite missing").toBeTruthy();
+    expect((org!.logo as { url: string }).url).toMatch(/^https:\/\//);
+    expect(site!.url).toBe(`${SITE}/`);
+    expect((site!.publisher as { "@id": string })["@id"]).toBe(org!["@id"]);
+  });
+
   it("removes structured data on unmount so routes don't accumulate schema", () => {
     const view = render(
       <MemoryRouter initialEntries={["/bugete-personale"]}>
@@ -90,6 +108,7 @@ describe("guide pages emit valid JSON-LD", () => {
     expect(readJsonLd().length).toBe(0);
   });
 });
+
 
 describe("validateJsonLdNode catches regressions", () => {
   it("rejects an FAQ question without an answer", () => {

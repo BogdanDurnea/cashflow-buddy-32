@@ -1,5 +1,7 @@
 import { useEffect } from "react";
 import { OG_IMAGE_HEIGHT, OG_IMAGE_WIDTH } from "@/data/seoRoutes";
+import { siteSchemaNodes } from "@/data/siteSchema";
+
 
 interface SEOOptions {
   title: string;
@@ -46,7 +48,9 @@ export function useSEO({
   imageAlt,
   jsonLd,
 }: SEOOptions) {
-  const jsonLdKey = jsonLd ? JSON.stringify(jsonLd) : "";
+  // Organization + WebSite ship on every page; page-specific nodes come after.
+  const jsonLdKey = JSON.stringify([...siteSchemaNodes, ...(jsonLd ?? [])]);
+
 
   useEffect(() => {
     const prevTitle = document.title;
