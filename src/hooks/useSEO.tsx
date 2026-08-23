@@ -1,5 +1,7 @@
 import { useEffect } from "react";
 import { OG_IMAGE_HEIGHT, OG_IMAGE_WIDTH } from "@/data/seoRoutes";
+import { siteSchemaNodes } from "@/data/siteSchema";
+
 
 interface SEOOptions {
   title: string;
