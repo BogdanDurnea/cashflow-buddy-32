@@ -109,7 +109,7 @@ const Index = () => {
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
   useSEO({
-    title: "MoneyTracker — Dashboard finanțe personale",
+    title: t("dashboard.pageTitle"),
     description:
       "Gestionează-ți finanțele personale: tranzacții, bugete pe categorii, rapoarte AI, scanare bonuri, sincronizare offline și export PDF/CSV.",
   });
@@ -607,12 +607,12 @@ const Index = () => {
         <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-2 sm:py-3 md:py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2 sm:space-x-3 min-w-0 flex-1">
-              <SidebarTrigger className="shrink-0" />
+              <SidebarTrigger className="shrink-0" aria-label={t("common.toggleSidebar")} />
               <div className="gradient-primary p-1.5 sm:p-2 rounded-lg shrink-0">
                 <TrendingUp className="h-5 w-5 sm:h-6 sm:w-6 text-primary-foreground" />
               </div>
               <div className="min-w-0">
-                <h1 className="text-lg sm:text-xl md:text-2xl font-bold truncate">{t("dashboard.appName")}</h1>
+                <h1 className="text-lg sm:text-xl md:text-2xl font-bold truncate">{t("dashboard.pageTitle")}</h1>
                 <p className="text-xs sm:text-sm text-muted-foreground hidden sm:block">{t("dashboard.subtitle")}</p>
               </div>
             </div>
@@ -624,11 +624,11 @@ const Index = () => {
                   {expandedSections.length === allSections.length ? t("common.close") : t("common.all")}
                 </span>
               </Button>
-              <Button variant="outline" size="sm" onClick={requestNotificationPermission} className="h-8 sm:h-9 active:scale-95 transition-smooth" title={t("settings.notifications")}>
+              <Button variant="outline" size="sm" onClick={requestNotificationPermission} className="h-8 sm:h-9 active:scale-95 transition-smooth" title={t("settings.notifications")} aria-label={t("settings.notifications")}>
                 <Bell className="h-4 w-4" />
               </Button>
-              <LanguageSelector variant="icon" />
-              <ThemeToggle />
+              <LanguageSelector variant="icon" aria-label={t("settings.language")} />
+              <ThemeToggle aria-label={t("settings.theme")} />
               <Button variant="outline" size="sm" onClick={handleLogout} className="h-8 sm:h-9 active:scale-95 transition-smooth">
                 <LogOut className="h-4 w-4 sm:mr-2" />
                 <span className="hidden sm:inline">{t("nav.logout")}</span>

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader } from "@/components/ui/card";
 import { Loader2, AlertCircle, Calendar, PieChart } from "lucide-react";
 import { PieChart as RechartsPieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from "recharts";
 import { useSEO } from "@/hooks/useSEO";
@@ -104,7 +104,7 @@ export default function SharedReport() {
           <CardHeader>
             <div className="flex items-center gap-2">
               <PieChart className="h-6 w-6 text-primary" />
-              <CardTitle>{report.title}</CardTitle>
+              <h1 className="text-2xl font-bold">{report.title} — Raport partajat</h1>
             </div>
             <CardDescription className="flex items-center gap-2">
               <Calendar className="h-4 w-4" />

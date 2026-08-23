@@ -24,7 +24,8 @@
     "none": "Niciunul",
     "select": "Selectează",
     "undo": "Anulează",
-    "currency": "RON"
+    "currency": "RON",
+    "toggleSidebar": "Comută bara laterală"
   },
   "nav": {
     "dashboard": "Panou de control",
@@ -151,7 +152,8 @@
     "greeting": "Bună, {{name}}!",
     "transactionCount": "Ai {{count}} tranzacții înregistrate",
     "subtitle": "Monitorizează-ți finanțele",
-    "appName": "MoneyTracker",
+    "appName": "CashFlow Buddy",
+    "pageTitle": "CashFlow Buddy — Panou financiar personal",
     "expensesMonth": "Cheltuieli {{month}}",
     "day": "Ziua {{day}}",
     "netBalance": "Balanță netă",

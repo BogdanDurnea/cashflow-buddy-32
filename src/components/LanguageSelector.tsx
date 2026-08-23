@@ -13,9 +13,10 @@ import { useToast } from '@/hooks/use-toast';
 interface LanguageSelectorProps {
   variant?: 'icon' | 'full';
   className?: string;
+  'aria-label'?: string;
 }
 
-export function LanguageSelector({ variant = 'icon', className }: LanguageSelectorProps) {
+export function LanguageSelector({ variant = 'icon', className, 'aria-label': ariaLabel }: LanguageSelectorProps) {
   const { i18n, t } = useTranslation();
   const { toast } = useToast();
 
@@ -32,7 +33,7 @@ export function LanguageSelector({ variant = 'icon', className }: LanguageSelect
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size={variant === 'icon' ? 'icon' : 'default'} className={className}>
+        <Button variant="ghost" size={variant === 'icon' ? 'icon' : 'default'} className={className} aria-label={ariaLabel}>
           {variant === 'icon' ? (
             <Globe className="h-5 w-5" />
           ) : (

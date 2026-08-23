@@ -24,6 +24,7 @@
     "none": "Geen",
     "select": "Selecteren",
     "undo": "Ongedaan maken",
+    "toggleSidebar": "Toggle sidebar",
     "currency": "EUR"
   },
   "nav": {
@@ -151,7 +152,8 @@
     "greeting": "Hallo, {{name}}!",
     "transactionCount": "Je hebt {{count}} transacties geregistreerd",
     "subtitle": "Beheer je financiën",
-    "appName": "MoneyTracker",
+    "appName": "CashFlow Buddy",
+    "pageTitle": "CashFlow Buddy — Personal Finance Dashboard",
     "expensesMonth": "Uitgaven {{month}}",
     "day": "Dag {{day}}",
     "netBalance": "Netto saldo",

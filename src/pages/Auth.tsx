@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { Wallet, Loader2, ArrowLeft } from "lucide-react";
@@ -199,9 +199,10 @@ export default function Auth() {
               <Wallet className="h-8 w-8 text-primary" />
             </div>
           </div>
-          <CardTitle className="text-2xl font-bold">{getTitle()}</CardTitle>
+          <h1 className="text-2xl font-bold text-center">{getTitle()} — CashFlow Buddy</h1>
           <CardDescription>{getDescription()}</CardDescription>
         </CardHeader>
+
         <CardContent className="space-y-4">
           {mode === "forgot-password" ? (
             <>
