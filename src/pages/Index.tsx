@@ -785,7 +785,9 @@ const Index = () => {
                     <TransactionList transactions={filteredTransactions} onEditTransaction={handleEditTransaction} onDeleteTransaction={handleDeleteTransaction} onRefresh={loadTransactions} />
                   </div>
                 </div>
+                <KPIWidgets transactions={transactions} />
                 <div className="grid gap-4 sm:grid-cols-2">
+
                   <QuickStatsDonut transactions={transactions} />
                   <WeeklyComparisonWidget transactions={transactions} />
                 </div>
