@@ -14,6 +14,9 @@ import { BiometricGate } from "@/components/BiometricGate";
 // Lazy load pages for better performance
 const Index = lazy(() => import("./pages/Index"));
 const Landing = lazy(() => import("./pages/Landing"));
+const ExpenseTracking = lazy(() => import("./pages/guides/ExpenseTracking"));
+const Budgeting = lazy(() => import("./pages/guides/Budgeting"));
+const Reports = lazy(() => import("./pages/guides/Reports"));
 const Auth = lazy(() => import("./pages/Auth"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const Install = lazy(() => import("./pages/Install"));
@@ -52,6 +55,9 @@ const App = () => (
                     <Route path="/.lovable/oauth/consent" element={<OAuthConsent />} />
                     <Route path="/privacy" element={<Legal variant="privacy" />} />
                     <Route path="/terms" element={<Legal variant="terms" />} />
+                    <Route path="/urmarirea-cheltuielilor" element={<ExpenseTracking />} />
+                    <Route path="/bugete-personale" element={<Budgeting />} />
+                    <Route path="/rapoarte-financiare" element={<Reports />} />
                     {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                     <Route path="*" element={<NotFound />} />
                   </Routes>

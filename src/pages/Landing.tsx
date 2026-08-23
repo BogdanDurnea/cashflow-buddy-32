@@ -14,7 +14,30 @@ import {
   Target,
   FileText,
   ShieldCheck,
+  ArrowRight,
 } from "lucide-react";
+
+const guides = [
+  {
+    to: "/urmarirea-cheltuielilor",
+    icon: Wallet,
+    title: "Urmărirea cheltuielilor",
+    text: "Cum îți ții evidența cheltuielilor zilnice cu categorii, bonuri scanate și import CSV.",
+  },
+  {
+    to: "/bugete-personale",
+    icon: PieChart,
+    title: "Buget personal",
+    text: "Regula 50/30/20, bugete pe categorii, alerte de depășire și obiective de economii.",
+  },
+  {
+    to: "/rapoarte-financiare",
+    icon: FileText,
+    title: "Rapoarte financiare",
+    text: "Indicatorii lunari esențiali, comparații între luni și export PDF sau CSV.",
+  },
+];
+
 
 const features = [
   {
@@ -183,6 +206,38 @@ export default function Landing() {
           </Card>
         </div>
       </section>
+
+      {/* Guides */}
+      <section className="border-y bg-muted/30">
+        <div className="mx-auto max-w-6xl px-4 py-16">
+          <h2 className="text-2xl font-bold sm:text-3xl">Ghiduri de finanțe personale</h2>
+          <p className="mt-2 max-w-2xl text-muted-foreground">
+            Resurse practice despre cum îți urmărești cheltuielile, cum îți construiești
+            bugetul și ce indicatori merită urmăriți lunar.
+          </p>
+          <div className="mt-8 grid gap-4 md:grid-cols-3">
+            {guides.map((g) => (
+              <Card key={g.to} className="h-full">
+                <CardContent className="space-y-3 pt-6">
+                  <div className="inline-flex rounded-lg bg-primary/10 p-2">
+                    <g.icon className="h-5 w-5 text-primary" aria-hidden="true" />
+                  </div>
+                  <h3 className="font-semibold">
+                    <Link to={g.to} className="hover:text-primary hover:underline">
+                      {g.title}
+                    </Link>
+                  </h3>
+                  <p className="text-sm text-muted-foreground">{g.text}</p>
+                  <Link to={g.to} className="inline-flex items-center gap-1 text-sm text-primary hover:underline">
+                    Citește ghidul <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                  </Link>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </section>
+
 
       {/* CTA */}
       <section className="border-t">
