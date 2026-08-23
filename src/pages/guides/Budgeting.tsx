@@ -66,10 +66,6 @@ export default function Budgeting() {
             "Da, prin bugetele partajate: inviți alte persoane la un buget și fiecare vede consumul comun, păstrând totuși propriile tranzacții private.",
         },
       ]}
-      related={[
-        { to: "/urmarirea-cheltuielilor", label: "Urmărirea cheltuielilor: ghid practic" },
-        { to: "/rapoarte-financiare", label: "Rapoarte financiare: ce să urmărești lunar" },
-      ]}
     />
   );
 }

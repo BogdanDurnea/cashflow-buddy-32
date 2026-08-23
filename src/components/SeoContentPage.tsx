@@ -5,6 +5,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useSEO } from "@/hooks/useSEO";
 import { useAuth } from "@/hooks/useAuth";
+import { relatedGuides } from "@/data/guides";
+
+const SITE = "https://cashflow-buddy-32.lovable.app";
 
 export interface SeoSection {
   heading: string;
@@ -27,7 +30,6 @@ export interface SeoContentPageProps {
   path: string;
   sections: SeoSection[];
   faqs: SeoFaq[];
-  related: { to: string; label: string }[];
 }
 
 export function SeoContentPage({
@@ -40,13 +42,36 @@ export function SeoContentPage({
   path,
   sections,
   faqs,
-  related,
 }: SeoContentPageProps) {
   const { user } = useAuth();
+  const related = relatedGuides(path);
+  const url = `${SITE}${path}`;
+
   useSEO({
     title: seoTitle,
     description: seoDescription,
-    canonical: `https://cashflow-buddy-32.lovable.app${path}`,
+    canonical: url,
+    jsonLd: [
+      {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "@id": `${url}#faq`,
+        mainEntity: faqs.map((faq) => ({
+          "@type": "Question",
+          name: faq.question,
+          acceptedAnswer: { "@type": "Answer", text: faq.answer },
+        })),
+      },
+      {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        itemListElement: [
+          { "@type": "ListItem", position: 1, name: "Acasă", item: `${SITE}/` },
+          { "@type": "ListItem", position: 2, name: "Ghiduri", item: `${SITE}/#ghiduri` },
+          { "@type": "ListItem", position: 3, name: title, item: url },
+        ],
+      },
+    ],
   });
 
   const cta = user
@@ -119,18 +144,44 @@ export function SeoContentPage({
           </Button>
         </section>
 
-        <nav aria-label="Ghiduri conexe" className="mt-12">
-          <h2 className="text-lg font-semibold">Continuă cu</h2>
-          <ul className="mt-3 space-y-2">
-            {related.map((r) => (
-              <li key={r.to}>
-                <Link to={r.to} className="inline-flex items-center gap-2 text-primary hover:underline">
-                  {r.label} <ArrowRight className="h-4 w-4" />
-                </Link>
-              </li>
+        <section aria-labelledby="ghiduri-similare" className="mt-12">
+          <h2 id="ghiduri-similare" className="text-2xl font-semibold">
+            Ghiduri similare
+          </h2>
+          <p className="mt-2 text-muted-foreground">
+            Continuă cu celelalte ghiduri din seria de finanțe personale.
+          </p>
+          <div className="mt-6 grid gap-4 sm:grid-cols-2">
+            {related.map((g) => (
+              <Card key={g.to} className="h-full">
+                <CardContent className="space-y-3 pt-6">
+                  <div className="inline-flex rounded-lg bg-primary/10 p-2">
+                    <g.icon className="h-5 w-5 text-primary" aria-hidden="true" />
+                  </div>
+                  <h3 className="font-semibold">
+                    <Link to={g.to} className="hover:text-primary hover:underline">
+                      {g.title}
+                    </Link>
+                  </h3>
+                  <p className="text-sm text-muted-foreground">{g.text}</p>
+                  <Link
+                    to={g.to}
+                    className="inline-flex items-center gap-1 text-sm text-primary hover:underline"
+                  >
+                    Citește ghidul <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                  </Link>
+                </CardContent>
+              </Card>
             ))}
-          </ul>
-        </nav>
+          </div>
+          <Link
+            to="/#ghiduri"
+            className="mt-6 inline-flex items-center gap-2 text-sm text-primary hover:underline"
+          >
+            Vezi toate ghidurile <ArrowRight className="h-4 w-4" aria-hidden="true" />
+          </Link>
+        </section>
+
       </article>
     </main>
   );

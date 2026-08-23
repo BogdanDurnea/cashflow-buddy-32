@@ -5,7 +5,10 @@ interface SEOOptions {
   description?: string;
   canonical?: string;
   noIndex?: boolean;
+  /** Structured data objects rendered as <script type="application/ld+json"> */
+  jsonLd?: Record<string, unknown>[];
 }
+
 
 function setMeta(selector: string, attr: string, value: string) {
   let el = document.head.querySelector<HTMLMetaElement>(selector);
@@ -28,7 +31,9 @@ function setLink(rel: string, href: string) {
   el.setAttribute("href", href);
 }
 
-export function useSEO({ title, description, canonical, noIndex }: SEOOptions) {
+export function useSEO({ title, description, canonical, noIndex, jsonLd }: SEOOptions) {
+  const jsonLdKey = jsonLd ? JSON.stringify(jsonLd) : "";
+
   useEffect(() => {
     const prevTitle = document.title;
     document.title = title;
@@ -58,8 +63,27 @@ export function useSEO({ title, description, canonical, noIndex }: SEOOptions) {
       if (robots) robots.remove();
     }
 
+    // Structured data: managed exclusively by this hook, removed on unmount so
+    // routes never accumulate stale schema.
+    document.head
+      .querySelectorAll('script[data-seo-jsonld="true"]')
+      .forEach((el) => el.remove());
+    if (jsonLdKey) {
+      for (const item of JSON.parse(jsonLdKey) as Record<string, unknown>[]) {
+        const script = document.createElement("script");
+        script.type = "application/ld+json";
+        script.setAttribute("data-seo-jsonld", "true");
+        script.textContent = JSON.stringify(item);
+        document.head.appendChild(script);
+      }
+    }
+
     return () => {
       document.title = prevTitle;
+      document.head
+        .querySelectorAll('script[data-seo-jsonld="true"]')
+        .forEach((el) => el.remove());
     };
-  }, [title, description, canonical, noIndex]);
+  }, [title, description, canonical, noIndex, jsonLdKey]);
 }
+
