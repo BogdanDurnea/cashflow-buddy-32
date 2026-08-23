@@ -104,7 +104,7 @@ export default function SharedReport() {
           <CardHeader>
             <div className="flex items-center gap-2">
               <PieChart className="h-6 w-6 text-primary" />
-              <CardTitle>{report.title}</CardTitle>
+              <h1 className="text-2xl font-bold">{report.title} — Raport partajat</h1>
             </div>
             <CardDescription className="flex items-center gap-2">
               <Calendar className="h-4 w-4" />
