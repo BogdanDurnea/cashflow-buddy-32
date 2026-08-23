@@ -47,16 +47,16 @@ export default function Auth() {
   useSEO({
     title:
       mode === "signup"
-        ? "Înregistrare cont — MoneyTracker"
+        ? "Înregistrare cont — CashFlow Buddy"
         : mode === "forgot-password"
-        ? "Resetare parolă — MoneyTracker"
-        : "Autentificare — MoneyTracker",
+        ? "Resetare parolă — CashFlow Buddy"
+        : "Autentificare — CashFlow Buddy",
     description:
       mode === "signup"
-        ? "Creează un cont MoneyTracker pentru a-ți gestiona finanțele personale, bugetele și rapoartele."
+        ? "Creează un cont CashFlow Buddy pentru a-ți gestiona finanțele personale, bugetele și rapoartele."
         : mode === "forgot-password"
-        ? "Primește un link de resetare a parolei pentru contul tău MoneyTracker."
-        : "Autentifică-te în MoneyTracker pentru a-ți accesa tranzacțiile, bugetele și rapoartele.",
+        ? "Primește un link de resetare a parolei pentru contul tău CashFlow Buddy."
+        : "Autentifică-te în CashFlow Buddy pentru a-ți accesa tranzacțiile, bugetele și rapoartele.",
   });
 
   useEffect(() => {

@@ -10,9 +10,9 @@ const Install = () => {
   const [isInstalled, setIsInstalled] = useState(false);
 
   useSEO({
-    title: "Instalează MoneyTracker — aplicație PWA pentru iOS și Android",
+    title: "Instalează CashFlow Buddy — aplicație PWA pentru iOS și Android",
     description:
-      "Ghid pas cu pas pentru instalarea aplicației MoneyTracker pe telefonul tău (iOS, Android) ca aplicație nativă PWA.",
+      "Ghid pas cu pas pentru instalarea aplicației CashFlow Buddy pe telefonul tău (iOS, Android) ca aplicație nativă PWA.",
   });
 
   useEffect(() => {
@@ -54,7 +54,7 @@ const Install = () => {
             <Smartphone className="h-10 w-10 text-primary-foreground" />
           </div>
           
-          <h1 className="text-3xl font-bold">Instalează MoneyTracker</h1>
+          <h1 className="text-3xl font-bold">Instalează CashFlow Buddy</h1>
           
           {isInstalled ? (
             <div className="space-y-4">
@@ -69,7 +69,7 @@ const Install = () => {
           ) : (
             <>
               <p className="text-muted-foreground">
-                Instalează MoneyTracker pe dispozitivul tău pentru o experiență mai bună.
+                Instalează CashFlow Buddy pe dispozitivul tău pentru o experiență mai bună.
                 Aplicația va funcționa offline și va fi rapid accesibilă de pe ecranul principal.
               </p>
 

@@ -6,7 +6,7 @@ const NotFound = () => {
   const location = useLocation();
 
   useSEO({
-    title: "Pagina nu a fost găsită — MoneyTracker",
+    title: "Pagina nu a fost găsită — CashFlow Buddy",
     description: "Pagina pe care încerci să o accesezi nu există.",
     noIndex: true,
   });

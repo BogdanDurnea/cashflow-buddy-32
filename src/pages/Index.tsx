@@ -879,7 +879,7 @@ const Index = () => {
                   transactions: filteredTransactions,
                   income: filteredTransactions.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0),
                   expenses: filteredTransactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0)
-                }} title="Raport Financiar MoneyTracker" />
+                }} title="Raport Financiar CashFlow Buddy" />
                   <div className="space-y-4">
                     <h3 className="text-lg font-semibold">Integrări</h3>
                     <div className="grid gap-4 sm:gap-6 lg:grid-cols-2">
@@ -939,7 +939,7 @@ const Index = () => {
         <footer className="bg-card border-t mt-8 sm:mt-12">
           <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6">
             <div className="text-center text-muted-foreground">
-              <p className="text-xs sm:text-sm">&copy; 2024 MoneyTracker. O aplicație pentru gestionarea finanțelor personale.</p>
+              <p className="text-xs sm:text-sm">&copy; 2024 CashFlow Buddy. O aplicație pentru gestionarea finanțelor personale.</p>
             </div>
           </div>
         </footer>
