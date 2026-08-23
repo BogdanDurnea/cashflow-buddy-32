@@ -50,7 +50,7 @@ export const KPIWidgets = React.memo(function KPIWidgets({ transactions }: KPIWi
         <div className="space-y-3">
           <div className="flex items-end justify-between gap-2">
             <div>
-              <span className="text-3xl font-bold">{kpi.score}</span>
+              <span className="text-3xl font-bold" data-testid="kpi-health-score">{kpi.score}</span>
               <span className="text-sm text-muted-foreground">/100</span>
             </div>
             <Badge variant="outline" className={levelStyles[kpi.level]}>
