@@ -199,9 +199,10 @@ export default function Auth() {
               <Wallet className="h-8 w-8 text-primary" />
             </div>
           </div>
-          <CardTitle className="text-2xl font-bold">{getTitle()}</CardTitle>
+          <h1 className="text-2xl font-bold text-center">{getTitle()} — CashFlow Buddy</h1>
           <CardDescription>{getDescription()}</CardDescription>
         </CardHeader>
+
         <CardContent className="space-y-4">
           {mode === "forgot-password" ? (
             <>
