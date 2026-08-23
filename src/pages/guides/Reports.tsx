@@ -62,10 +62,6 @@ export default function Reports() {
             "O sinteză a evoluției veniturilor și cheltuielilor, categoriile cu variații semnificative și observații despre tiparele din perioada analizată.",
         },
       ]}
-      related={[
-        { to: "/urmarirea-cheltuielilor", label: "Urmărirea cheltuielilor: ghid practic" },
-        { to: "/bugete-personale", label: "Cum îți faci un buget personal care funcționează" },
-      ]}
     />
   );
 }

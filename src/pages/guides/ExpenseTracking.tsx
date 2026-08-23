@@ -66,10 +66,6 @@ export default function ExpenseTracking() {
             "Da. Fiecare cont vede doar propriile tranzacții, accesul este restricționat la nivel de bază de date, iar aplicația poate fi blocată suplimentar cu amprentă sau Face ID.",
         },
       ]}
-      related={[
-        { to: "/bugete-personale", label: "Cum îți faci un buget personal care funcționează" },
-        { to: "/rapoarte-financiare", label: "Rapoarte financiare: ce să urmărești lunar" },
-      ]}
     />
   );
 }
