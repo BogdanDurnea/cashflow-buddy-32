@@ -8,7 +8,9 @@
     "build": "vite build",
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:seo": "vitest run src/__tests__/seo-jsonld.test.tsx"
   },
   "overrides": {
     "tar": "^7.5.21"
