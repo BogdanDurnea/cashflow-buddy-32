@@ -14,7 +14,30 @@ import {
   Target,
   FileText,
   ShieldCheck,
+  ArrowRight,
 } from "lucide-react";
+
+const guides = [
+  {
+    to: "/urmarirea-cheltuielilor",
+    icon: Wallet,
+    title: "Urmărirea cheltuielilor",
+    text: "Cum îți ții evidența cheltuielilor zilnice cu categorii, bonuri scanate și import CSV.",
+  },
+  {
+    to: "/bugete-personale",
+    icon: PieChart,
+    title: "Buget personal",
+    text: "Regula 50/30/20, bugete pe categorii, alerte de depășire și obiective de economii.",
+  },
+  {
+    to: "/rapoarte-financiare",
+    icon: FileText,
+    title: "Rapoarte financiare",
+    text: "Indicatorii lunari esențiali, comparații între luni și export PDF sau CSV.",
+  },
+];
+
 
 const features = [
   {
