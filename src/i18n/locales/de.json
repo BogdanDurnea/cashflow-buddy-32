@@ -24,6 +24,7 @@
     "none": "Keine",
     "select": "Auswählen",
     "undo": "Rückgängig",
+    "toggleSidebar": "Toggle sidebar",
     "currency": "EUR"
   },
   "nav": {
@@ -151,7 +152,8 @@
     "greeting": "Hallo, {{name}}!",
     "transactionCount": "Sie haben {{count}} Transaktionen",
     "subtitle": "Verwalten Sie Ihre Finanzen",
-    "appName": "MoneyTracker",
+    "appName": "CashFlow Buddy",
+    "pageTitle": "CashFlow Buddy — Personal Finance Dashboard",
     "expensesMonth": "Ausgaben {{month}}",
     "day": "Tag {{day}}",
     "netBalance": "Nettosaldo",
