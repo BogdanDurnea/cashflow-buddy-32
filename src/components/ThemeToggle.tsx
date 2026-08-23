@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { useTheme } from "next-themes";
 import { motion, AnimatePresence } from "framer-motion";
 
-export function ThemeToggle() {
+export function ThemeToggle({ "aria-label": ariaLabel }: { "aria-label"?: string }) {
   const { theme, setTheme } = useTheme();
 
   return (
@@ -12,7 +12,7 @@ export function ThemeToggle() {
       size="sm"
       onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
       className="h-8 sm:h-9 active:scale-95 relative overflow-hidden no-theme-transition"
-      title="Comutare temă"
+      aria-label={ariaLabel}
     >
       <AnimatePresence mode="wait" initial={false}>
         {theme === "dark" ? (
