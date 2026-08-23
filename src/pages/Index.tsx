@@ -7,6 +7,8 @@ import { TransactionList } from "@/components/TransactionList";
 import { MobileTransactionFAB } from "@/components/MobileTransactionFAB";
 import { EditTransactionDialog } from "@/components/EditTransactionDialog";
 import { StatsCards } from "@/components/StatsCards";
+import { KPIWidgets } from "@/components/KPIWidgets";
+
 import { TransactionFilters } from "@/components/TransactionFilters";
 import { TransactionCharts } from "@/components/TransactionCharts";
 import { BudgetManager } from "@/components/BudgetManager";
