@@ -7,6 +7,8 @@ import { TransactionList } from "@/components/TransactionList";
 import { MobileTransactionFAB } from "@/components/MobileTransactionFAB";
 import { EditTransactionDialog } from "@/components/EditTransactionDialog";
 import { StatsCards } from "@/components/StatsCards";
+import { KPIWidgets } from "@/components/KPIWidgets";
+
 import { TransactionFilters } from "@/components/TransactionFilters";
 import { TransactionCharts } from "@/components/TransactionCharts";
 import { BudgetManager } from "@/components/BudgetManager";
@@ -785,7 +787,9 @@ const Index = () => {
                     <TransactionList transactions={filteredTransactions} onEditTransaction={handleEditTransaction} onDeleteTransaction={handleDeleteTransaction} onRefresh={loadTransactions} />
                   </div>
                 </div>
+                <KPIWidgets transactions={transactions} />
                 <div className="grid gap-4 sm:grid-cols-2">
+
                   <QuickStatsDonut transactions={transactions} />
                   <WeeklyComparisonWidget transactions={transactions} />
                 </div>
