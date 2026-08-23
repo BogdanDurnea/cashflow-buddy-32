@@ -55,6 +55,9 @@ const App = () => (
                     <Route path="/.lovable/oauth/consent" element={<OAuthConsent />} />
                     <Route path="/privacy" element={<Legal variant="privacy" />} />
                     <Route path="/terms" element={<Legal variant="terms" />} />
+                    <Route path="/urmarirea-cheltuielilor" element={<ExpenseTracking />} />
+                    <Route path="/bugete-personale" element={<Budgeting />} />
+                    <Route path="/rapoarte-financiare" element={<Reports />} />
                     {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                     <Route path="*" element={<NotFound />} />
                   </Routes>
