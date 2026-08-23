@@ -34,9 +34,9 @@ type AuthMode = "login" | "signup" | "forgot-password";
 export default function Auth() {
   const navigate = useNavigate();
   const nextParam = (() => {
-    if (typeof window === "undefined") return "/";
+    if (typeof window === "undefined") return "/dashboard";
     const n = new URLSearchParams(window.location.search).get("next");
-    return n && n.startsWith("/") && !n.startsWith("//") ? n : "/";
+    return n && n.startsWith("/") && !n.startsWith("//") ? n : "/dashboard";
   })();
   const [isLoading, setIsLoading] = useState(false);
   const [mode, setMode] = useState<AuthMode>("login");
