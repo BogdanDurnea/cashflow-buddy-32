@@ -109,7 +109,7 @@ const Index = () => {
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
   useSEO({
-    title: "CashFlow Buddy — Personal Finance Dashboard",
+    title: t("dashboard.pageTitle"),
     description:
       "Gestionează-ți finanțele personale: tranzacții, bugete pe categorii, rapoarte AI, scanare bonuri, sincronizare offline și export PDF/CSV.",
   });
