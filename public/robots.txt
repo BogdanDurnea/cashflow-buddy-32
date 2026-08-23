@@ -3,6 +3,7 @@ Allow: /
 
 # Private / user-specific areas — no value for search results
 Disallow: /shared/
+Disallow: /dashboard
 Disallow: /reset-password
 Disallow: /.lovable/
 

@@ -109,7 +109,7 @@ export default function ResetPassword() {
       
       // Redirect to home after 2 seconds
       setTimeout(() => {
-        navigate("/");
+        navigate("/dashboard");
       }, 2000);
     } catch (error: any) {
       toast.error(error.message || "A apărut o eroare la actualizarea parolei");
