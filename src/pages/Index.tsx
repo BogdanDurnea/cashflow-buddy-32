@@ -612,7 +612,7 @@ const Index = () => {
                 <TrendingUp className="h-5 w-5 sm:h-6 sm:w-6 text-primary-foreground" />
               </div>
               <div className="min-w-0">
-                <h1 className="text-lg sm:text-xl md:text-2xl font-bold truncate">{t("dashboard.appName")}</h1>
+                <h1 className="text-lg sm:text-xl md:text-2xl font-bold truncate">{t("dashboard.pageTitle")}</h1>
                 <p className="text-xs sm:text-sm text-muted-foreground hidden sm:block">{t("dashboard.subtitle")}</p>
               </div>
             </div>
