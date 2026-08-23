@@ -32,16 +32,16 @@ interface Vitals {
 
 for (const path of PAGES) {
   test(`Core Web Vitals budget on ${path}`, async ({ page }) => {
-    await page.addInitScript(webVitalsScript);
-    await page.addInitScript(() => {
-      // @ts-expect-error injected by the web-vitals IIFE bundle
-      const wv = window.webVitals;
-      const store: Record<string, number> = {};
-      (window as unknown as { __vitals: Record<string, number> }).__vitals = store;
-      wv.onLCP((m: { value: number }) => (store.lcp = m.value), { reportAllChanges: true });
-      wv.onCLS((m: { value: number }) => (store.cls = m.value), { reportAllChanges: true });
-      wv.onINP((m: { value: number }) => (store.inp = m.value), { reportAllChanges: true });
-    });
+    // The IIFE bundle declares `var webVitals` in the init-script scope, so the
+    // listeners must be registered in that same script.
+    await page.addInitScript(`
+      ${webVitalsScript}
+      window.__vitals = {};
+      webVitals.onLCP(function (m) { window.__vitals.lcp = m.value; }, { reportAllChanges: true });
+      webVitals.onCLS(function (m) { window.__vitals.cls = m.value; }, { reportAllChanges: true });
+      webVitals.onINP(function (m) { window.__vitals.inp = m.value; }, { reportAllChanges: true });
+    `);
+
 
     await page.goto(path, { waitUntil: "networkidle" });
 
