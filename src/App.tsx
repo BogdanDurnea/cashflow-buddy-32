@@ -14,6 +14,9 @@ import { BiometricGate } from "@/components/BiometricGate";
 // Lazy load pages for better performance
 const Index = lazy(() => import("./pages/Index"));
 const Landing = lazy(() => import("./pages/Landing"));
+const ExpenseTracking = lazy(() => import("./pages/guides/ExpenseTracking"));
+const Budgeting = lazy(() => import("./pages/guides/Budgeting"));
+const Reports = lazy(() => import("./pages/guides/Reports"));
 const Auth = lazy(() => import("./pages/Auth"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const Install = lazy(() => import("./pages/Install"));
