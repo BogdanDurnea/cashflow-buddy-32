@@ -1,4 +1,4 @@
-name: SEO Structured Data
+name: SEO Metadata & Structured Data
 
 on:
   push:
@@ -13,7 +13,7 @@ concurrency:
 
 jobs:
   jsonld:
-    name: Validate JSON-LD (FAQPage, BreadcrumbList)
+    name: Validate JSON-LD, canonical and meta tags
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -30,7 +30,7 @@ jobs:
         env:
           NPM_CONFIG_REGISTRY: https://registry.npmjs.org/
 
-      - name: Validate structured data
+      - name: Validate SEO metadata and structured data
         run: bun run test:seo
 
       - name: Build (catches broken SEO imports before deploy)
