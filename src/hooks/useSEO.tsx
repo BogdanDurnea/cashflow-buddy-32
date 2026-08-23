@@ -48,7 +48,9 @@ export function useSEO({
   imageAlt,
   jsonLd,
 }: SEOOptions) {
-  const jsonLdKey = jsonLd ? JSON.stringify(jsonLd) : "";
+  // Organization + WebSite ship on every page; page-specific nodes come after.
+  const jsonLdKey = JSON.stringify([...siteSchemaNodes, ...(jsonLd ?? [])]);
+
 
   useEffect(() => {
     const prevTitle = document.title;
