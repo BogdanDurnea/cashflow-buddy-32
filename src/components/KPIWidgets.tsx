@@ -146,15 +146,17 @@ export const KPIWidgets = React.memo(function KPIWidgets({ transactions }: KPIWi
   ];
 
   return (
-    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3" data-testid="kpi-widgets">
       {cards.map((card, i) => (
         <motion.div
           key={card.key}
+          data-testid={`kpi-card-${card.key}`}
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, delay: i * 0.08 }}
         >
           <Card className="h-full shadow-card transition-all duration-300 hover:shadow-lg">
+
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">
                 {card.title}
