@@ -5,7 +5,10 @@ interface SEOOptions {
   description?: string;
   canonical?: string;
   noIndex?: boolean;
+  /** Structured data objects rendered as <script type="application/ld+json"> */
+  jsonLd?: Record<string, unknown>[];
 }
+
 
 function setMeta(selector: string, attr: string, value: string) {
   let el = document.head.querySelector<HTMLMetaElement>(selector);
