@@ -10,7 +10,7 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "vitest run",
-    "test:seo": "vitest run src/__tests__/seo-jsonld.test.tsx"
+    "test:seo": "vitest run src/__tests__"
   },
   "overrides": {
     "tar": "^7.5.21"

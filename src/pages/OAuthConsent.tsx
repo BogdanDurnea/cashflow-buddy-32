@@ -100,7 +100,7 @@ export default function OAuthConsent() {
         <CardHeader>
           <CardTitle>Conectează {clientName} la contul tău</CardTitle>
           <CardDescription>
-            {clientName} va putea accesa datele tale financiare din MoneyTracker (tranzacții,
+            {clientName} va putea accesa datele tale financiare din CashFlow Buddy (tranzacții,
             bugete, sumare) în numele tău.
           </CardDescription>
         </CardHeader>

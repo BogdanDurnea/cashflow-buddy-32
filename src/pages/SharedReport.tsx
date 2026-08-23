@@ -21,10 +21,10 @@ export default function SharedReport() {
 
   useSEO({
     title: report?.title
-      ? `${report.title} — Raport partajat MoneyTracker`
-      : "Raport partajat — MoneyTracker",
+      ? `${report.title} — Raport partajat CashFlow Buddy`
+      : "Raport partajat — CashFlow Buddy",
     description:
-      "Raport financiar partajat public din MoneyTracker. Vizualizează venituri, cheltuieli, sold și distribuția pe categorii.",
+      "Raport financiar partajat public din CashFlow Buddy. Vizualizează venituri, cheltuieli, sold și distribuția pe categorii.",
     noIndex: true,
   });
 

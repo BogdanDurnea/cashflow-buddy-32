@@ -29,9 +29,9 @@ export default function ResetPassword() {
   const [errors, setErrors] = useState<{ password?: string; confirmPassword?: string }>({});
 
   useSEO({
-    title: "Resetare parolă — MoneyTracker",
+    title: "Resetare parolă — CashFlow Buddy",
     description:
-      "Setează o parolă nouă pentru contul tău MoneyTracker folosind link-ul primit pe email.",
+      "Setează o parolă nouă pentru contul tău CashFlow Buddy folosind link-ul primit pe email.",
     noIndex: true,
   });
 
