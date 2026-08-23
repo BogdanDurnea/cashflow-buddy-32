@@ -30,8 +30,47 @@ jobs:
         env:
           NPM_CONFIG_REGISTRY: https://registry.npmjs.org/
 
-      - name: Validate SEO metadata and structured data
+      - name: Validate SEO metadata, robots/sitemap and structured data
         run: bun run test:seo
+
+      - name: Validate OpenGraph / Twitter images
+        run: bun run test:og
 
       - name: Build (catches broken SEO imports before deploy)
         run: bun run build
+
+  e2e:
+    name: Rendered-HTML SEO checks (Playwright)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+        env:
+          NPM_CONFIG_REGISTRY: https://registry.npmjs.org/
+
+      - name: Install Chromium
+        run: bunx playwright install --with-deps chromium
+
+      - name: Build
+        run: bun run build
+
+      - name: Check canonical, meta, og:url and JSON-LD in the browser
+        run: bun run test:e2e
+
+      - name: Upload report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: seo-e2e-report
+          path: playwright-report
+          retention-days: 7
+

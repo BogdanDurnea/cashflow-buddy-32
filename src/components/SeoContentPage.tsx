@@ -6,8 +6,10 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useSEO } from "@/hooks/useSEO";
 import { useAuth } from "@/hooks/useAuth";
 import { relatedGuides } from "@/data/guides";
+import { SITE_URL, ogImageFor } from "@/data/seoRoutes";
 
-const SITE = "https://cashflow-buddy-32.lovable.app";
+const SITE = SITE_URL;
+
 
 export interface SeoSection {
   heading: string;
@@ -51,6 +53,8 @@ export function SeoContentPage({
     title: seoTitle,
     description: seoDescription,
     canonical: url,
+    image: ogImageFor(path).url,
+    imageAlt: ogImageFor(path).alt,
     jsonLd: [
       {
         "@context": "https://schema.org",
