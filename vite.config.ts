@@ -1,9 +1,13 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
+import fs from "fs";
 import { componentTagger } from "lovable-tagger";
 import { VitePWA } from 'vite-plugin-pwa';
 import { mcpPlugin } from "@lovable.dev/mcp-js/stacks/supabase/vite";
+
+const pkg = JSON.parse(fs.readFileSync(path.resolve(__dirname, "package.json"), "utf-8"));
+const appVersion = process.env.VITE_APP_VERSION || `${pkg.version}-${Date.now()}`;
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
