@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useState } from "react";
 import { RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { trackPwaEvent } from "@/lib/pwaTelemetry";
+
 
 export const PWA_UPDATE_EVENT = "pwa:update-available";
 
@@ -69,18 +71,21 @@ export function PWAUpdatePrompt() {
 
   const handleUpdate = useCallback(() => {
     setUpdating(true);
+    trackPwaEvent("pwa:skip-waiting", { currentVersion, newVersion });
     try {
       waiting?.postMessage({ type: "SKIP_WAITING" });
     } catch {
       // ignore – we reload regardless
     }
     window.setTimeout(() => window.location.reload(), 150);
-  }, [waiting]);
+  }, [waiting, currentVersion, newVersion]);
 
   const handleDismiss = useCallback(() => {
+    trackPwaEvent("pwa:update-dismissed", { currentVersion, newVersion });
     setDismissedKey(updateKey(waiting, newVersion));
     setVisible(false);
-  }, [waiting, newVersion]);
+  }, [waiting, currentVersion, newVersion]);
+
 
   if (!visible) return null;
 

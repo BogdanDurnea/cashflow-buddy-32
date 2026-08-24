@@ -1,4 +1,7 @@
+import { trackPwaEvent } from './pwaTelemetry';
+
 export const PWA_UPDATE_EVENT = 'pwa:update-available';
+
 export const SW_VERSION_PARAM = 'v';
 
 /** Last worker we already announced – prevents duplicate events for the same update. */
@@ -31,12 +34,15 @@ function notifyUpdateAvailable(registration: ServiceWorkerRegistration) {
   const currentVersion = getVersionFromScriptURL(registration.active?.scriptURL);
   const newVersion = getVersionFromScriptURL(waiting?.scriptURL) ?? currentVersion;
 
+  trackPwaEvent('pwa:update-available', { currentVersion, newVersion });
+
   window.dispatchEvent(
     new CustomEvent<UpdateEventDetail>(PWA_UPDATE_EVENT, {
       detail: { waiting, currentVersion, newVersion },
     })
   );
 }
+
 
 /** Test/reset helper – forgets the last announced worker. */
 export function resetUpdateNotifications() {
