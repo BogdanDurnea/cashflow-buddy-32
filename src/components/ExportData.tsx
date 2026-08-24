@@ -465,10 +465,30 @@ export function ExportData({ transactions, currentViewTransactions, filterContex
             </DialogContent>
           </Dialog>
         </div>
-        
-        <div className="mt-4 p-3 bg-muted/50 rounded-lg">
+
+        <div className="pt-3 border-t space-y-2">
+          <p className="text-sm font-medium">Export KPI + tranzacții (vizualizarea curentă)</p>
+          <p className="text-xs text-muted-foreground">
+            Include perioada și filtrele active, indicatorii KPI și lista de tranzacții filtrate.
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <Button onClick={exportCurrentViewCSV} variant="secondary" className="w-full">
+              <Gauge className="h-4 w-4 mr-2" />
+              KPI + Tranzacții CSV
+            </Button>
+            <Button onClick={exportCurrentViewPDF} variant="secondary" className="w-full">
+              <FileText className="h-4 w-4 mr-2" />
+              KPI + Tranzacții PDF
+            </Button>
+          </div>
+        </div>
+
+        <div className="mt-4 p-3 bg-muted/50 rounded-lg space-y-1">
           <p className="text-xs text-muted-foreground">
             <strong>Total tranzacții:</strong> {transactions.length}
+          </p>
+          <p className="text-xs text-muted-foreground">
+            <strong>În vizualizarea curentă:</strong> {viewTransactions.length}
           </p>
         </div>
       </CardContent>
