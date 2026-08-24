@@ -54,17 +54,12 @@ test.describe("PWA update", () => {
     await page.goto("/", { waitUntil: "domcontentloaded" });
     await expect(page.locator("#root")).not.toBeEmpty();
 
+    // The mock worker persists the message so it survives the reload.
     await page.evaluate((eventName) => {
-      const w = window as unknown as { __swMessages: unknown[] };
-      w.__swMessages = [];
-      // Block the reload so we can inspect the message that was posted.
-      Object.defineProperty(window.location, "reload", {
-        configurable: true,
-        value: () => {},
-      });
       const waiting = {
         state: "installed",
-        postMessage: (message: unknown) => w.__swMessages.push(message),
+        postMessage: (message: unknown) =>
+          sessionStorage.setItem("__swMessage", JSON.stringify(message)),
       };
       window.dispatchEvent(new CustomEvent(eventName, { detail: { waiting } }));
     }, UPDATE_EVENT);
@@ -72,7 +67,7 @@ test.describe("PWA update", () => {
     await page.getByRole("button", { name: /Actualizează aplicația/i }).click();
 
     await expect
-      .poll(() => page.evaluate(() => (window as unknown as { __swMessages: unknown[] }).__swMessages))
-      .toEqual([{ type: "SKIP_WAITING" }]);
+      .poll(() => page.evaluate(() => sessionStorage.getItem("__swMessage")))
+      .toBe(JSON.stringify({ type: "SKIP_WAITING" }));
   });
 });
