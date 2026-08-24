@@ -94,6 +94,9 @@ export default defineConfig(({ mode }) => ({
       }
     })
   ].filter(Boolean),
+  define: {
+    __APP_VERSION__: JSON.stringify(appVersion),
+  },
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
