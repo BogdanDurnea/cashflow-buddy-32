@@ -34,12 +34,15 @@ function notifyUpdateAvailable(registration: ServiceWorkerRegistration) {
   const currentVersion = getVersionFromScriptURL(registration.active?.scriptURL);
   const newVersion = getVersionFromScriptURL(waiting?.scriptURL) ?? currentVersion;
 
+  trackPwaEvent('pwa:update-available', { currentVersion, newVersion });
+
   window.dispatchEvent(
     new CustomEvent<UpdateEventDetail>(PWA_UPDATE_EVENT, {
       detail: { waiting, currentVersion, newVersion },
     })
   );
 }
+
 
 /** Test/reset helper – forgets the last announced worker. */
 export function resetUpdateNotifications() {
