@@ -167,6 +167,161 @@ export function ExportData({ transactions, currentViewTransactions, filterContex
     }
   };
 
+  const viewTransactions = currentViewTransactions ?? transactions;
+
+  const periodLabels: Record<string, string> = {
+    all: "Toate perioadele",
+    today: "Astăzi",
+    week: "Ultima săptămână",
+    month: "Luna curentă",
+    year: "Anul curent",
+  };
+
+  const filterSummary = () => {
+    const ctx = filterContext;
+    const range = ctx?.startDate && ctx?.endDate
+      ? `${ctx.startDate.toLocaleDateString('ro-RO')} - ${ctx.endDate.toLocaleDateString('ro-RO')}`
+      : periodLabels[ctx?.period ?? "all"] ?? ctx?.period ?? "Toate perioadele";
+    const type = ctx?.type === "income" ? "Venituri" : ctx?.type === "expense" ? "Cheltuieli" : "Toate";
+    const category = !ctx?.category || ctx.category === "all" ? "Toate" : ctx.category;
+    return [
+      ["Perioadă", range],
+      ["Tip tranzacții", type],
+      ["Categorie", category],
+      ["Tranzacții incluse", String(viewTransactions.length)],
+    ] as [string, string][];
+  };
+
+  const kpiRows = () => {
+    const kpi = computeKpi(viewTransactions);
+    const levels: Record<string, string> = { healthy: "Sănătos", watch: "De urmărit", risk: "Risc" };
+    return [
+      ["Scor sănătate cash flow (0-100)", `${kpi.score}`],
+      ["Stare", levels[kpi.level]],
+      ["Venituri (luna curentă)", `${kpi.income.toFixed(2)} RON`],
+      ["Cheltuieli (luna curentă)", `${kpi.expense.toFixed(2)} RON`],
+      ["Cash flow net", `${kpi.net.toFixed(2)} RON`],
+      ["Rată economisire", `${kpi.savingsRate.toFixed(1)}%`],
+      ["Prognoză cheltuieli lună", `${kpi.forecastExpense.toFixed(2)} RON`],
+      ["Așteptat până azi", `${kpi.expectedToDate.toFixed(2)} RON`],
+      ["Variație vs prognoză", `${kpi.variance.toFixed(2)} RON (${kpi.variancePct.toFixed(1)}%)`],
+      ["Zile rămase din lună", `${kpi.daysLeft}`],
+    ] as [string, string][];
+  };
+
+  const exportCurrentViewCSV = () => {
+    if (viewTransactions.length === 0) {
+      toast.error("Nu există tranzacții de exportat");
+      return;
+    }
+
+    const esc = (v: string) => `"${v.replace(/"/g, '""')}"`;
+    const lines: string[] = [];
+    lines.push(esc("Raport KPI & Tranzacții"));
+    lines.push(esc(`Generat la: ${new Date().toLocaleString('ro-RO')}`));
+    lines.push("");
+    lines.push(esc("Filtre aplicate"));
+    filterSummary().forEach(([k, v]) => lines.push([k, v].map(esc).join(",")));
+    lines.push("");
+    lines.push(esc("Indicatori KPI"));
+    kpiRows().forEach(([k, v]) => lines.push([k, v].map(esc).join(",")));
+    lines.push("");
+    lines.push(esc("Tranzacții"));
+    lines.push(["Data", "Tip", "Categorie", "Sumă (RON)", "Descriere"].map(esc).join(","));
+    viewTransactions.forEach(t => {
+      lines.push([
+        new Date(t.date).toLocaleDateString('ro-RO'),
+        t.type === "income" ? "Venit" : "Cheltuială",
+        t.category,
+        t.amount.toFixed(2),
+        t.description || "-",
+      ].map(esc).join(","));
+    });
+
+    const blob = new Blob(["\ufeff" + lines.join("\n")], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    link.setAttribute("href", url);
+    link.setAttribute("download", `kpi_tranzactii_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = "hidden";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    toast.success("KPI și tranzacții exportate în CSV");
+  };
+
+  const exportCurrentViewPDF = async () => {
+    if (viewTransactions.length === 0) {
+      toast.error("Nu există tranzacții de exportat");
+      return;
+    }
+
+    try {
+      const { default: jsPDF } = await import('jspdf');
+      const doc = new jsPDF();
+
+      doc.setFontSize(18);
+      doc.text("Raport KPI & Tranzacții", 14, 20);
+      doc.setFontSize(10);
+      doc.text(`Generat la: ${new Date().toLocaleString('ro-RO')}`, 14, 28);
+
+      let y = 38;
+      doc.setFontSize(12);
+      doc.text("Filtre aplicate", 14, y);
+      y += 6;
+      doc.setFontSize(9);
+      filterSummary().forEach(([k, v]) => {
+        doc.text(`${k}:`, 14, y);
+        doc.text(v, 80, y);
+        y += 5;
+      });
+
+      y += 5;
+      doc.setFontSize(12);
+      doc.text("Indicatori KPI", 14, y);
+      y += 6;
+      doc.setFontSize(9);
+      kpiRows().forEach(([k, v]) => {
+        if (y > 275) { doc.addPage(); y = 20; }
+        doc.text(`${k}:`, 14, y);
+        doc.text(v, 110, y);
+        y += 5;
+      });
+
+      y += 6;
+      if (y > 260) { doc.addPage(); y = 20; }
+      doc.setFontSize(12);
+      doc.text("Tranzacții", 14, y);
+      y += 7;
+      doc.setFontSize(9);
+      doc.text("Data", 14, y);
+      doc.text("Tip", 40, y);
+      doc.text("Categorie", 70, y);
+      doc.text("Sumă (RON)", 110, y);
+      doc.text("Descriere", 150, y);
+      y += 4;
+      doc.line(14, y, 196, y);
+      y += 5;
+      doc.setFontSize(8);
+      viewTransactions.forEach(t => {
+        if (y > 280) { doc.addPage(); y = 20; }
+        doc.text(new Date(t.date).toLocaleDateString('ro-RO'), 14, y);
+        doc.text(t.type === "income" ? "Venit" : "Chelt.", 40, y);
+        doc.text(t.category.substring(0, 15), 70, y);
+        doc.text(t.amount.toFixed(2), 110, y);
+        doc.text((t.description || "-").substring(0, 20), 150, y);
+        y += 6;
+      });
+
+      doc.save(`kpi_tranzactii_${new Date().toISOString().split('T')[0]}.pdf`);
+      toast.success("KPI și tranzacții exportate în PDF");
+    } catch (error) {
+      toast.error("Eroare la exportul PDF");
+      console.error(error);
+    }
+  };
+
   const handleExportWithFilters = () => {
     if (exportType === "csv") {
       exportToCSV(true);
