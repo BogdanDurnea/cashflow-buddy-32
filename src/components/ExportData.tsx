@@ -4,16 +4,28 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Download, FileText, FileSpreadsheet, Filter } from "lucide-react";
+import { Download, FileText, FileSpreadsheet, Filter, Gauge } from "lucide-react";
 import { Transaction } from "@/components/TransactionForm";
 import { toast } from "sonner";
 import { expenseCategories, incomeCategories } from "@/lib/categoryConfig";
+import { computeKpi } from "@/lib/kpi";
+
+export interface ExportFilterContext {
+  type: "all" | "income" | "expense";
+  category: string;
+  period: string;
+  startDate?: Date | null;
+  endDate?: Date | null;
+}
 
 interface ExportDataProps {
   transactions: Transaction[];
+  /** Transactions matching the filters currently applied on the dashboard */
+  currentViewTransactions?: Transaction[];
+  filterContext?: ExportFilterContext;
 }
 
-export function ExportData({ transactions }: ExportDataProps) {
+export function ExportData({ transactions, currentViewTransactions, filterContext }: ExportDataProps) {
   const [isFilterDialogOpen, setIsFilterDialogOpen] = useState(false);
   const [exportType, setExportType] = useState<"csv" | "pdf">("csv");
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
