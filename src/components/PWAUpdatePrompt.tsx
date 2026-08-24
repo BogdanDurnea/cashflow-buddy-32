@@ -12,6 +12,19 @@ type UpdateEventDetail = {
 
 type UpdateEvent = CustomEvent<UpdateEventDetail>;
 
+let dismissSeq = 0;
+
+/** Stable identity for an update (worker instance + version). */
+function updateKey(worker: ServiceWorker | null, version: string | null): string {
+  if (worker) {
+    const w = worker as ServiceWorker & { __pwaKey?: string };
+    if (!w.__pwaKey) w.__pwaKey = `w${++dismissSeq}`;
+    return `${w.__pwaKey}|${version ?? ""}`;
+  }
+  return `v|${version ?? ""}`;
+}
+
+
 /**
  * Shows a persistent banner when a new service worker version is waiting.
  * Clicking "Actualizează aplicația" activates the new worker and reloads.
