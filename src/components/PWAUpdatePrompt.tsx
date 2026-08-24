@@ -16,6 +16,8 @@ type UpdateEvent = CustomEvent<UpdateEventDetail>;
 
 let dismissSeq = 0;
 
+export const DISMISSED_VERSION_KEY = "pwa:update-dismissed-version";
+
 /** Stable identity for an update (worker instance + version). */
 function updateKey(worker: ServiceWorker | null, version: string | null): string {
   if (worker) {
@@ -26,11 +28,28 @@ function updateKey(worker: ServiceWorker | null, version: string | null): string
   return `v|${version ?? ""}`;
 }
 
+function readDismissedVersion(): string | null {
+  try {
+    return window.localStorage.getItem(DISMISSED_VERSION_KEY);
+  } catch {
+    return null;
+  }
+}
+
+function writeDismissedVersion(version: string | null) {
+  try {
+    if (version) window.localStorage.setItem(DISMISSED_VERSION_KEY, version);
+    else window.localStorage.removeItem(DISMISSED_VERSION_KEY);
+  } catch {
+    // ignore – storage disabled
+  }
+}
 
 /**
  * Shows a persistent banner when a new service worker version is waiting.
  * Clicking "Actualizează aplicația" activates the new worker and reloads.
- * The banner displays the current and new version numbers when available.
+ * "Mai târziu" hides the banner for that version, persisted across refreshes,
+ * so it only reappears when a genuinely newer version becomes available.
  */
 export function PWAUpdatePrompt() {
   const [waiting, setWaiting] = useState<ServiceWorker | null>(null);
@@ -38,7 +57,7 @@ export function PWAUpdatePrompt() {
   const [updating, setUpdating] = useState(false);
   const [currentVersion, setCurrentVersion] = useState<string | null>(null);
   const [newVersion, setNewVersion] = useState<string | null>(null);
-  // Identifies the update the user dismissed via "Mai târziu".
+  // Identifies the update the user dismissed via "Mai târziu" (this session).
   const [dismissedKey, setDismissedKey] = useState<string | null>(null);
 
   useEffect(() => {
@@ -52,6 +71,13 @@ export function PWAUpdatePrompt() {
       setCurrentVersion(detail?.currentVersion ?? null);
       setNewVersion(nextVersion);
       setUpdating(false);
+
+      // Persisted dismissal wins: the same version never reappears after refresh.
+      const persisted = readDismissedVersion();
+      if (nextVersion && persisted && persisted === nextVersion) {
+        setVisible(false);
+        return;
+      }
 
       const key = updateKey(next, nextVersion);
       setDismissedKey((dismissed) => {
@@ -72,6 +98,8 @@ export function PWAUpdatePrompt() {
   const handleUpdate = useCallback(() => {
     setUpdating(true);
     trackPwaEvent("pwa:skip-waiting", { currentVersion, newVersion });
+    // A version the user actually installed must not stay dismissed.
+    writeDismissedVersion(null);
     try {
       waiting?.postMessage({ type: "SKIP_WAITING" });
     } catch {
@@ -83,8 +111,10 @@ export function PWAUpdatePrompt() {
   const handleDismiss = useCallback(() => {
     trackPwaEvent("pwa:update-dismissed", { currentVersion, newVersion });
     setDismissedKey(updateKey(waiting, newVersion));
+    writeDismissedVersion(newVersion);
     setVisible(false);
   }, [waiting, currentVersion, newVersion]);
+
 
 
   if (!visible) return null;
