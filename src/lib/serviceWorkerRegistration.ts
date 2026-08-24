@@ -1,9 +1,21 @@
 export const PWA_UPDATE_EVENT = 'pwa:update-available';
 
+/** Last worker we already announced – prevents duplicate events for the same update. */
+let lastNotifiedWorker: ServiceWorker | null = null;
+
 function notifyUpdateAvailable(waiting: ServiceWorker | null) {
+  // Two updates in a row must announce only the newest worker, once each.
+  if (waiting && waiting === lastNotifiedWorker) return;
+  lastNotifiedWorker = waiting;
+
   window.dispatchEvent(
     new CustomEvent(PWA_UPDATE_EVENT, { detail: { waiting } })
   );
+}
+
+/** Test/reset helper – forgets the last announced worker. */
+export function resetUpdateNotifications() {
+  lastNotifiedWorker = null;
 }
 
 /** Watches a registration and announces any waiting (updated) service worker. */
@@ -23,6 +35,7 @@ export function watchForUpdates(registration: ServiceWorkerRegistration) {
     });
   });
 }
+
 
 export async function registerServiceWorker() {
   if (!('serviceWorker' in navigator)) {

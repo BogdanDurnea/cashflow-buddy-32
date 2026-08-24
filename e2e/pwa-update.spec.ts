@@ -71,3 +71,63 @@ test.describe("PWA update", () => {
       .toBe(JSON.stringify({ type: "SKIP_WAITING" }));
   });
 });
+
+test.describe("PWA update – two consecutive updates", () => {
+  test("shows a single banner and targets only the newest waiting worker", async ({ page }) => {
+    await page.goto("/", { waitUntil: "domcontentloaded" });
+    await expect(page.locator("#root")).not.toBeEmpty();
+
+    // Two updates arrive back to back (v1 then v2).
+    await page.evaluate((eventName) => {
+      const w = window as unknown as { __swMessages: Record<string, unknown[]> };
+      w.__swMessages = { v1: [], v2: [] };
+      for (const version of ["v1", "v2"]) {
+        const waiting = {
+          state: "installed",
+          postMessage: (message: unknown) => {
+            w.__swMessages[version].push(message);
+            sessionStorage.setItem("__swTarget", version);
+          },
+        };
+        window.dispatchEvent(new CustomEvent(eventName, { detail: { waiting } }));
+      }
+    }, UPDATE_EVENT);
+
+    // Exactly one banner, never stacked.
+    await expect(page.getByTestId("pwa-update-prompt")).toHaveCount(1);
+    const updateButton = page.getByRole("button", { name: /Actualizează aplicația/i });
+    await expect(updateButton).toHaveCount(1);
+
+    await updateButton.click();
+
+    // Only the newest worker receives SKIP_WAITING, exactly once.
+    await expect.poll(() => page.evaluate(() => sessionStorage.getItem("__swTarget"))).toBe("v2");
+  });
+
+  test("does not duplicate the SKIP_WAITING message for the older worker", async ({ page }) => {
+    await page.goto("/", { waitUntil: "domcontentloaded" });
+    await expect(page.locator("#root")).not.toBeEmpty();
+
+    const counts = await page.evaluate(async (eventName) => {
+      const calls = { v1: 0, v2: 0 };
+      const make = (key: "v1" | "v2") => ({
+        state: "installed",
+        postMessage: () => {
+          calls[key] += 1;
+        },
+      });
+      window.dispatchEvent(new CustomEvent(eventName, { detail: { waiting: make("v1") } }));
+      window.dispatchEvent(new CustomEvent(eventName, { detail: { waiting: make("v2") } }));
+
+      await new Promise((resolve) => setTimeout(resolve, 100));
+      const button = [...document.querySelectorAll("button")].find((b) =>
+        /Actualizează aplicația/i.test(b.textContent ?? ""),
+      );
+      button?.click();
+      await new Promise((resolve) => setTimeout(resolve, 50));
+      return calls;
+    }, UPDATE_EVENT);
+
+    expect(counts).toEqual({ v1: 0, v2: 1 });
+  });
+});
