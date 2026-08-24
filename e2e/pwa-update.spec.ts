@@ -17,7 +17,7 @@ test.describe("PWA update", () => {
     await expect(page.getByTestId("pwa-update-prompt")).toHaveCount(0);
   });
 
-  test("shows 'Actualizează aplicația' after the service worker updates", async ({ page }) => {
+  test("shows 'Actualizează aplicația' and the current/new versions after the service worker updates", async ({ page }) => {
     await page.goto("/", { waitUntil: "domcontentloaded" });
     await expect(page.locator("#root")).not.toBeEmpty();
 
@@ -30,12 +30,17 @@ test.describe("PWA update", () => {
         state: "installed",
         postMessage: (message: unknown) => w.__swMessages.push(message),
       };
-      window.dispatchEvent(new CustomEvent(eventName, { detail: { waiting } }));
+      window.dispatchEvent(
+        new CustomEvent(eventName, {
+          detail: { waiting, currentVersion: "1.0.0", newVersion: "1.1.0" },
+        }),
+      );
     }, UPDATE_EVENT);
 
     const banner = page.getByTestId("pwa-update-prompt");
     await expect(banner).toBeVisible();
     await expect(banner).toContainText(/versiune nouă este disponibilă/i);
+    await expect(banner).toContainText(/Versiunea curentă: 1\.0\.0 → Versiunea nouă: 1\.1\.0/i);
 
     const updateButton = page.getByRole("button", { name: /Actualizează aplicația/i });
     await expect(updateButton).toBeVisible();
@@ -61,7 +66,11 @@ test.describe("PWA update", () => {
         postMessage: (message: unknown) =>
           sessionStorage.setItem("__swMessage", JSON.stringify(message)),
       };
-      window.dispatchEvent(new CustomEvent(eventName, { detail: { waiting } }));
+      window.dispatchEvent(
+        new CustomEvent(eventName, {
+          detail: { waiting, currentVersion: "1.0.0", newVersion: "1.1.0" },
+        }),
+      );
     }, UPDATE_EVENT);
 
     await page.getByRole("button", { name: /Actualizează aplicația/i }).click();
@@ -81,20 +90,31 @@ test.describe("PWA update – two consecutive updates", () => {
     await page.evaluate((eventName) => {
       const w = window as unknown as { __swMessages: Record<string, unknown[]> };
       w.__swMessages = { v1: [], v2: [] };
-      for (const version of ["v1", "v2"]) {
+      const versions = [
+        { key: "v1", current: "1.0.0", next: "1.0.1" },
+        { key: "v2", current: "1.0.0", next: "1.1.0" },
+      ];
+      for (const { key, current, next } of versions) {
         const waiting = {
           state: "installed",
           postMessage: (message: unknown) => {
-            w.__swMessages[version].push(message);
-            sessionStorage.setItem("__swTarget", version);
+            w.__swMessages[key].push(message);
+            sessionStorage.setItem("__swTarget", key);
           },
         };
-        window.dispatchEvent(new CustomEvent(eventName, { detail: { waiting } }));
+        window.dispatchEvent(
+          new CustomEvent(eventName, {
+            detail: { waiting, currentVersion: current, newVersion: next },
+          }),
+        );
       }
     }, UPDATE_EVENT);
 
     // Exactly one banner, never stacked.
     await expect(page.getByTestId("pwa-update-prompt")).toHaveCount(1);
+    const banner = page.getByTestId("pwa-update-prompt");
+    await expect(banner).toContainText(/Versiunea curentă: 1\.0\.0 → Versiunea nouă: 1\.1\.0/i);
+
     const updateButton = page.getByRole("button", { name: /Actualizează aplicația/i });
     await expect(updateButton).toHaveCount(1);
 
@@ -110,14 +130,23 @@ test.describe("PWA update – two consecutive updates", () => {
 
     const counts = await page.evaluate(async (eventName) => {
       const calls = { v1: 0, v2: 0 };
-      const make = (key: "v1" | "v2") => ({
+      const make = (key: "v1" | "v2", current: string, next: string) => ({
         state: "installed",
         postMessage: () => {
           calls[key] += 1;
         },
+        __version: { current, next },
       });
-      window.dispatchEvent(new CustomEvent(eventName, { detail: { waiting: make("v1") } }));
-      window.dispatchEvent(new CustomEvent(eventName, { detail: { waiting: make("v2") } }));
+      window.dispatchEvent(
+        new CustomEvent(eventName, {
+          detail: { waiting: make("v1", "1.0.0", "1.0.1"), currentVersion: "1.0.0", newVersion: "1.0.1" },
+        }),
+      );
+      window.dispatchEvent(
+        new CustomEvent(eventName, {
+          detail: { waiting: make("v2", "1.0.0", "1.1.0"), currentVersion: "1.0.0", newVersion: "1.1.0" },
+        }),
+      );
 
       await new Promise((resolve) => setTimeout(resolve, 100));
       const button = [...document.querySelectorAll("button")].find((b) =>
@@ -141,20 +170,32 @@ test.describe("PWA update – three consecutive updates", () => {
     await page.evaluate((eventName) => {
       const w = window as unknown as { __swMessages: Record<string, unknown[]> };
       w.__swMessages = { v1: [], v2: [], v3: [] };
-      for (const version of ["v1", "v2", "v3"]) {
+      const versions = [
+        { key: "v1", current: "1.0.0", next: "1.0.1" },
+        { key: "v2", current: "1.0.0", next: "1.1.0" },
+        { key: "v3", current: "1.0.0", next: "1.2.0" },
+      ];
+      for (const { key, current, next } of versions) {
         const waiting = {
           state: "installed",
           postMessage: (message: unknown) => {
-            w.__swMessages[version].push(message);
-            sessionStorage.setItem("__swTarget", version);
+            w.__swMessages[key].push(message);
+            sessionStorage.setItem("__swTarget", key);
           },
         };
-        window.dispatchEvent(new CustomEvent(eventName, { detail: { waiting } }));
+        window.dispatchEvent(
+          new CustomEvent(eventName, {
+            detail: { waiting, currentVersion: current, newVersion: next },
+          }),
+        );
       }
     }, UPDATE_EVENT);
 
     // Exactly one banner, never stacked.
     await expect(page.getByTestId("pwa-update-prompt")).toHaveCount(1);
+    const banner = page.getByTestId("pwa-update-prompt");
+    await expect(banner).toContainText(/Versiunea curentă: 1\.0\.0 → Versiunea nouă: 1\.2\.0/i);
+
     const updateButton = page.getByRole("button", { name: /Actualizează aplicația/i });
     await expect(updateButton).toHaveCount(1);
 
@@ -170,15 +211,28 @@ test.describe("PWA update – three consecutive updates", () => {
 
     const counts = await page.evaluate(async (eventName) => {
       const calls = { v1: 0, v2: 0, v3: 0 };
-      const make = (key: "v1" | "v2" | "v3") => ({
+      const make = (key: "v1" | "v2" | "v3", current: string, next: string) => ({
         state: "installed",
         postMessage: () => {
           calls[key] += 1;
         },
+        __version: { current, next },
       });
-      window.dispatchEvent(new CustomEvent(eventName, { detail: { waiting: make("v1") } }));
-      window.dispatchEvent(new CustomEvent(eventName, { detail: { waiting: make("v2") } }));
-      window.dispatchEvent(new CustomEvent(eventName, { detail: { waiting: make("v3") } }));
+      window.dispatchEvent(
+        new CustomEvent(eventName, {
+          detail: { waiting: make("v1", "1.0.0", "1.0.1"), currentVersion: "1.0.0", newVersion: "1.0.1" },
+        }),
+      );
+      window.dispatchEvent(
+        new CustomEvent(eventName, {
+          detail: { waiting: make("v2", "1.0.0", "1.1.0"), currentVersion: "1.0.0", newVersion: "1.1.0" },
+        }),
+      );
+      window.dispatchEvent(
+        new CustomEvent(eventName, {
+          detail: { waiting: make("v3", "1.0.0", "1.2.0"), currentVersion: "1.0.0", newVersion: "1.2.0" },
+        }),
+      );
 
       await new Promise((resolve) => setTimeout(resolve, 100));
       const button = [...document.querySelectorAll("button")].find((b) =>
