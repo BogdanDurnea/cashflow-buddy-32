@@ -69,4 +69,47 @@ test.describe("PWA install", () => {
       .toBe(1);
     await expect(page.getByText(/Aplicația este instalată/i)).toBeVisible();
   });
+
+  /**
+   * iOS Safari never fires `beforeinstallprompt`, so /install must render the
+   * manual "Adaugă la ecranul de pornire" instructions immediately, without
+   * waiting for an event that will never arrive.
+   */
+  test("shows the iOS Safari fallback instructions without waiting for beforeinstallprompt", async ({
+    browser,
+  }) => {
+    const iPhone = devices["iPhone 13"];
+    const context = await browser.newContext({
+      ...iPhone,
+      userAgent:
+        "Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Mobile/15E148 Safari/604.1",
+    });
+    const page = await context.newPage();
+
+    try {
+      const start = Date.now();
+      await page.goto("/install", { waitUntil: "domcontentloaded" });
+
+      // Fallback content must be present on first render — no event, no delay.
+      await expect(page.getByRole("heading", { name: /Cum să instalezi/i })).toBeVisible();
+      const iosBlock = page.getByRole("heading", { name: /Pe iOS \(Safari\)/i });
+      await expect(iosBlock).toBeVisible();
+      await expect(page.getByText(/Adaugă la ecranul de pornire/i).first()).toBeVisible();
+      await expect(page.getByText(/Share/i).first()).toBeVisible();
+      expect(Date.now() - start, "fallback must render immediately").toBeLessThan(10_000);
+
+      // The Chromium-only install button must stay absent on iOS Safari.
+      await expect(page.getByRole("button", { name: /Instalează acum/i })).toHaveCount(0);
+
+      // No install prompt event was ever registered as required for the fallback.
+      await expect(page.getByRole("link", { name: /Continuă în browser/i })).toBeVisible();
+
+      // Fallback stays stable — it does not disappear while waiting for an event.
+      await page.waitForTimeout(1_000);
+      await expect(iosBlock).toBeVisible();
+    } finally {
+      await context.close();
+    }
+  });
 });
+
