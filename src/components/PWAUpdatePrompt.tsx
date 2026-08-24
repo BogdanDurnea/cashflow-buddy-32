@@ -23,20 +23,31 @@ export function PWAUpdatePrompt() {
   const [updating, setUpdating] = useState(false);
   const [currentVersion, setCurrentVersion] = useState<string | null>(null);
   const [newVersion, setNewVersion] = useState<string | null>(null);
+  // Identifies the update the user dismissed via "Mai târziu".
+  const [dismissedKey, setDismissedKey] = useState<string | null>(null);
 
   useEffect(() => {
     const onUpdate = (event: Event) => {
       const detail = (event as UpdateEvent).detail;
+      const next = detail?.waiting ?? null;
+      const nextVersion = detail?.newVersion ?? null;
       // Back-to-back updates: always keep only the most recent waiting worker
       // and keep showing a single banner (no duplicates, no stacking).
-      setWaiting((current) => {
-        const next = detail?.waiting ?? null;
-        return next === current ? current : next;
-      });
+      setWaiting((current) => (next === current ? current : next));
       setCurrentVersion(detail?.currentVersion ?? null);
-      setNewVersion(detail?.newVersion ?? null);
-      setVisible(true);
+      setNewVersion(nextVersion);
       setUpdating(false);
+
+      const key = updateKey(next, nextVersion);
+      setDismissedKey((dismissed) => {
+        if (dismissed !== null && dismissed === key) {
+          // Same update as the one dismissed – stay hidden.
+          setVisible(false);
+          return dismissed;
+        }
+        setVisible(true);
+        return null;
+      });
     };
 
     window.addEventListener(PWA_UPDATE_EVENT, onUpdate);
@@ -53,7 +64,13 @@ export function PWAUpdatePrompt() {
     window.setTimeout(() => window.location.reload(), 150);
   }, [waiting]);
 
+  const handleDismiss = useCallback(() => {
+    setDismissedKey(updateKey(waiting, newVersion));
+    setVisible(false);
+  }, [waiting, newVersion]);
+
   if (!visible) return null;
+
 
   const hasVersions = Boolean(currentVersion && newVersion);
 
