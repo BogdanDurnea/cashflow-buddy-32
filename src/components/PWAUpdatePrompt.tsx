@@ -103,12 +103,23 @@ export function PWAUpdatePrompt() {
           ? `Versiunea curentă: ${currentVersion} → Versiunea nouă: ${newVersion}`
           : "Reîncarcă pentru a folosi cea mai recentă versiune a aplicației."}
       </p>
-      <Button
-        className="mt-3 w-full"
-        size="sm"
-        disabled={updating}
-        onClick={handleUpdate}
-      >
+      <div className="mt-3 flex gap-2">
+        <Button
+          variant="ghost"
+          className="flex-1"
+          size="sm"
+          data-testid="pwa-update-dismiss"
+          onClick={handleDismiss}
+        >
+          Mai târziu
+        </Button>
+        <Button
+          className="flex-1"
+          size="sm"
+          disabled={updating}
+          onClick={handleUpdate}
+        >
+
         <RefreshCw className={`mr-2 h-4 w-4 ${updating ? "animate-spin" : ""}`} />
         Actualizează aplicația
       </Button>
