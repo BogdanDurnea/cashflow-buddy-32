@@ -69,18 +69,21 @@ export function PWAUpdatePrompt() {
 
   const handleUpdate = useCallback(() => {
     setUpdating(true);
+    trackPwaEvent("pwa:skip-waiting", { currentVersion, newVersion });
     try {
       waiting?.postMessage({ type: "SKIP_WAITING" });
     } catch {
       // ignore – we reload regardless
     }
     window.setTimeout(() => window.location.reload(), 150);
-  }, [waiting]);
+  }, [waiting, currentVersion, newVersion]);
 
   const handleDismiss = useCallback(() => {
+    trackPwaEvent("pwa:update-dismissed", { currentVersion, newVersion });
     setDismissedKey(updateKey(waiting, newVersion));
     setVisible(false);
-  }, [waiting, newVersion]);
+  }, [waiting, currentVersion, newVersion]);
+
 
   if (!visible) return null;
 
