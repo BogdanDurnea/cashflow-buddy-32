@@ -119,10 +119,11 @@ export function PWAUpdatePrompt() {
           disabled={updating}
           onClick={handleUpdate}
         >
-
-        <RefreshCw className={`mr-2 h-4 w-4 ${updating ? "animate-spin" : ""}`} />
-        Actualizează aplicația
-      </Button>
+          <RefreshCw className={`mr-2 h-4 w-4 ${updating ? "animate-spin" : ""}`} />
+          Actualizează aplicația
+        </Button>
+      </div>
     </div>
+
   );
 }
