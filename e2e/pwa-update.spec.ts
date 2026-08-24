@@ -245,4 +245,82 @@ test.describe("PWA update – three consecutive updates", () => {
 
     expect(counts).toEqual({ v1: 0, v2: 0, v3: 1 });
   });
+test("'Mai târziu' persists per version across a refresh", async ({ page }) => {
+    await page.goto("/", { waitUntil: "domcontentloaded" });
+    await expect(page.locator("#root")).not.toBeEmpty();
+
+    const fire = (newVersion: string) =>
+      page.evaluate(
+        ([eventName, version]) => {
+          window.dispatchEvent(
+            new CustomEvent(eventName as string, {
+              detail: {
+                waiting: { state: "installed", postMessage: () => {} },
+                currentVersion: "1.0.0",
+                newVersion: version,
+              },
+            }),
+          );
+        },
+        [UPDATE_EVENT, newVersion],
+      );
+
+    await fire("1.1.0");
+    const banner = page.getByTestId("pwa-update-prompt");
+    await expect(banner).toBeVisible();
+
+    await page.getByTestId("pwa-update-dismiss").click();
+    await expect(banner).toHaveCount(0);
+
+    // Same version offered again in the same session: stays hidden.
+    await fire("1.1.0");
+    await expect(page.getByTestId("pwa-update-prompt")).toHaveCount(0);
+
+    // After a refresh the dismissal is still remembered for that version.
+    await page.reload({ waitUntil: "domcontentloaded" });
+    await expect(page.locator("#root")).not.toBeEmpty();
+    await fire("1.1.0");
+    await expect(page.getByTestId("pwa-update-prompt")).toHaveCount(0);
+  });
+
+  test("banner reappears only for a genuinely newer version", async ({ page }) => {
+    await page.goto("/", { waitUntil: "domcontentloaded" });
+    await expect(page.locator("#root")).not.toBeEmpty();
+
+    await page.evaluate(
+      ([eventName, version]) => {
+        localStorage.setItem("pwa:update-dismissed-version", "1.1.0");
+        window.dispatchEvent(
+          new CustomEvent(eventName as string, {
+            detail: {
+              waiting: { state: "installed", postMessage: () => {} },
+              currentVersion: "1.0.0",
+              newVersion: version,
+            },
+          }),
+        );
+      },
+      [UPDATE_EVENT, "1.1.0"],
+    );
+    await expect(page.getByTestId("pwa-update-prompt")).toHaveCount(0);
+
+    await page.evaluate(
+      ([eventName, version]) => {
+        window.dispatchEvent(
+          new CustomEvent(eventName as string, {
+            detail: {
+              waiting: { state: "installed", postMessage: () => {} },
+              currentVersion: "1.0.0",
+              newVersion: version,
+            },
+          }),
+        );
+      },
+      [UPDATE_EVENT, "1.2.0"],
+    );
+
+    const banner = page.getByTestId("pwa-update-prompt");
+    await expect(banner).toBeVisible();
+    await expect(banner).toContainText(/Versiunea nouă: 1\.2\.0/i);
+  });
 });
