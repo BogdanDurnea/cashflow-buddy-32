@@ -1,4 +1,7 @@
+import { trackPwaEvent } from './pwaTelemetry';
+
 export const PWA_UPDATE_EVENT = 'pwa:update-available';
+
 export const SW_VERSION_PARAM = 'v';
 
 /** Last worker we already announced – prevents duplicate events for the same update. */
