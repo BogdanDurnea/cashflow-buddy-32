@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useState } from "react";
 import { RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { trackPwaEvent } from "@/lib/pwaTelemetry";
+
 
 export const PWA_UPDATE_EVENT = "pwa:update-available";
 
