@@ -36,6 +36,8 @@ export async function registerServiceWorker() {
     });
     
     console.log('Service Worker înregistrat cu succes:', registration);
+
+    watchForUpdates(registration);
     
     // Wait for the service worker to be ready
     await navigator.serviceWorker.ready;
