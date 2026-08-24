@@ -4,16 +4,25 @@ import { Button } from "@/components/ui/button";
 
 export const PWA_UPDATE_EVENT = "pwa:update-available";
 
-type UpdateEvent = CustomEvent<{ waiting?: ServiceWorker | null }>;
+type UpdateEventDetail = {
+  waiting?: ServiceWorker | null;
+  currentVersion?: string | null;
+  newVersion?: string | null;
+};
+
+type UpdateEvent = CustomEvent<UpdateEventDetail>;
 
 /**
  * Shows a persistent banner when a new service worker version is waiting.
  * Clicking "Actualizează aplicația" activates the new worker and reloads.
+ * The banner displays the current and new version numbers when available.
  */
 export function PWAUpdatePrompt() {
   const [waiting, setWaiting] = useState<ServiceWorker | null>(null);
   const [visible, setVisible] = useState(false);
   const [updating, setUpdating] = useState(false);
+  const [currentVersion, setCurrentVersion] = useState<string | null>(null);
+  const [newVersion, setNewVersion] = useState<string | null>(null);
 
   useEffect(() => {
     const onUpdate = (event: Event) => {
@@ -24,6 +33,8 @@ export function PWAUpdatePrompt() {
         const next = detail?.waiting ?? null;
         return next === current ? current : next;
       });
+      setCurrentVersion(detail?.currentVersion ?? null);
+      setNewVersion(detail?.newVersion ?? null);
       setVisible(true);
       setUpdating(false);
     };
@@ -44,6 +55,7 @@ export function PWAUpdatePrompt() {
 
   if (!visible) return null;
 
+  const hasVersions = Boolean(currentVersion && newVersion);
 
   return (
     <div
@@ -54,9 +66,12 @@ export function PWAUpdatePrompt() {
     >
       <p className="text-sm font-medium text-card-foreground">
         O versiune nouă este disponibilă
+        {newVersion && !currentVersion && ` (${newVersion})`}
       </p>
       <p className="mt-1 text-xs text-muted-foreground">
-        Reîncarcă pentru a folosi cea mai recentă versiune a aplicației.
+        {hasVersions
+          ? `Versiunea curentă: ${currentVersion} → Versiunea nouă: ${newVersion}`
+          : "Reîncarcă pentru a folosi cea mai recentă versiune a aplicației."}
       </p>
       <Button
         className="mt-3 w-full"
