@@ -4,16 +4,28 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Download, FileText, FileSpreadsheet, Filter } from "lucide-react";
+import { Download, FileText, FileSpreadsheet, Filter, Gauge } from "lucide-react";
 import { Transaction } from "@/components/TransactionForm";
 import { toast } from "sonner";
 import { expenseCategories, incomeCategories } from "@/lib/categoryConfig";
+import { computeKpi } from "@/lib/kpi";
+
+export interface ExportFilterContext {
+  type: "all" | "income" | "expense";
+  category: string;
+  period: string;
+  startDate?: Date | null;
+  endDate?: Date | null;
+}
 
 interface ExportDataProps {
   transactions: Transaction[];
+  /** Transactions matching the filters currently applied on the dashboard */
+  currentViewTransactions?: Transaction[];
+  filterContext?: ExportFilterContext;
 }
 
-export function ExportData({ transactions }: ExportDataProps) {
+export function ExportData({ transactions, currentViewTransactions, filterContext }: ExportDataProps) {
   const [isFilterDialogOpen, setIsFilterDialogOpen] = useState(false);
   const [exportType, setExportType] = useState<"csv" | "pdf">("csv");
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
@@ -149,6 +161,161 @@ export function ExportData({ transactions }: ExportDataProps) {
       const filename = filtered ? `tranzactii_filtrate_${new Date().toISOString().split('T')[0]}.pdf` : `tranzactii_${new Date().toISOString().split('T')[0]}.pdf`;
       doc.save(filename);
       toast.success("Date exportate cu succes în PDF");
+    } catch (error) {
+      toast.error("Eroare la exportul PDF");
+      console.error(error);
+    }
+  };
+
+  const viewTransactions = currentViewTransactions ?? transactions;
+
+  const periodLabels: Record<string, string> = {
+    all: "Toate perioadele",
+    today: "Astăzi",
+    week: "Ultima săptămână",
+    month: "Luna curentă",
+    year: "Anul curent",
+  };
+
+  const filterSummary = () => {
+    const ctx = filterContext;
+    const range = ctx?.startDate && ctx?.endDate
+      ? `${ctx.startDate.toLocaleDateString('ro-RO')} - ${ctx.endDate.toLocaleDateString('ro-RO')}`
+      : periodLabels[ctx?.period ?? "all"] ?? ctx?.period ?? "Toate perioadele";
+    const type = ctx?.type === "income" ? "Venituri" : ctx?.type === "expense" ? "Cheltuieli" : "Toate";
+    const category = !ctx?.category || ctx.category === "all" ? "Toate" : ctx.category;
+    return [
+      ["Perioadă", range],
+      ["Tip tranzacții", type],
+      ["Categorie", category],
+      ["Tranzacții incluse", String(viewTransactions.length)],
+    ] as [string, string][];
+  };
+
+  const kpiRows = () => {
+    const kpi = computeKpi(viewTransactions);
+    const levels: Record<string, string> = { healthy: "Sănătos", watch: "De urmărit", risk: "Risc" };
+    return [
+      ["Scor sănătate cash flow (0-100)", `${kpi.score}`],
+      ["Stare", levels[kpi.level]],
+      ["Venituri (luna curentă)", `${kpi.income.toFixed(2)} RON`],
+      ["Cheltuieli (luna curentă)", `${kpi.expense.toFixed(2)} RON`],
+      ["Cash flow net", `${kpi.net.toFixed(2)} RON`],
+      ["Rată economisire", `${kpi.savingsRate.toFixed(1)}%`],
+      ["Prognoză cheltuieli lună", `${kpi.forecastExpense.toFixed(2)} RON`],
+      ["Așteptat până azi", `${kpi.expectedToDate.toFixed(2)} RON`],
+      ["Variație vs prognoză", `${kpi.variance.toFixed(2)} RON (${kpi.variancePct.toFixed(1)}%)`],
+      ["Zile rămase din lună", `${kpi.daysLeft}`],
+    ] as [string, string][];
+  };
+
+  const exportCurrentViewCSV = () => {
+    if (viewTransactions.length === 0) {
+      toast.error("Nu există tranzacții de exportat");
+      return;
+    }
+
+    const esc = (v: string) => `"${v.replace(/"/g, '""')}"`;
+    const lines: string[] = [];
+    lines.push(esc("Raport KPI & Tranzacții"));
+    lines.push(esc(`Generat la: ${new Date().toLocaleString('ro-RO')}`));
+    lines.push("");
+    lines.push(esc("Filtre aplicate"));
+    filterSummary().forEach(([k, v]) => lines.push([k, v].map(esc).join(",")));
+    lines.push("");
+    lines.push(esc("Indicatori KPI"));
+    kpiRows().forEach(([k, v]) => lines.push([k, v].map(esc).join(",")));
+    lines.push("");
+    lines.push(esc("Tranzacții"));
+    lines.push(["Data", "Tip", "Categorie", "Sumă (RON)", "Descriere"].map(esc).join(","));
+    viewTransactions.forEach(t => {
+      lines.push([
+        new Date(t.date).toLocaleDateString('ro-RO'),
+        t.type === "income" ? "Venit" : "Cheltuială",
+        t.category,
+        t.amount.toFixed(2),
+        t.description || "-",
+      ].map(esc).join(","));
+    });
+
+    const blob = new Blob(["\ufeff" + lines.join("\n")], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    link.setAttribute("href", url);
+    link.setAttribute("download", `kpi_tranzactii_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = "hidden";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    toast.success("KPI și tranzacții exportate în CSV");
+  };
+
+  const exportCurrentViewPDF = async () => {
+    if (viewTransactions.length === 0) {
+      toast.error("Nu există tranzacții de exportat");
+      return;
+    }
+
+    try {
+      const { default: jsPDF } = await import('jspdf');
+      const doc = new jsPDF();
+
+      doc.setFontSize(18);
+      doc.text("Raport KPI & Tranzacții", 14, 20);
+      doc.setFontSize(10);
+      doc.text(`Generat la: ${new Date().toLocaleString('ro-RO')}`, 14, 28);
+
+      let y = 38;
+      doc.setFontSize(12);
+      doc.text("Filtre aplicate", 14, y);
+      y += 6;
+      doc.setFontSize(9);
+      filterSummary().forEach(([k, v]) => {
+        doc.text(`${k}:`, 14, y);
+        doc.text(v, 80, y);
+        y += 5;
+      });
+
+      y += 5;
+      doc.setFontSize(12);
+      doc.text("Indicatori KPI", 14, y);
+      y += 6;
+      doc.setFontSize(9);
+      kpiRows().forEach(([k, v]) => {
+        if (y > 275) { doc.addPage(); y = 20; }
+        doc.text(`${k}:`, 14, y);
+        doc.text(v, 110, y);
+        y += 5;
+      });
+
+      y += 6;
+      if (y > 260) { doc.addPage(); y = 20; }
+      doc.setFontSize(12);
+      doc.text("Tranzacții", 14, y);
+      y += 7;
+      doc.setFontSize(9);
+      doc.text("Data", 14, y);
+      doc.text("Tip", 40, y);
+      doc.text("Categorie", 70, y);
+      doc.text("Sumă (RON)", 110, y);
+      doc.text("Descriere", 150, y);
+      y += 4;
+      doc.line(14, y, 196, y);
+      y += 5;
+      doc.setFontSize(8);
+      viewTransactions.forEach(t => {
+        if (y > 280) { doc.addPage(); y = 20; }
+        doc.text(new Date(t.date).toLocaleDateString('ro-RO'), 14, y);
+        doc.text(t.type === "income" ? "Venit" : "Chelt.", 40, y);
+        doc.text(t.category.substring(0, 15), 70, y);
+        doc.text(t.amount.toFixed(2), 110, y);
+        doc.text((t.description || "-").substring(0, 20), 150, y);
+        y += 6;
+      });
+
+      doc.save(`kpi_tranzactii_${new Date().toISOString().split('T')[0]}.pdf`);
+      toast.success("KPI și tranzacții exportate în PDF");
     } catch (error) {
       toast.error("Eroare la exportul PDF");
       console.error(error);
@@ -298,10 +465,30 @@ export function ExportData({ transactions }: ExportDataProps) {
             </DialogContent>
           </Dialog>
         </div>
-        
-        <div className="mt-4 p-3 bg-muted/50 rounded-lg">
+
+        <div className="pt-3 border-t space-y-2">
+          <p className="text-sm font-medium">Export KPI + tranzacții (vizualizarea curentă)</p>
+          <p className="text-xs text-muted-foreground">
+            Include perioada și filtrele active, indicatorii KPI și lista de tranzacții filtrate.
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <Button onClick={exportCurrentViewCSV} variant="secondary" className="w-full">
+              <Gauge className="h-4 w-4 mr-2" />
+              KPI + Tranzacții CSV
+            </Button>
+            <Button onClick={exportCurrentViewPDF} variant="secondary" className="w-full">
+              <FileText className="h-4 w-4 mr-2" />
+              KPI + Tranzacții PDF
+            </Button>
+          </div>
+        </div>
+
+        <div className="mt-4 p-3 bg-muted/50 rounded-lg space-y-1">
           <p className="text-xs text-muted-foreground">
             <strong>Total tranzacții:</strong> {transactions.length}
+          </p>
+          <p className="text-xs text-muted-foreground">
+            <strong>În vizualizarea curentă:</strong> {viewTransactions.length}
           </p>
         </div>
       </CardContent>

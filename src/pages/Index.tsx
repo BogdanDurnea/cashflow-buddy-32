@@ -869,7 +869,17 @@ const Index = () => {
                 <AccordionContent className="px-4 sm:px-6 pb-4 space-y-6">
                   <ReportsSection transactions={transactions} />
                   <div className="grid gap-4 sm:gap-6 lg:grid-cols-2">
-                    <ExportData transactions={transactions} />
+                    <ExportData
+                      transactions={transactions}
+                      currentViewTransactions={filteredTransactions}
+                      filterContext={{
+                        type: filterType,
+                        category: filterCategory,
+                        period: filterPeriod,
+                        startDate: dateRangeStart,
+                        endDate: dateRangeEnd,
+                      }}
+                    />
                     <AdvancedPDFExport 
                       transactions={transactions} 
                       monthlyBudget={monthlyBudget}
