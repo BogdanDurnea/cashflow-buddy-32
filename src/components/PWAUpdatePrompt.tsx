@@ -18,8 +18,14 @@ export function PWAUpdatePrompt() {
   useEffect(() => {
     const onUpdate = (event: Event) => {
       const detail = (event as UpdateEvent).detail;
-      setWaiting(detail?.waiting ?? null);
+      // Back-to-back updates: always keep only the most recent waiting worker
+      // and keep showing a single banner (no duplicates, no stacking).
+      setWaiting((current) => {
+        const next = detail?.waiting ?? null;
+        return next === current ? current : next;
+      });
       setVisible(true);
+      setUpdating(false);
     };
 
     window.addEventListener(PWA_UPDATE_EVENT, onUpdate);
@@ -37,6 +43,7 @@ export function PWAUpdatePrompt() {
   }, [waiting]);
 
   if (!visible) return null;
+
 
   return (
     <div
