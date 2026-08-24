@@ -1,3 +1,29 @@
+export const PWA_UPDATE_EVENT = 'pwa:update-available';
+
+function notifyUpdateAvailable(waiting: ServiceWorker | null) {
+  window.dispatchEvent(
+    new CustomEvent(PWA_UPDATE_EVENT, { detail: { waiting } })
+  );
+}
+
+/** Watches a registration and announces any waiting (updated) service worker. */
+export function watchForUpdates(registration: ServiceWorkerRegistration) {
+  if (registration.waiting && navigator.serviceWorker.controller) {
+    notifyUpdateAvailable(registration.waiting);
+  }
+
+  registration.addEventListener('updatefound', () => {
+    const installing = registration.installing;
+    if (!installing) return;
+
+    installing.addEventListener('statechange', () => {
+      if (installing.state === 'installed' && navigator.serviceWorker.controller) {
+        notifyUpdateAvailable(registration.waiting ?? installing);
+      }
+    });
+  });
+}
+
 export async function registerServiceWorker() {
   if (!('serviceWorker' in navigator)) {
     console.log('Service Worker nu este suportat de acest browser');
