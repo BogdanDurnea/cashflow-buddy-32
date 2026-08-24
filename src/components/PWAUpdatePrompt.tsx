@@ -12,6 +12,19 @@ type UpdateEventDetail = {
 
 type UpdateEvent = CustomEvent<UpdateEventDetail>;
 
+let dismissSeq = 0;
+
+/** Stable identity for an update (worker instance + version). */
+function updateKey(worker: ServiceWorker | null, version: string | null): string {
+  if (worker) {
+    const w = worker as ServiceWorker & { __pwaKey?: string };
+    if (!w.__pwaKey) w.__pwaKey = `w${++dismissSeq}`;
+    return `${w.__pwaKey}|${version ?? ""}`;
+  }
+  return `v|${version ?? ""}`;
+}
+
+
 /**
  * Shows a persistent banner when a new service worker version is waiting.
  * Clicking "Actualizează aplicația" activates the new worker and reloads.
@@ -23,20 +36,31 @@ export function PWAUpdatePrompt() {
   const [updating, setUpdating] = useState(false);
   const [currentVersion, setCurrentVersion] = useState<string | null>(null);
   const [newVersion, setNewVersion] = useState<string | null>(null);
+  // Identifies the update the user dismissed via "Mai târziu".
+  const [dismissedKey, setDismissedKey] = useState<string | null>(null);
 
   useEffect(() => {
     const onUpdate = (event: Event) => {
       const detail = (event as UpdateEvent).detail;
+      const next = detail?.waiting ?? null;
+      const nextVersion = detail?.newVersion ?? null;
       // Back-to-back updates: always keep only the most recent waiting worker
       // and keep showing a single banner (no duplicates, no stacking).
-      setWaiting((current) => {
-        const next = detail?.waiting ?? null;
-        return next === current ? current : next;
-      });
+      setWaiting((current) => (next === current ? current : next));
       setCurrentVersion(detail?.currentVersion ?? null);
-      setNewVersion(detail?.newVersion ?? null);
-      setVisible(true);
+      setNewVersion(nextVersion);
       setUpdating(false);
+
+      const key = updateKey(next, nextVersion);
+      setDismissedKey((dismissed) => {
+        if (dismissed !== null && dismissed === key) {
+          // Same update as the one dismissed – stay hidden.
+          setVisible(false);
+          return dismissed;
+        }
+        setVisible(true);
+        return null;
+      });
     };
 
     window.addEventListener(PWA_UPDATE_EVENT, onUpdate);
@@ -53,7 +77,13 @@ export function PWAUpdatePrompt() {
     window.setTimeout(() => window.location.reload(), 150);
   }, [waiting]);
 
+  const handleDismiss = useCallback(() => {
+    setDismissedKey(updateKey(waiting, newVersion));
+    setVisible(false);
+  }, [waiting, newVersion]);
+
   if (!visible) return null;
+
 
   const hasVersions = Boolean(currentVersion && newVersion);
 
@@ -73,15 +103,27 @@ export function PWAUpdatePrompt() {
           ? `Versiunea curentă: ${currentVersion} → Versiunea nouă: ${newVersion}`
           : "Reîncarcă pentru a folosi cea mai recentă versiune a aplicației."}
       </p>
-      <Button
-        className="mt-3 w-full"
-        size="sm"
-        disabled={updating}
-        onClick={handleUpdate}
-      >
-        <RefreshCw className={`mr-2 h-4 w-4 ${updating ? "animate-spin" : ""}`} />
-        Actualizează aplicația
-      </Button>
+      <div className="mt-3 flex gap-2">
+        <Button
+          variant="ghost"
+          className="flex-1"
+          size="sm"
+          data-testid="pwa-update-dismiss"
+          onClick={handleDismiss}
+        >
+          Mai târziu
+        </Button>
+        <Button
+          className="flex-1"
+          size="sm"
+          disabled={updating}
+          onClick={handleUpdate}
+        >
+          <RefreshCw className={`mr-2 h-4 w-4 ${updating ? "animate-spin" : ""}`} />
+          Actualizează aplicația
+        </Button>
+      </div>
     </div>
+
   );
 }
