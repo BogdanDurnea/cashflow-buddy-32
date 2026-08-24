@@ -1,15 +1,40 @@
 export const PWA_UPDATE_EVENT = 'pwa:update-available';
+export const SW_VERSION_PARAM = 'v';
 
 /** Last worker we already announced – prevents duplicate events for the same update. */
 let lastNotifiedWorker: ServiceWorker | null = null;
 
-function notifyUpdateAvailable(waiting: ServiceWorker | null) {
+function getVersionFromScriptURL(scriptURL: string | undefined): string | null {
+  if (!scriptURL) return null;
+  try {
+    const url = new URL(scriptURL, window.location.href);
+    return url.searchParams.get(SW_VERSION_PARAM);
+  } catch {
+    return null;
+  }
+}
+
+type UpdateEventDetail = {
+  waiting?: ServiceWorker | null;
+  currentVersion?: string | null;
+  newVersion?: string | null;
+};
+
+type UpdateEvent = CustomEvent<UpdateEventDetail>;
+
+function notifyUpdateAvailable(registration: ServiceWorkerRegistration) {
   // Two updates in a row must announce only the newest worker, once each.
+  const waiting = registration.waiting;
   if (waiting && waiting === lastNotifiedWorker) return;
-  lastNotifiedWorker = waiting;
+  lastNotifiedWorker = waiting ?? null;
+
+  const currentVersion = getVersionFromScriptURL(registration.active?.scriptURL);
+  const newVersion = getVersionFromScriptURL(waiting?.scriptURL) ?? currentVersion;
 
   window.dispatchEvent(
-    new CustomEvent(PWA_UPDATE_EVENT, { detail: { waiting } })
+    new CustomEvent<UpdateEventDetail>(PWA_UPDATE_EVENT, {
+      detail: { waiting, currentVersion, newVersion },
+    })
   );
 }
 
@@ -21,7 +46,7 @@ export function resetUpdateNotifications() {
 /** Watches a registration and announces any waiting (updated) service worker. */
 export function watchForUpdates(registration: ServiceWorkerRegistration) {
   if (registration.waiting && navigator.serviceWorker.controller) {
-    notifyUpdateAvailable(registration.waiting);
+    notifyUpdateAvailable(registration);
   }
 
   registration.addEventListener('updatefound', () => {
@@ -30,7 +55,7 @@ export function watchForUpdates(registration: ServiceWorkerRegistration) {
 
     installing.addEventListener('statechange', () => {
       if (installing.state === 'installed' && navigator.serviceWorker.controller) {
-        notifyUpdateAvailable(registration.waiting ?? installing);
+        notifyUpdateAvailable(registration);
       }
     });
   });
@@ -44,7 +69,8 @@ export async function registerServiceWorker() {
   }
 
   try {
-    const registration = await navigator.serviceWorker.register('/sw.js', {
+    const version = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : 'unknown';
+    const registration = await navigator.serviceWorker.register(`/sw.js?${SW_VERSION_PARAM}=${encodeURIComponent(version)}`, {
       scope: '/'
     });
     
