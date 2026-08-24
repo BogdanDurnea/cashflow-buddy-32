@@ -111,5 +111,54 @@ test.describe("PWA install", () => {
       await context.close();
     }
   });
+
+  /**
+   * Android Chrome fires `beforeinstallprompt`, so /install should render the
+   * native "Instalează acum" button once the event is received and call
+   * prompt() when the user taps it.
+   */
+  test("Android Chrome: shows 'Instalează acum' after beforeinstallprompt and calls prompt()", async ({
+    browser,
+  }) => {
+    const pixel = devices["Pixel 7"];
+    const context = await browser.newContext({
+      ...pixel,
+      userAgent:
+        "Mozilla/5.0 (Linux; Android 14; Pixel 7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Mobile Safari/537.36",
+    });
+    const page = await context.newPage();
+
+    try {
+      await page.goto("/install", { waitUntil: "domcontentloaded" });
+
+      const installButton = page.getByRole("button", { name: /Instalează acum/i });
+      await expect(page.getByRole("heading", { name: /Instalează CashFlow Buddy/i })).toBeVisible();
+      await expect(installButton).toHaveCount(0);
+
+      // Simulate the Android Chrome install prompt.
+      await page.evaluate(() => {
+        const event = new Event("beforeinstallprompt", { cancelable: true }) as Event & {
+          prompt: () => void;
+          userChoice: Promise<{ outcome: string; platform: string }>;
+        };
+        (window as unknown as { __promptCalls: number }).__promptCalls = 0;
+        event.prompt = () => {
+          (window as unknown as { __promptCalls: number }).__promptCalls += 1;
+        };
+        event.userChoice = Promise.resolve({ outcome: "accepted", platform: "android" });
+        window.dispatchEvent(event);
+      });
+
+      await expect(installButton).toBeVisible();
+      await installButton.click();
+
+      await expect
+        .poll(async () => page.evaluate(() => (window as unknown as { __promptCalls: number }).__promptCalls))
+        .toBe(1);
+      await expect(page.getByText(/Aplicația este instalată/i)).toBeVisible();
+    } finally {
+      await context.close();
+    }
+  });
 });
 
