@@ -9,7 +9,8 @@
 export type PwaTelemetryEvent =
   | 'pwa:update-available'
   | 'pwa:update-dismissed'
-  | 'pwa:skip-waiting';
+  | 'pwa:skip-waiting'
+  | 'pwa:update-reset';
 
 export type PwaTelemetryRecord = {
   event: PwaTelemetryEvent;
