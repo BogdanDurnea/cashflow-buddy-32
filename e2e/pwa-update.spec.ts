@@ -323,4 +323,38 @@ test("'Mai târziu' persists per version across a refresh", async ({ page }) => 
     await expect(banner).toBeVisible();
     await expect(banner).toContainText(/Versiunea nouă: 1\.2\.0/i);
   });
+
+  test("'Resetează opțiunea' re-shows a dismissed banner", async ({ page }) => {
+    await page.goto("/", { waitUntil: "domcontentloaded" });
+    await expect(page.locator("#root")).not.toBeEmpty();
+
+    await page.evaluate(
+      ([eventName, version]) => {
+        localStorage.setItem("pwa:update-dismissed-version", version);
+        window.dispatchEvent(
+          new CustomEvent(eventName as string, {
+            detail: {
+              waiting: { state: "installed", postMessage: () => {} },
+              currentVersion: "1.0.0",
+              newVersion: version,
+            },
+          }),
+        );
+      },
+      [UPDATE_EVENT, "1.1.0"],
+    );
+
+    // Dismissed banner is hidden, but the reset control appears.
+    await expect(page.getByTestId("pwa-update-prompt")).toHaveCount(0);
+    const reset = page.getByTestId("pwa-update-reset");
+    await expect(reset).toBeVisible();
+    await expect(reset).toContainText("1.1.0");
+
+    await page.getByTestId("pwa-update-reset-button").click();
+
+    // The full update banner returns and the reset control disappears.
+    const banner = page.getByTestId("pwa-update-prompt");
+    await expect(banner).toBeVisible();
+    await expect(page.getByTestId("pwa-update-reset")).toHaveCount(0);
+  });
 });
