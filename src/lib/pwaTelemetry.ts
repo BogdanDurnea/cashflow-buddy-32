@@ -9,7 +9,8 @@
 export type PwaTelemetryEvent =
   | 'pwa:update-available'
   | 'pwa:update-dismissed'
-  | 'pwa:skip-waiting';
+  | 'pwa:skip-waiting'
+  | 'pwa:update-reset';
 
 export type PwaTelemetryRecord = {
   event: PwaTelemetryEvent;
@@ -86,11 +87,13 @@ export function getPwaTelemetrySummary() {
   const offered = state.counts['pwa:update-available'] ?? 0;
   const applied = state.counts['pwa:skip-waiting'] ?? 0;
   const dismissed = state.counts['pwa:update-dismissed'] ?? 0;
+  const reset = state.counts['pwa:update-reset'] ?? 0;
 
   return {
     offered,
     applied,
     dismissed,
+    reset,
     updateRate: offered > 0 ? applied / offered : 0,
     records: state.records,
   };
