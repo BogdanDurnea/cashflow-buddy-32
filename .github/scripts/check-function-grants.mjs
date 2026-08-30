@@ -19,6 +19,8 @@ const ROOT = process.cwd();
 const ALLOWLIST_PATH = path.join(ROOT, '.github/security/function-grants.json');
 const MIGRATIONS_DIR = path.join(ROOT, 'supabase/migrations');
 const RISKY_ROLES = new Set(['public', 'anon', 'authenticated']);
+// Trusted server-side roles: never reachable from the browser, so not part of the gate.
+const IMPLICIT_ROLES = new Set(['postgres', 'supabase_admin', 'service_role', '']);
 
 const allowlist = JSON.parse(readFileSync(ALLOWLIST_PATH, 'utf8')).functions;
 const errors = [];
@@ -65,6 +67,7 @@ for (const file of files) {
     const allowed = allowedRoles(fn);
     for (const role of roles) {
       if (!(fn in allowlist)) continue; // already reported above
+      if (IMPLICIT_ROLES.has(role)) continue;
       if (!allowed.has(role)) {
         const severity = RISKY_ROLES.has(role) ? errors : warnings;
         severity.push(
@@ -113,7 +116,7 @@ if (dbUrl) {
     const allowed = allowedRoles(name);
     for (const grantee of (granteeList || '').split(',').filter(Boolean)) {
       const role = grantee.toLowerCase();
-      if (role === 'postgres' || role === 'supabase_admin' || role === '') continue;
+      if (IMPLICIT_ROLES.has(role)) continue;
       if (!allowed.has(role)) {
         const bucket = RISKY_ROLES.has(role) ? errors : warnings;
         bucket.push(
