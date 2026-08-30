@@ -1,0 +1,19 @@
+{
+  "$comment": "Allowlist of EXECUTE grants on public schema functions. Any function found with grants to PUBLIC/anon/authenticated that are not listed here fails CI. Update this file in the same PR as the migration that changes grants.",
+  "functions": {
+    "get_shared_report": ["anon", "authenticated"],
+    "increment_report_view_count": ["anon", "authenticated"],
+    "get_achievements_leaderboard": ["authenticated"],
+    "get_user_achievement_rank": ["authenticated"],
+    "unlock_achievement": ["authenticated"],
+    "is_shared_budget_member": ["authenticated"],
+    "is_shared_budget_owner": ["authenticated"],
+    "check_rate_limit": ["service_role"],
+    "cleanup_expired_rate_limits": ["service_role"],
+    "purge_all_expired_rate_limits": ["service_role"],
+    "reset_user_rate_limits": ["service_role"],
+    "get_rate_limits_stats": ["service_role"],
+    "handle_new_user": [],
+    "handle_updated_at": []
+  }
+}

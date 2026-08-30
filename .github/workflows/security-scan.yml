@@ -1,0 +1,57 @@
+name: Security Scan
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: "0 5 * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: security-scan-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  function-grants:
+    name: SECURITY DEFINER function grants (blocking)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install psql (for optional live grant check)
+        if: ${{ env.SUPABASE_DB_URL != '' }}
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: sudo apt-get update && sudo apt-get install -y postgresql-client
+
+      - name: Check function grants against allowlist
+        id: grants
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: node .github/scripts/check-function-grants.mjs | tee grants-report.txt
+
+      - name: Comment result on PR
+        if: always() && github.event_name == 'pull_request'
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          header: security-function-grants
+          message: |
+            ### 🔐 Security gate — public schema function grants
+
+            Status: ${{ steps.grants.outcome == 'success' && '✅ no new exposure' || '❌ blocked (new or changed exposure)' }}
+
+            If this fails, either tighten the migration (`REVOKE EXECUTE ... FROM PUBLIC, anon, authenticated`)
+            or, if the exposure is intentional, update `.github/security/function-grants.json` in this PR.
