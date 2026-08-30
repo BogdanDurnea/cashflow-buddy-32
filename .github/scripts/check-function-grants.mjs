@@ -28,6 +28,25 @@ const warnings = [];
 
 const allowedRoles = (fn) => new Set((allowlist[fn] ?? []).map((r) => r.toLowerCase()));
 
+/** 1-based line number of a character offset inside a string. */
+const lineAt = (text, index) => text.slice(0, index).split('\n').length;
+
+/** Column (1-based) of a character offset inside a string. */
+const colAt = (text, index) => index - text.lastIndexOf('\n', index - 1);
+
+/**
+ * Build a GitHub annotation record.
+ * `file` is repo-relative so GitHub can render it inline on the PR diff.
+ */
+const annotation = (message, { file, line, col, title } = {}) => ({
+  message,
+  file,
+  line,
+  col,
+  title,
+});
+
+
 /* ---------------------------- 1. static scan ---------------------------- */
 
 const files = readdirSync(MIGRATIONS_DIR)
@@ -38,28 +57,46 @@ const createRe = /create\s+(?:or\s+replace\s+)?function\s+(?:public\.)?"?([a-z0-
 const grantRe =
   /grant\s+execute\s+on\s+function\s+(?:public\.)?"?([a-z0-9_]+)"?\s*\(([^)]*)\)\s*to\s+([^;]+);/gi;
 
+/** fn -> { file, line } of its most recent definition, used to place live-check annotations. */
+const fnDefs = new Map();
+
 for (const file of files) {
+  const relFile = path.posix.join('supabase/migrations', file);
   const sql = readFileSync(path.join(MIGRATIONS_DIR, file), 'utf8');
 
   for (const m of sql.matchAll(createRe)) {
     const fn = m[1].toLowerCase();
+    const line = lineAt(sql, m.index);
+    const col = colAt(sql, m.index);
+    fnDefs.set(fn, { file: relFile, line, col });
+
     if (!(fn in allowlist)) {
       errors.push(
-        `${file}: function public.${fn}() is created but missing from ${path.relative(ROOT, ALLOWLIST_PATH)}. ` +
-          `Add it with the exact roles it should be callable by (use [] for trigger-only functions).`,
+        annotation(
+          `function public.${fn}() is created but missing from ${path.relative(ROOT, ALLOWLIST_PATH)}. ` +
+            `Add it with the exact roles it should be callable by (use [] for trigger-only functions).`,
+          { file: relFile, line, col, title: 'Function not in allowlist' },
+        ),
       );
     }
     // SECURITY DEFINER without search_path is a privilege-escalation vector.
     const body = sql.slice(m.index, m.index + 4000).toLowerCase();
     if (body.includes('security definer') && !body.includes('search_path')) {
       errors.push(
-        `${file}: public.${fn}() is SECURITY DEFINER but does not pin "set search_path".`,
+        annotation(`public.${fn}() is SECURITY DEFINER but does not pin "set search_path".`, {
+          file: relFile,
+          line,
+          col,
+          title: 'Missing search_path on SECURITY DEFINER',
+        }),
       );
     }
   }
 
   for (const m of sql.matchAll(grantRe)) {
     const fn = m[1].toLowerCase();
+    const line = lineAt(sql, m.index);
+    const col = colAt(sql, m.index);
     const roles = m[3]
       .split(',')
       .map((r) => r.trim().replace(/"/g, '').toLowerCase())
@@ -71,8 +108,11 @@ for (const file of files) {
       if (!allowed.has(role)) {
         const severity = RISKY_ROLES.has(role) ? errors : warnings;
         severity.push(
-          `${file}: GRANT EXECUTE on public.${fn}() TO ${role} is not in the allowlist ` +
-            `(allowed: ${[...allowed].join(', ') || 'none'}).`,
+          annotation(
+            `GRANT EXECUTE on public.${fn}() TO ${role} is not in the allowlist ` +
+              `(allowed: ${[...allowed].join(', ') || 'none'}).`,
+            { file: relFile, line, col, title: 'Unexpected GRANT EXECUTE' },
+          ),
         );
       }
     }
@@ -103,14 +143,21 @@ if (dbUrl) {
       stdio: ['ignore', 'pipe', 'pipe'],
     });
   } catch (err) {
-    warnings.push(`Live grant check skipped: ${err.message.split('\n')[0]}`);
+    warnings.push(annotation(`Live grant check skipped: ${err.message.split('\n')[0]}`));
   }
 
   for (const line of out.split('\n').filter(Boolean)) {
     const [fn, granteeList] = line.split('|');
     const name = fn.toLowerCase();
+    // Point the annotation at the migration that last defined the function, when known.
+    const where = fnDefs.get(name) ?? {};
     if (!(name in allowlist)) {
-      errors.push(`live: public.${name}() exists in the database but is not in the allowlist.`);
+      errors.push(
+        annotation(`live: public.${name}() exists in the database but is not in the allowlist.`, {
+          ...where,
+          title: 'Function not in allowlist (live)',
+        }),
+      );
       continue;
     }
     const allowed = allowedRoles(name);
@@ -120,20 +167,48 @@ if (dbUrl) {
       if (!allowed.has(role)) {
         const bucket = RISKY_ROLES.has(role) ? errors : warnings;
         bucket.push(
-          `live: public.${name}() is EXECUTE-able by "${role}" ` +
-            `(allowed: ${[...allowed].join(', ') || 'none'}).`,
+          annotation(
+            `live: public.${name}() is EXECUTE-able by "${role}" ` +
+              `(allowed: ${[...allowed].join(', ') || 'none'}).`,
+            { ...where, title: 'Unexpected EXECUTE grant (live)' },
+          ),
         );
       }
     }
   }
 } else {
-  warnings.push('SUPABASE_DB_URL not set — live database grant verification skipped.');
+  warnings.push(
+    annotation('SUPABASE_DB_URL not set — live database grant verification skipped.'),
+  );
 }
 
 /* ------------------------------- report -------------------------------- */
 
-for (const w of warnings) console.log(`::warning::${w}`);
-for (const e of errors) console.log(`::error::${e}`);
+/** Escape per GitHub workflow-command rules. */
+const escProp = (v) =>
+  String(v).replace(/%/g, '%25').replace(/\r/g, '%0D').replace(/\n/g, '%0A').replace(/:/g, '%3A').replace(/,/g, '%2C');
+const escData = (v) => String(v).replace(/%/g, '%25').replace(/\r/g, '%0D').replace(/\n/g, '%0A');
+
+/** Emit a GitHub workflow command with inline file/line annotation props. */
+function emit(level, a) {
+  const props = [];
+  if (a.title) props.push(`title=${escProp(a.title)}`);
+  if (a.file) {
+    props.push(`file=${escProp(a.file)}`);
+    if (a.line) {
+      props.push(`line=${a.line}`, `endLine=${a.line}`);
+      if (a.col) props.push(`col=${a.col}`);
+    }
+  }
+  const prefix = props.length ? `${level} ${props.join(',')}` : level;
+  console.log(`::${prefix}::${escData(a.message)}`);
+  // Human-readable line for the plain-text report artifact / PR comment.
+  const loc = a.file ? `${a.file}${a.line ? `:${a.line}` : ''}: ` : '';
+  console.log(`${level === 'error' ? 'ERROR' : 'WARN '} ${loc}${a.message}`);
+}
+
+for (const w of warnings) emit('warning', w);
+for (const e of errors) emit('error', e);
 
 console.log(
   `\nFunction grant gate: ${files.length} migrations scanned, ` +
@@ -145,4 +220,5 @@ if (errors.length) {
   console.log('\nMerge blocked: new or changed exposure on public schema functions.');
   process.exit(1);
 }
+
 console.log('No new exposure detected.');
