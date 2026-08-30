@@ -115,9 +115,51 @@ export function PWAUpdatePrompt() {
     setVisible(false);
   }, [waiting, currentVersion, newVersion]);
 
+  const handleReset = useCallback(() => {
+    trackPwaEvent("pwa:update-reset", { currentVersion, newVersion });
+    writeDismissedVersion(null);
+    setDismissedKey(null);
+    if (waiting) setVisible(true);
+  }, [waiting, currentVersion, newVersion]);
 
 
-  if (!visible) return null;
+  if (!visible) {
+    if (!waiting || !newVersion) return null;
+    return (
+      <div
+        role="status"
+        aria-live="polite"
+        data-testid="pwa-update-reset"
+        className="fixed bottom-4 left-1/2 z-[100] w-[min(28rem,calc(100vw-2rem))] -translate-x-1/2 rounded-lg border border-border bg-card p-4 shadow-lg"
+      >
+        <p className="text-sm font-medium text-card-foreground">
+          O versiune nouă ({newVersion}) este ascunsă
+        </p>
+        <p className="mt-1 text-xs text-muted-foreground">
+          Ai ales „Mai târziu" pentru această versiune. Poți reafișa bannerul oricând.
+        </p>
+        <div className="mt-3 flex gap-2">
+          <Button
+            variant="ghost"
+            className="flex-1"
+            size="sm"
+            data-testid="pwa-update-reset-dismiss"
+            onClick={() => setVisible(false)}
+          >
+            Închide
+          </Button>
+          <Button
+            className="flex-1"
+            size="sm"
+            data-testid="pwa-update-reset-button"
+            onClick={handleReset}
+          >
+            Resetează opțiunea
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
 
   const hasVersions = Boolean(currentVersion && newVersion);
