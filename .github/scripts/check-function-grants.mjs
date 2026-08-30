@@ -28,6 +28,25 @@ const warnings = [];
 
 const allowedRoles = (fn) => new Set((allowlist[fn] ?? []).map((r) => r.toLowerCase()));
 
+/** 1-based line number of a character offset inside a string. */
+const lineAt = (text, index) => text.slice(0, index).split('\n').length;
+
+/** Column (1-based) of a character offset inside a string. */
+const colAt = (text, index) => index - text.lastIndexOf('\n', index - 1);
+
+/**
+ * Build a GitHub annotation record.
+ * `file` is repo-relative so GitHub can render it inline on the PR diff.
+ */
+const annotation = (message, { file, line, col, title } = {}) => ({
+  message,
+  file,
+  line,
+  col,
+  title,
+});
+
+
 /* ---------------------------- 1. static scan ---------------------------- */
 
 const files = readdirSync(MIGRATIONS_DIR)
