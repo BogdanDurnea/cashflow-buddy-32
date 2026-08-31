@@ -54,6 +54,7 @@ function writeDismissedVersion(version: string | null) {
 export function PWAUpdatePrompt() {
   const [waiting, setWaiting] = useState<ServiceWorker | null>(null);
   const [visible, setVisible] = useState(false);
+  const [resetVisible, setResetVisible] = useState(false);
   const [updating, setUpdating] = useState(false);
   const [currentVersion, setCurrentVersion] = useState<string | null>(null);
   const [newVersion, setNewVersion] = useState<string | null>(null);
@@ -72,10 +73,13 @@ export function PWAUpdatePrompt() {
       setNewVersion(nextVersion);
       setUpdating(false);
 
-      // Persisted dismissal wins: the same version never reappears after refresh.
+      // Persisted dismissal: show the reset control so the user can re-enable
+      // the banner, but only on a fresh load — not right after clicking
+      // "Mai târziu" in the same session.
       const persisted = readDismissedVersion();
       if (nextVersion && persisted && persisted === nextVersion) {
         setVisible(false);
+        setResetVisible(true);
         return;
       }
 
@@ -84,9 +88,11 @@ export function PWAUpdatePrompt() {
         if (dismissed !== null && dismissed === key) {
           // Same update as the one dismissed – stay hidden.
           setVisible(false);
+          setResetVisible(false);
           return dismissed;
         }
         setVisible(true);
+        setResetVisible(false);
         return null;
       });
     };
@@ -113,18 +119,26 @@ export function PWAUpdatePrompt() {
     setDismissedKey(updateKey(waiting, newVersion));
     writeDismissedVersion(newVersion);
     setVisible(false);
+    setResetVisible(false);
   }, [waiting, currentVersion, newVersion]);
 
   const handleReset = useCallback(() => {
     trackPwaEvent("pwa:update-reset", { currentVersion, newVersion });
     writeDismissedVersion(null);
     setDismissedKey(null);
-    if (waiting) setVisible(true);
+    if (waiting) {
+      setVisible(true);
+      setResetVisible(false);
+    }
   }, [waiting, currentVersion, newVersion]);
 
+  const handleResetDismiss = useCallback(() => {
+    setResetVisible(false);
+  }, []);
 
-  if (!visible) {
-    if (!waiting || !newVersion) return null;
+  if (!visible && !resetVisible) return null;
+
+  if (resetVisible && waiting && newVersion) {
     return (
       <div
         role="status"
@@ -144,7 +158,7 @@ export function PWAUpdatePrompt() {
             className="flex-1"
             size="sm"
             data-testid="pwa-update-reset-dismiss"
-            onClick={() => setVisible(false)}
+            onClick={handleResetDismiss}
           >
             Închide
           </Button>
@@ -160,7 +174,6 @@ export function PWAUpdatePrompt() {
       </div>
     );
   }
-
 
   const hasVersions = Boolean(currentVersion && newVersion);
 
@@ -201,6 +214,5 @@ export function PWAUpdatePrompt() {
         </Button>
       </div>
     </div>
-
   );
 }
