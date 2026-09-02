@@ -271,6 +271,8 @@ test("'Mai târziu' persists per version across a refresh", async ({ page }) => 
 
     await page.getByTestId("pwa-update-dismiss").click();
     await expect(banner).toHaveCount(0);
+    // The reset banner must not appear immediately after "Mai târziu".
+    await expect(page.getByTestId("pwa-update-reset")).toHaveCount(0);
 
     // Same version offered again in the same session: stays hidden.
     await fire("1.1.0");
