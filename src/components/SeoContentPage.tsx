@@ -53,6 +53,7 @@ export function SeoContentPage({
     title: seoTitle,
     description: seoDescription,
     canonical: url,
+    ogType: "article",
     image: ogImageFor(path).url,
     imageAlt: ogImageFor(path).alt,
     jsonLd: [
