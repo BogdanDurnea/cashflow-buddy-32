@@ -11,6 +11,8 @@ interface SEOOptions {
   /** Absolute URL of the social preview image (1200x630). */
   image?: string;
   imageAlt?: string;
+  /** OpenGraph object type: "website" (default) or "article" for guides. */
+  ogType?: "website" | "article";
   /** Structured data objects rendered as <script type="application/ld+json"> */
   jsonLd?: Record<string, unknown>[];
 }
@@ -46,6 +48,7 @@ export function useSEO({
   noIndex,
   image,
   imageAlt,
+  ogType = "website",
   jsonLd,
 }: SEOOptions) {
   // Organization + WebSite ship on every page; page-specific nodes come after.
@@ -89,6 +92,7 @@ export function useSEO({
         : "/");
     setLink("canonical", url);
     setMeta('meta[property="og:url"]', "content", url);
+    setMeta('meta[property="og:type"]', "content", ogType);
 
     if (noIndex) {
       setMeta('meta[name="robots"]', "content", "noindex, nofollow");
@@ -118,6 +122,6 @@ export function useSEO({
         .querySelectorAll('script[data-seo-jsonld="true"]')
         .forEach((el) => el.remove());
     };
-  }, [title, description, canonical, noIndex, image, imageAlt, jsonLdKey]);
+  }, [title, description, canonical, noIndex, image, imageAlt, ogType, jsonLdKey]);
 }
 
