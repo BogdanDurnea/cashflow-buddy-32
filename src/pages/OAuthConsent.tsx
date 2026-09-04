@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Loader2 } from "lucide-react";
+import { useSEO } from "@/hooks/useSEO";
 
 type OAuthClient = { supabase: any };
 
@@ -12,6 +13,10 @@ function isSafeRelativePath(path: string): boolean {
 }
 
 export default function OAuthConsent() {
+  useSEO({
+    title: "Autorizare aplicație — CashFlow Buddy",
+    noIndex: true,
+  });
   const [params] = useSearchParams();
   const authorizationId = params.get("authorization_id") ?? "";
   const [details, setDetails] = useState<any>(null);
