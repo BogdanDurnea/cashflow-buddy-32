@@ -19,10 +19,9 @@ import {
   Download,
 } from "lucide-react";
 
-// Android APK published as a Lovable asset.
-import androidApk from "@/assets/cashflow-buddy.apk.asset.json";
-
-const ANDROID_APK_URL = androidApk.url;
+// Android APK stored in Lovable Cloud storage (private bucket, signed link on demand).
+const APK_BUCKET = "app-downloads";
+const APK_PATH = "cashflow-buddy.apk";
 
 const features = [
   {
