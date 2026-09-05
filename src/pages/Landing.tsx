@@ -16,9 +16,12 @@ import {
   FileText,
   ShieldCheck,
   ArrowRight,
+  Download,
 } from "lucide-react";
 
-
+// Public URL of the Android APK hosted in Lovable Cloud storage.
+// Empty string hides the download button until an APK is published.
+const ANDROID_APK_URL = "";
 
 const features = [
   {
@@ -92,6 +95,14 @@ export default function Landing() {
                 <Button asChild size="lg" variant="outline">
                   <Link to="/install">Instalează aplicația</Link>
                 </Button>
+                {ANDROID_APK_URL && (
+                  <Button asChild size="lg" variant="secondary">
+                    <a href={ANDROID_APK_URL} download="cashflow-buddy.apk">
+                      <Download className="mr-2 h-4 w-4" aria-hidden="true" />
+                      Descarcă APK (Android)
+                    </a>
+                  </Button>
+                )}
                 <Button asChild size="lg" variant="ghost">
                   <a href="#ghiduri">Citește ghidurile</a>
                 </Button>
