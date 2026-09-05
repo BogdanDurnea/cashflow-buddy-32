@@ -16,9 +16,12 @@ import {
   FileText,
   ShieldCheck,
   ArrowRight,
+  Download,
 } from "lucide-react";
 
-
+// Public URL of the Android APK hosted in Lovable Cloud storage.
+// Empty string hides the download button until an APK is published.
+const ANDROID_APK_URL = "";
 
 const features = [
   {
