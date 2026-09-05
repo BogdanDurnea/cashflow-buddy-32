@@ -19,9 +19,9 @@ import {
   Download,
 } from "lucide-react";
 
-// Public URL of the Android APK hosted in Lovable Cloud storage.
-// Empty string hides the download button until an APK is published.
-const ANDROID_APK_URL = "";
+// Android APK stored in Lovable Cloud storage (private bucket, signed link on demand).
+const APK_BUCKET = "app-downloads";
+const APK_PATH = "cashflow-buddy.apk";
 
 const features = [
   {
