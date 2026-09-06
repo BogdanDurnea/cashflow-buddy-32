@@ -5,7 +5,7 @@ const config: CapacitorConfig = {
   appName: 'cashflow-buddy-32',
   webDir: 'dist',
   server: {
-    url: 'https://925aba52-baeb-4ad4-82a7-ad7ce8b538ba.lovableproject.com?forceHideBadge=true',
+    url: 'https://cashflow-buddy-32.lovable.app?forceHideBadge=true',
     cleartext: true,
     androidScheme: 'https'
   },
