@@ -65,6 +65,27 @@ export default function Landing() {
       "Urmărește venituri și cheltuieli, setează bugete, scanează bonuri cu AI și generează rapoarte. Aplicație de finanțe personale, disponibilă în 9 limbi.",
   });
 
+  const [apkLoading, setApkLoading] = useState(false);
+
+  const handleApkDownload = async () => {
+    setApkLoading(true);
+    try {
+      const { data, error } = await supabase.storage
+        .from(APK_BUCKET)
+        .createSignedUrl(APK_PATH, 300, { download: "cashflow-buddy.apk" });
+      if (error || !data?.signedUrl) throw error ?? new Error("no url");
+      window.location.href = data.signedUrl;
+    } catch {
+      toast({
+        title: "Descărcarea nu a pornit",
+        description: "Încearcă din nou în câteva momente.",
+        variant: "destructive",
+      });
+    } finally {
+      setApkLoading(false);
+    }
+  };
+
   const primaryCta = user
     ? { to: "/dashboard", label: "Deschide dashboard-ul" }
     : { to: "/auth", label: "Începe gratuit" };
