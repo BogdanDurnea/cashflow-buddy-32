@@ -95,18 +95,22 @@ export default function Landing() {
                 <Button asChild size="lg" variant="outline">
                   <Link to="/install">Instalează aplicația</Link>
                 </Button>
-                {ANDROID_APK_URL && (
-                  <Button asChild size="lg" variant="secondary">
-                    <a href={ANDROID_APK_URL} download="cashflow-buddy.apk">
-                      <Download className="mr-2 h-4 w-4" aria-hidden="true" />
-                      Descarcă APK (Android)
-                    </a>
-                  </Button>
-                )}
                 <Button asChild size="lg" variant="ghost">
                   <a href="#ghiduri">Citește ghidurile</a>
                 </Button>
               </div>
+              <div>
+                <Button
+                  size="lg"
+                  variant="secondary"
+                  onClick={handleApkDownload}
+                  disabled={apkLoading}
+                >
+                  <Download className="mr-2 h-4 w-4" aria-hidden="true" />
+                  {apkLoading ? "Se pregătește..." : "Descarcă pentru Android (.apk)"}
+                </Button>
+              </div>
+
               <p className="text-sm text-muted-foreground">
                 Fără card bancar. Datele tale rămân private și criptate.
               </p>
