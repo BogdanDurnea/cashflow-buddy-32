@@ -1,4 +1,7 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useSEO } from "@/hooks/useSEO";
@@ -65,6 +68,27 @@ export default function Landing() {
       "Urmărește venituri și cheltuieli, setează bugete, scanează bonuri cu AI și generează rapoarte. Aplicație de finanțe personale, disponibilă în 9 limbi.",
   });
 
+  const [apkLoading, setApkLoading] = useState(false);
+
+  const handleApkDownload = async () => {
+    setApkLoading(true);
+    try {
+      const { data, error } = await supabase.storage
+        .from(APK_BUCKET)
+        .createSignedUrl(APK_PATH, 300, { download: "cashflow-buddy.apk" });
+      if (error || !data?.signedUrl) throw error ?? new Error("no url");
+      window.location.href = data.signedUrl;
+    } catch {
+      toast({
+        title: "Descărcarea nu a pornit",
+        description: "Încearcă din nou în câteva momente.",
+        variant: "destructive",
+      });
+    } finally {
+      setApkLoading(false);
+    }
+  };
+
   const primaryCta = user
     ? { to: "/dashboard", label: "Deschide dashboard-ul" }
     : { to: "/auth", label: "Începe gratuit" };
@@ -95,18 +119,22 @@ export default function Landing() {
                 <Button asChild size="lg" variant="outline">
                   <Link to="/install">Instalează aplicația</Link>
                 </Button>
-                {ANDROID_APK_URL && (
-                  <Button asChild size="lg" variant="secondary">
-                    <a href={ANDROID_APK_URL} download="cashflow-buddy.apk">
-                      <Download className="mr-2 h-4 w-4" aria-hidden="true" />
-                      Descarcă APK (Android)
-                    </a>
-                  </Button>
-                )}
                 <Button asChild size="lg" variant="ghost">
                   <a href="#ghiduri">Citește ghidurile</a>
                 </Button>
               </div>
+              <div>
+                <Button
+                  size="lg"
+                  variant="secondary"
+                  onClick={handleApkDownload}
+                  disabled={apkLoading}
+                >
+                  <Download className="mr-2 h-4 w-4" aria-hidden="true" />
+                  {apkLoading ? "Se pregătește..." : "Descarcă pentru Android (.apk)"}
+                </Button>
+              </div>
+
               <p className="text-sm text-muted-foreground">
                 Fără card bancar. Datele tale rămân private și criptate.
               </p>
