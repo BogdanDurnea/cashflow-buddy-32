@@ -425,21 +425,9 @@ export function DashboardWidgets({ transactions, savingsGoals = [], categoryBudg
           className="space-y-4"
         >
           {visibleWidgets.map((widget) => (
-            <Reorder.Item
-              key={widget.id}
-              value={widget}
-              className="cursor-grab active:cursor-grabbing"
-              whileDrag={{ scale: 1.02, boxShadow: "0 8px 25px rgba(0,0,0,0.15)" }}
-            >
-              <div className="relative group">
-                <div className="absolute -left-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity z-10">
-                  <div className="p-1 rounded bg-muted border shadow-sm">
-                    <GripVertical className="h-4 w-4 text-muted-foreground" />
-                  </div>
-                </div>
-                {renderWidget(widget)}
-              </div>
-            </Reorder.Item>
+            <LongPressWidgetItem key={widget.id} widget={widget}>
+              {renderWidget(widget)}
+            </LongPressWidgetItem>
           ))}
         </Reorder.Group>
       )}

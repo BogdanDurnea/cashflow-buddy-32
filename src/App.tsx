@@ -8,7 +8,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Loader2 } from "lucide-react";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { SidebarProvider } from "@/components/ui/sidebar";
-import { OfflineIndicator } from "@/components/OfflineIndicator";
+
 import { PWAUpdatePrompt } from "@/components/PWAUpdatePrompt";
 import { BiometricGate } from "@/components/BiometricGate";
 
