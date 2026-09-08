@@ -112,7 +112,7 @@ jobs:
 
       - name: Upload SBOM + license report artifact
         if: always()
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: sbom-and-licenses-${{ github.run_number }}-${{ github.sha }}
           path: sbom-artifacts/**
