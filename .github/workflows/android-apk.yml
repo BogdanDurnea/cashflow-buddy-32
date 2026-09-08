@@ -30,18 +30,23 @@ jobs:
       - name: Build web app
         run: bun run build
 
-      - name: Add Android platform
-        run: bunx cap add android || true
-
-      - name: Sync Capacitor
-        run: bunx cap sync android
-
       - uses: actions/setup-java@v5
         with:
           distribution: 'temurin'
           java-version: '21'
 
       - uses: android-actions/setup-android@v3
+
+      - name: Add Android platform
+        run: |
+          if [ -d "android" ]; then
+            echo "Android platform already exists; skipping cap add."
+          else
+            bunx cap add android
+          fi
+
+      - name: Sync Capacitor
+        run: bunx cap sync android
 
       - name: Build debug APK
         working-directory: android
