@@ -28,11 +28,17 @@ type UpdateEvent = CustomEvent<UpdateEventDetail>;
 function notifyUpdateAvailable(registration: ServiceWorkerRegistration) {
   // Two updates in a row must announce only the newest worker, once each.
   const waiting = registration.waiting;
-  if (waiting && waiting === lastNotifiedWorker) return;
-  lastNotifiedWorker = waiting ?? null;
+  // No waiting worker => no real update, never announce anything.
+  if (!waiting) return;
+  if (waiting === lastNotifiedWorker) return;
 
   const currentVersion = getVersionFromScriptURL(registration.active?.scriptURL);
-  const newVersion = getVersionFromScriptURL(waiting?.scriptURL) ?? currentVersion;
+  const newVersion = getVersionFromScriptURL(waiting.scriptURL) ?? currentVersion;
+
+  // Same version as the one already running => not an update.
+  if (currentVersion && newVersion && currentVersion === newVersion) return;
+
+  lastNotifiedWorker = waiting;
 
   trackPwaEvent('pwa:update-available', { currentVersion, newVersion });
 

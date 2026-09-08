@@ -73,6 +73,16 @@ export function PWAUpdatePrompt() {
       setNewVersion(nextVersion);
       setUpdating(false);
 
+      // Only a genuine update (waiting worker + a different version) shows UI.
+      const sameVersion =
+        Boolean(detail?.currentVersion) && detail?.currentVersion === nextVersion;
+      if (!next || sameVersion) {
+        setVisible(false);
+        setResetVisible(false);
+        return;
+      }
+
+
       // Persisted dismissal: show the reset control so the user can re-enable
       // the banner, but only on a fresh load — not right after clicking
       // "Mai târziu" in the same session.
