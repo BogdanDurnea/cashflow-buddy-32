@@ -1,6 +1,6 @@
-import { useState, useEffect, useCallback, useMemo } from "react";
+import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
-import { motion, Reorder, AnimatePresence } from "framer-motion";
+import { motion, Reorder, AnimatePresence, useDragControls } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { GripVertical, Settings2, Target, PiggyBank, Clock, TrendingUp } from "lucide-react";
@@ -315,6 +315,98 @@ function BudgetVsActualWidget({ transactions, categoryBudgets }: { transactions:
         </AnimatePresence>
       </CardContent>
     </Card>
+  );
+}
+
+const LONG_PRESS_MS = 500;
+const MOVE_TOLERANCE_PX = 10;
+
+/**
+ * Reorder item that only becomes draggable after a long press,
+ * so normal scrolling/touch gestures are never hijacked.
+ */
+function LongPressWidgetItem({
+  widget,
+  children,
+}: {
+  widget: WidgetConfig;
+  children: React.ReactNode;
+}) {
+  const dragControls = useDragControls();
+  const [armed, setArmed] = useState(false);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const startRef = useRef<{ x: number; y: number } | null>(null);
+
+  const clearTimer = useCallback(() => {
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+      timerRef.current = null;
+    }
+    startRef.current = null;
+  }, []);
+
+  const handlePointerDown = useCallback(
+    (event: React.PointerEvent) => {
+      if (event.button !== 0 && event.pointerType === "mouse") return;
+      startRef.current = { x: event.clientX, y: event.clientY };
+      const nativeEvent = event.nativeEvent;
+      timerRef.current = setTimeout(() => {
+        setArmed(true);
+        dragControls.start(nativeEvent);
+        if (typeof navigator !== "undefined" && navigator.vibrate) {
+          navigator.vibrate(15);
+        }
+      }, LONG_PRESS_MS);
+    },
+    [dragControls]
+  );
+
+  const handlePointerMove = useCallback(
+    (event: React.PointerEvent) => {
+      const start = startRef.current;
+      if (!start || !timerRef.current) return;
+      if (
+        Math.abs(event.clientX - start.x) > MOVE_TOLERANCE_PX ||
+        Math.abs(event.clientY - start.y) > MOVE_TOLERANCE_PX
+      ) {
+        clearTimer();
+      }
+    },
+    [clearTimer]
+  );
+
+  const handlePointerEnd = useCallback(() => {
+    clearTimer();
+    setArmed(false);
+  }, [clearTimer]);
+
+  useEffect(() => () => {
+    if (timerRef.current) clearTimeout(timerRef.current);
+  }, []);
+
+  return (
+    <Reorder.Item
+      value={widget}
+      dragListener={false}
+      dragControls={dragControls}
+      onDragEnd={handlePointerEnd}
+      className={armed ? "cursor-grabbing touch-pan-y" : "touch-pan-y"}
+      whileDrag={{ scale: 1.02, boxShadow: "0 8px 25px rgba(0,0,0,0.15)" }}
+      onPointerDown={handlePointerDown}
+      onPointerMove={handlePointerMove}
+      onPointerUp={handlePointerEnd}
+      onPointerCancel={handlePointerEnd}
+      onContextMenu={(e) => e.preventDefault()}
+    >
+      <div className="relative group">
+        <div className="absolute -left-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity z-10">
+          <div className="p-1 rounded bg-muted border shadow-sm">
+            <GripVertical className="h-4 w-4 text-muted-foreground" />
+          </div>
+        </div>
+        {children}
+      </div>
+    </Reorder.Item>
   );
 }
 
