@@ -328,7 +328,46 @@ function BudgetVsActualWidget({ transactions, categoryBudgets }: { transactions:
   );
 }
 
+/** Montează conținutul doar când intră (aproape) în ecran. */
+function LazyMount({ children }: { children: React.ReactNode }) {
+  const ref = useRef<HTMLDivElement | null>(null);
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    if (typeof IntersectionObserver === "undefined") {
+      setVisible(true);
+      return;
+    }
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((e) => e.isIntersecting)) {
+          setVisible(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: "300px 0px" }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <div ref={ref}>
+      {visible ? (
+        <Suspense fallback={<Skeleton className="h-64 w-full rounded-lg" />}>
+          {children}
+        </Suspense>
+      ) : (
+        <Skeleton className="h-64 w-full rounded-lg" />
+      )}
+    </div>
+  );
+}
+
 const LONG_PRESS_MS = 500;
+
 const MOVE_TOLERANCE_PX = 10;
 
 /**
