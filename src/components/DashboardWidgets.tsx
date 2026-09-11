@@ -1,15 +1,25 @@
-import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
+import React, { useState, useEffect, useCallback, useMemo, useRef, lazy, Suspense } from "react";
 import { useTranslation } from "react-i18next";
 import { motion, Reorder, AnimatePresence, useDragControls } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { GripVertical, Settings2, Target, PiggyBank, Clock, TrendingUp } from "lucide-react";
 import { Transaction } from "./TransactionForm";
-import { QuickStatsDonut } from "./QuickStatsDonut";
-import { BalanceEvolutionChart } from "./BalanceEvolutionChart";
 import { SavingsGoal } from "@/hooks/useSavingsGoals";
-import { CategoryTrendsSparkline } from "./CategoryTrendsSparkline";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Progress } from "@/components/ui/progress";
+
+// Graficele sunt încărcate leneș (doar când widget-ul devine vizibil)
+const QuickStatsDonut = lazy(() =>
+  import("./QuickStatsDonut").then((m) => ({ default: m.QuickStatsDonut }))
+);
+const BalanceEvolutionChart = lazy(() =>
+  import("./BalanceEvolutionChart").then((m) => ({ default: m.BalanceEvolutionChart }))
+);
+const CategoryTrendsSparkline = lazy(() =>
+  import("./CategoryTrendsSparkline").then((m) => ({ default: m.CategoryTrendsSparkline }))
+);
+
 import {
   Dialog,
   DialogContent,
@@ -318,7 +328,46 @@ function BudgetVsActualWidget({ transactions, categoryBudgets }: { transactions:
   );
 }
 
+/** Montează conținutul doar când intră (aproape) în ecran. */
+function LazyMount({ children }: { children: React.ReactNode }) {
+  const ref = useRef<HTMLDivElement | null>(null);
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    if (typeof IntersectionObserver === "undefined") {
+      setVisible(true);
+      return;
+    }
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((e) => e.isIntersecting)) {
+          setVisible(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: "300px 0px" }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <div ref={ref}>
+      {visible ? (
+        <Suspense fallback={<Skeleton className="h-64 w-full rounded-lg" />}>
+          {children}
+        </Suspense>
+      ) : (
+        <Skeleton className="h-64 w-full rounded-lg" />
+      )}
+    </div>
+  );
+}
+
 const LONG_PRESS_MS = 500;
+
 const MOVE_TOLERANCE_PX = 10;
 
 /**
@@ -350,8 +399,15 @@ function LongPressWidgetItem({
       if (event.button !== 0 && event.pointerType === "mouse") return;
       startRef.current = { x: event.clientX, y: event.clientY };
       const nativeEvent = event.nativeEvent;
+      const target = event.currentTarget as HTMLElement;
+      const pointerId = event.pointerId;
       timerRef.current = setTimeout(() => {
         setArmed(true);
+        try {
+          target.setPointerCapture?.(pointerId);
+        } catch {
+          /* ignorăm dacă pointerul nu mai există */
+        }
         dragControls.start(nativeEvent);
         if (typeof navigator !== "undefined" && navigator.vibrate) {
           navigator.vibrate(15);
@@ -380,9 +436,20 @@ function LongPressWidgetItem({
     setArmed(false);
   }, [clearTimer]);
 
+  // Dacă browserul anulează pointerul după ce drag-ul e armat (scroll nativ),
+  // păstrăm drag-ul activ — framer-motion gestionează gestul mai departe.
+  const handlePointerCancel = useCallback(() => {
+    if (armed) {
+      clearTimer();
+      return;
+    }
+    handlePointerEnd();
+  }, [armed, clearTimer, handlePointerEnd]);
+
   useEffect(() => () => {
     if (timerRef.current) clearTimeout(timerRef.current);
   }, []);
+
 
   return (
     <Reorder.Item
@@ -390,14 +457,16 @@ function LongPressWidgetItem({
       dragListener={false}
       dragControls={dragControls}
       onDragEnd={handlePointerEnd}
-      className={armed ? "cursor-grabbing touch-pan-y" : "touch-pan-y"}
+      className={armed ? "cursor-grabbing" : undefined}
+      style={{ touchAction: armed ? "none" : "pan-y" }}
       whileDrag={{ scale: 1.02, boxShadow: "0 8px 25px rgba(0,0,0,0.15)" }}
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerEnd}
-      onPointerCancel={handlePointerEnd}
+      onPointerCancel={handlePointerCancel}
       onContextMenu={(e) => e.preventDefault()}
     >
+
       <div className="relative group">
         <div className="absolute -left-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity z-10">
           <div className="p-1 rounded bg-muted border shadow-sm">
@@ -429,14 +498,22 @@ export function DashboardWidgets({ transactions, savingsGoals = [], categoryBudg
     );
   }, []);
 
-  const visibleWidgets = widgets.filter((w) => w.visible);
+  const visibleWidgets = useMemo(() => widgets.filter((w) => w.visible), [widgets]);
 
-  const renderWidget = (widget: WidgetConfig) => {
+  const renderWidget = useCallback((widget: WidgetConfig) => {
     switch (widget.id) {
       case "balance-evolution":
-        return <BalanceEvolutionChart transactions={transactions} />;
+        return (
+          <LazyMount>
+            <BalanceEvolutionChart transactions={transactions} />
+          </LazyMount>
+        );
       case "category-donut":
-        return <QuickStatsDonut transactions={transactions} />;
+        return (
+          <LazyMount>
+            <QuickStatsDonut transactions={transactions} />
+          </LazyMount>
+        );
       case "savings-goals":
         return <SavingsGoalsWidget goals={savingsGoals} />;
       case "recent-transactions":
@@ -444,11 +521,16 @@ export function DashboardWidgets({ transactions, savingsGoals = [], categoryBudg
       case "budget-vs-actual":
         return <BudgetVsActualWidget transactions={transactions} categoryBudgets={categoryBudgets} />;
       case "category-trends":
-        return <CategoryTrendsSparkline transactions={transactions} />;
+        return (
+          <LazyMount>
+            <CategoryTrendsSparkline transactions={transactions} />
+          </LazyMount>
+        );
       default:
         return null;
     }
-  };
+  }, [transactions, savingsGoals, categoryBudgets]);
+
 
   return (
     <div className="space-y-4">
