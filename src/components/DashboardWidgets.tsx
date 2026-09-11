@@ -350,8 +350,15 @@ function LongPressWidgetItem({
       if (event.button !== 0 && event.pointerType === "mouse") return;
       startRef.current = { x: event.clientX, y: event.clientY };
       const nativeEvent = event.nativeEvent;
+      const target = event.currentTarget as HTMLElement;
+      const pointerId = event.pointerId;
       timerRef.current = setTimeout(() => {
         setArmed(true);
+        try {
+          target.setPointerCapture?.(pointerId);
+        } catch {
+          /* ignorăm dacă pointerul nu mai există */
+        }
         dragControls.start(nativeEvent);
         if (typeof navigator !== "undefined" && navigator.vibrate) {
           navigator.vibrate(15);
@@ -380,9 +387,20 @@ function LongPressWidgetItem({
     setArmed(false);
   }, [clearTimer]);
 
+  // Dacă browserul anulează pointerul după ce drag-ul e armat (scroll nativ),
+  // păstrăm drag-ul activ — framer-motion gestionează gestul mai departe.
+  const handlePointerCancel = useCallback(() => {
+    if (armed) {
+      clearTimer();
+      return;
+    }
+    handlePointerEnd();
+  }, [armed, clearTimer, handlePointerEnd]);
+
   useEffect(() => () => {
     if (timerRef.current) clearTimeout(timerRef.current);
   }, []);
+
 
   return (
     <Reorder.Item
@@ -390,14 +408,16 @@ function LongPressWidgetItem({
       dragListener={false}
       dragControls={dragControls}
       onDragEnd={handlePointerEnd}
-      className={armed ? "cursor-grabbing touch-pan-y" : "touch-pan-y"}
+      className={armed ? "cursor-grabbing" : undefined}
+      style={{ touchAction: armed ? "none" : "pan-y" }}
       whileDrag={{ scale: 1.02, boxShadow: "0 8px 25px rgba(0,0,0,0.15)" }}
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerEnd}
-      onPointerCancel={handlePointerEnd}
+      onPointerCancel={handlePointerCancel}
       onContextMenu={(e) => e.preventDefault()}
     >
+
       <div className="relative group">
         <div className="absolute -left-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity z-10">
           <div className="p-1 rounded bg-muted border shadow-sm">
