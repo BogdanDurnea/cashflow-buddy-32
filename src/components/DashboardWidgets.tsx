@@ -1,15 +1,25 @@
-import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
+import React, { useState, useEffect, useCallback, useMemo, useRef, lazy, Suspense } from "react";
 import { useTranslation } from "react-i18next";
 import { motion, Reorder, AnimatePresence, useDragControls } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { GripVertical, Settings2, Target, PiggyBank, Clock, TrendingUp } from "lucide-react";
 import { Transaction } from "./TransactionForm";
-import { QuickStatsDonut } from "./QuickStatsDonut";
-import { BalanceEvolutionChart } from "./BalanceEvolutionChart";
 import { SavingsGoal } from "@/hooks/useSavingsGoals";
-import { CategoryTrendsSparkline } from "./CategoryTrendsSparkline";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Progress } from "@/components/ui/progress";
+
+// Graficele sunt încărcate leneș (doar când widget-ul devine vizibil)
+const QuickStatsDonut = lazy(() =>
+  import("./QuickStatsDonut").then((m) => ({ default: m.QuickStatsDonut }))
+);
+const BalanceEvolutionChart = lazy(() =>
+  import("./BalanceEvolutionChart").then((m) => ({ default: m.BalanceEvolutionChart }))
+);
+const CategoryTrendsSparkline = lazy(() =>
+  import("./CategoryTrendsSparkline").then((m) => ({ default: m.CategoryTrendsSparkline }))
+);
+
 import {
   Dialog,
   DialogContent,
