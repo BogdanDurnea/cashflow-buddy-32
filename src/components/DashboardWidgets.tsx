@@ -498,14 +498,22 @@ export function DashboardWidgets({ transactions, savingsGoals = [], categoryBudg
     );
   }, []);
 
-  const visibleWidgets = widgets.filter((w) => w.visible);
+  const visibleWidgets = useMemo(() => widgets.filter((w) => w.visible), [widgets]);
 
-  const renderWidget = (widget: WidgetConfig) => {
+  const renderWidget = useCallback((widget: WidgetConfig) => {
     switch (widget.id) {
       case "balance-evolution":
-        return <BalanceEvolutionChart transactions={transactions} />;
+        return (
+          <LazyMount>
+            <BalanceEvolutionChart transactions={transactions} />
+          </LazyMount>
+        );
       case "category-donut":
-        return <QuickStatsDonut transactions={transactions} />;
+        return (
+          <LazyMount>
+            <QuickStatsDonut transactions={transactions} />
+          </LazyMount>
+        );
       case "savings-goals":
         return <SavingsGoalsWidget goals={savingsGoals} />;
       case "recent-transactions":
@@ -513,11 +521,16 @@ export function DashboardWidgets({ transactions, savingsGoals = [], categoryBudg
       case "budget-vs-actual":
         return <BudgetVsActualWidget transactions={transactions} categoryBudgets={categoryBudgets} />;
       case "category-trends":
-        return <CategoryTrendsSparkline transactions={transactions} />;
+        return (
+          <LazyMount>
+            <CategoryTrendsSparkline transactions={transactions} />
+          </LazyMount>
+        );
       default:
         return null;
     }
-  };
+  }, [transactions, savingsGoals, categoryBudgets]);
+
 
   return (
     <div className="space-y-4">
