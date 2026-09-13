@@ -54,6 +54,8 @@ export function TransactionForm({ onAddTransaction }: TransactionFormProps) {
   const [isUploading, setIsUploading] = useState(false);
   const [isExtracting, setIsExtracting] = useState(false);
   const [ocrConfidence, setOcrConfidence] = useState<string | null>(null);
+  const [showSuccess, setShowSuccess] = useState(false);
+
 
   const { data: customCategories = [] } = useQuery({
     queryKey: ["custom-categories"],
