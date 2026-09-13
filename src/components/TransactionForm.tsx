@@ -14,6 +14,8 @@ import { useToast } from "@/hooks/use-toast";
 import { useQuery } from "@tanstack/react-query";
 import { useOfflineSync } from "@/hooks/useOfflineSync";
 import { Badge } from "@/components/ui/badge";
+import { SuccessAnimation } from "@/components/SuccessAnimation";
+
 
 export interface Transaction {
   id: string;
@@ -292,7 +294,10 @@ export function TransactionForm({ onAddTransaction }: TransactionFormProps) {
 
 
   return (
+    <>
+    <SuccessAnimation show={showSuccess} message={t("transactions.transactionAdded")} />
     <Card className="shadow-card transition-smooth">
+
       <CardHeader className="p-4 sm:p-6">
         <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
           <PlusCircle className="h-5 w-5 shrink-0" />
