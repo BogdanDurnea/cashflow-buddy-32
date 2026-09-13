@@ -73,8 +73,22 @@ export function ImportData({ onImport }: ImportDataProps) {
     
     try {
       const text = await file.text();
-      const transactions = parseCSV(text);
-      
+      let transactions: Transaction[] = [];
+      let sourceLabel = "";
+
+      try {
+        transactions = parseCSV(text);
+      } catch {
+        transactions = [];
+      }
+
+      if (transactions.length === 0) {
+        // Încearcă formatele de extras bancar (BT, Revolut, ING, generic)
+        const result = parseBankStatement(text);
+        transactions = toTransactions(result.rows);
+        sourceLabel = BANK_FORMAT_LABELS[result.format];
+      }
+
       if (transactions.length === 0) {
         throw new Error("Nu s-au găsit tranzacții valide în fișier");
       }
@@ -84,7 +98,9 @@ export function ImportData({ onImport }: ImportDataProps) {
       
       toast({
         title: "Import reușit!",
-        description: `${transactions.length} tranzacții au fost importate.`,
+        description: sourceLabel
+          ? `${transactions.length} tranzacții importate din extrasul ${sourceLabel}.`
+          : `${transactions.length} tranzacții au fost importate.`,
       });
     } catch (error) {
       toast({
@@ -97,6 +113,7 @@ export function ImportData({ onImport }: ImportDataProps) {
       event.target.value = '';
     }
   };
+
 
   return (
     <Card className="shadow-card">
