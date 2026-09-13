@@ -504,5 +504,7 @@ export function TransactionForm({ onAddTransaction }: TransactionFormProps) {
         </form>
       </CardContent>
     </Card>
+    </>
+
   );
 }
