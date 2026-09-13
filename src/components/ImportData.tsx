@@ -6,6 +6,8 @@ import { Label } from "@/components/ui/label";
 import { Upload, FileSpreadsheet, CheckCircle, AlertCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Transaction } from "@/components/TransactionForm";
+import { parseBankStatement, toTransactions, BANK_FORMAT_LABELS } from "@/lib/bankImport";
+
 
 interface ImportDataProps {
   onImport: (transactions: Transaction[]) => void;
