@@ -149,6 +149,11 @@ export function TransactionForm({ onAddTransaction }: TransactionFormProps) {
       if (fileInputRef.current) fileInputRef.current.value = "";
       if (cameraInputRef.current) cameraInputRef.current.value = "";
 
+      // Confirmare vizuală rapidă (util mai ales pe telefon)
+      setShowSuccess(true);
+      if (typeof navigator !== "undefined" && navigator.vibrate) navigator.vibrate(20);
+      window.setTimeout(() => setShowSuccess(false), 1200);
+
       toast({ 
         title: isOnline 
           ? t("transactions.transactionAdded")
@@ -157,6 +162,7 @@ export function TransactionForm({ onAddTransaction }: TransactionFormProps) {
           ? t("transactions.willSyncOnline")
           : undefined
       });
+
     } catch (error) {
       console.error("Error:", error);
       toast({ 
