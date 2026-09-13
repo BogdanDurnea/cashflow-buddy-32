@@ -14,6 +14,8 @@ import { useToast } from "@/hooks/use-toast";
 import { useQuery } from "@tanstack/react-query";
 import { useOfflineSync } from "@/hooks/useOfflineSync";
 import { Badge } from "@/components/ui/badge";
+import { SuccessAnimation } from "@/components/SuccessAnimation";
+
 
 export interface Transaction {
   id: string;
@@ -54,6 +56,8 @@ export function TransactionForm({ onAddTransaction }: TransactionFormProps) {
   const [isUploading, setIsUploading] = useState(false);
   const [isExtracting, setIsExtracting] = useState(false);
   const [ocrConfidence, setOcrConfidence] = useState<string | null>(null);
+  const [showSuccess, setShowSuccess] = useState(false);
+
 
   const { data: customCategories = [] } = useQuery({
     queryKey: ["custom-categories"],
@@ -149,6 +153,11 @@ export function TransactionForm({ onAddTransaction }: TransactionFormProps) {
       if (fileInputRef.current) fileInputRef.current.value = "";
       if (cameraInputRef.current) cameraInputRef.current.value = "";
 
+      // Confirmare vizuală rapidă (util mai ales pe telefon)
+      setShowSuccess(true);
+      if (typeof navigator !== "undefined" && navigator.vibrate) navigator.vibrate(20);
+      window.setTimeout(() => setShowSuccess(false), 1200);
+
       toast({ 
         title: isOnline 
           ? t("transactions.transactionAdded")
@@ -157,6 +166,7 @@ export function TransactionForm({ onAddTransaction }: TransactionFormProps) {
           ? t("transactions.willSyncOnline")
           : undefined
       });
+
     } catch (error) {
       console.error("Error:", error);
       toast({ 
@@ -284,7 +294,10 @@ export function TransactionForm({ onAddTransaction }: TransactionFormProps) {
 
 
   return (
+    <>
+    <SuccessAnimation show={showSuccess} message={t("transactions.transactionAdded")} />
     <Card className="shadow-card transition-smooth">
+
       <CardHeader className="p-4 sm:p-6">
         <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
           <PlusCircle className="h-5 w-5 shrink-0" />
@@ -491,5 +504,7 @@ export function TransactionForm({ onAddTransaction }: TransactionFormProps) {
         </form>
       </CardContent>
     </Card>
+    </>
+
   );
 }
