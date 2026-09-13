@@ -137,8 +137,13 @@ export const TransactionList = React.memo(function TransactionList({ transaction
             </div>
           ) : (
           <PullToRefresh onRefresh={handleRefresh}>
+          <p className="sm:hidden px-4 pb-2 text-xs text-muted-foreground flex items-center gap-1">
+            <ChevronLeft className="h-3 w-3" aria-hidden="true" />
+            Glisează o tranzacție spre stânga pentru a o șterge
+          </p>
           <ScrollArea className="h-[400px] sm:h-[450px]">
               <div className="space-y-1">
+
                 {visibleTransactions.map((transaction, index) => {
                   const categoryConfig = getCategoryConfig(transaction.category, transaction.type);
                   const CategoryIcon = categoryConfig.icon;
