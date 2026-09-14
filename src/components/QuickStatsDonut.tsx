@@ -81,8 +81,13 @@ export function QuickStatsDonut({ transactions }: QuickStatsDonutProps) {
         <CardContent className="p-4 pt-0">
           <div className="flex items-center gap-4">
             {/* Donut chart */}
-            <div className="relative w-28 h-28 shrink-0">
+            <div
+              className="relative w-28 h-28 shrink-0"
+              role="img"
+              aria-label={`Distribuția cheltuielilor pe categorii: ${donutData.map((d: { name: string; value: number }) => `${d.name} ${d.value}`).join(", ")}`}
+            >
               <ResponsiveContainer width="100%" height="100%">
+
                 <PieChart>
                   <Pie
                     data={donutData}

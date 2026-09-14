@@ -37,8 +37,11 @@ function Sparkline({ data, color, months }: { data: number[]; color: string; mon
         width={w}
         height={h}
         className="shrink-0 cursor-crosshair"
+        role="img"
+        aria-label={`Evoluția cheltuielilor pe ultimele ${data.length} luni: ${data.map((v) => Math.round(v)).join(", ")} RON`}
         onMouseLeave={() => setHovered(null)}
       >
+
         <motion.path
           d={pathD}
           fill="none"

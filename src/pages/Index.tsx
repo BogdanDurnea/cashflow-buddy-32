@@ -222,6 +222,25 @@ const Index = () => {
   const monthlyTotal = useMemo(() => monthlySparklineData.reduce((sum, d) => sum + d.amount, 0), [monthlySparklineData]);
   const currentMonthName = format(new Date(), 'MMMM');
 
+  // Comparație cheltuieli: luna curentă vs luna anterioară
+  const monthComparison = useMemo(() => {
+    const now = new Date();
+    const prev = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const prevStart = startOfMonth(prev);
+    const prevEnd = endOfMonth(prev);
+    const prevTotal = transactions
+      .filter(t => {
+        if (t.type !== 'expense') return false;
+        const d = new Date(t.date);
+        return d >= prevStart && d <= prevEnd;
+      })
+      .reduce((sum, t) => sum + t.amount, 0);
+    const diff = monthlyTotal - prevTotal;
+    const percent = prevTotal > 0 ? (diff / prevTotal) * 100 : null;
+    return { prevTotal, diff, percent };
+  }, [transactions, monthlyTotal]);
+
+
   // Load category budgets from localStorage
   useEffect(() => {
     const savedBudgets = localStorage.getItem("categoryBudgets");
@@ -678,7 +697,11 @@ const Index = () => {
                       <span className="text-xs font-semibold">{monthlyTotal.toLocaleString(i18n.language)} {t("common.currency")}</span>
                     </div>
                   </div>
-                  <div className="h-12">
+                  <div
+                    className="h-12"
+                    role="img"
+                    aria-label={`Cheltuieli zilnice în ${currentMonthName}, total ${monthlyTotal.toLocaleString(i18n.language)} ${t("common.currency")}`}
+                  >
                     <ResponsiveContainer width="100%" height="100%">
                       <AreaChart data={monthlySparklineData}>
                         <defs>
@@ -697,7 +720,24 @@ const Index = () => {
                       </AreaChart>
                     </ResponsiveContainer>
                   </div>
+                  {monthComparison.percent !== null && (
+                    <div className="mt-2 flex items-center gap-1 text-xs">
+                      {monthComparison.diff <= 0 ? (
+                        <TrendingDown className="h-3 w-3 text-success" />
+                      ) : (
+                        <TrendingUp className="h-3 w-3 text-danger" />
+                      )}
+                      <span className={monthComparison.diff <= 0 ? "text-success font-medium" : "text-danger font-medium"}>
+                        {monthComparison.diff <= 0 ? "-" : "+"}
+                        {Math.abs(monthComparison.percent).toFixed(0)}%
+                      </span>
+                      <span className="text-muted-foreground">
+                        față de luna trecută ({monthComparison.prevTotal.toLocaleString(i18n.language)} {t("common.currency")})
+                      </span>
+                    </div>
+                  )}
                 </div>
+
               </div>
 
               {/* Income, Expense, Balance Cards + Sync Indicator */}

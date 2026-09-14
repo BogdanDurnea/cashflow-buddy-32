@@ -122,7 +122,13 @@ function mapColumns(headers: string[]): ColumnMap {
   return {
     date: find("completed date", "started date", "data inregistrare", "data tranzactie", "data", "date"),
     description: find("descriere", "description", "detalii", "explicatii", "beneficiar", "merchant"),
-    amount: find("amount", "suma", "valoare"),
+    amount: h.findIndex(
+      (x) =>
+        !x.includes("debit") &&
+        !x.includes("credit") &&
+        ["amount", "suma", "valoare"].some((k) => x.includes(k))
+    ),
+
     debit: find("suma debit", "debit"),
     credit: find("suma credit", "credit"),
     currency: find("currency", "valuta", "moneda"),

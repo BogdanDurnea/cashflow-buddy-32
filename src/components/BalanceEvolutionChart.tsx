@@ -98,7 +98,9 @@ export function BalanceEvolutionChart({ transactions }: BalanceEvolutionChartPro
             Nu există tranzacții pentru afișare
           </div>
         ) : (
+          <div role="img" aria-label={`Evoluția soldului pe ${chartData.length} perioade, de la ${chartData[0]?.balance ?? 0} la ${chartData[chartData.length - 1]?.balance ?? 0} RON`}>
           <ResponsiveContainer width="100%" height={250}>
+
             <AreaChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
               <defs>
                 <linearGradient id="balanceGradientPositive" x1="0" y1="0" x2="0" y2="1">
@@ -146,7 +148,9 @@ export function BalanceEvolutionChart({ transactions }: BalanceEvolutionChartPro
               />
             </AreaChart>
           </ResponsiveContainer>
+          </div>
         )}
+
       </CardContent>
     </Card>
   );
