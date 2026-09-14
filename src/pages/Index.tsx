@@ -716,7 +716,24 @@ const Index = () => {
                       </AreaChart>
                     </ResponsiveContainer>
                   </div>
+                  {monthComparison.percent !== null && (
+                    <div className="mt-2 flex items-center gap-1 text-xs">
+                      {monthComparison.diff <= 0 ? (
+                        <TrendingDown className="h-3 w-3 text-success" />
+                      ) : (
+                        <TrendingUp className="h-3 w-3 text-danger" />
+                      )}
+                      <span className={monthComparison.diff <= 0 ? "text-success font-medium" : "text-danger font-medium"}>
+                        {monthComparison.diff <= 0 ? "-" : "+"}
+                        {Math.abs(monthComparison.percent).toFixed(0)}%
+                      </span>
+                      <span className="text-muted-foreground">
+                        față de luna trecută ({monthComparison.prevTotal.toLocaleString(i18n.language)} {t("common.currency")})
+                      </span>
+                    </div>
+                  )}
                 </div>
+
               </div>
 
               {/* Income, Expense, Balance Cards + Sync Indicator */}
