@@ -222,6 +222,25 @@ const Index = () => {
   const monthlyTotal = useMemo(() => monthlySparklineData.reduce((sum, d) => sum + d.amount, 0), [monthlySparklineData]);
   const currentMonthName = format(new Date(), 'MMMM');
 
+  // Comparație cheltuieli: luna curentă vs luna anterioară
+  const monthComparison = useMemo(() => {
+    const now = new Date();
+    const prev = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const prevStart = startOfMonth(prev);
+    const prevEnd = endOfMonth(prev);
+    const prevTotal = transactions
+      .filter(t => {
+        if (t.type !== 'expense') return false;
+        const d = new Date(t.date);
+        return d >= prevStart && d <= prevEnd;
+      })
+      .reduce((sum, t) => sum + t.amount, 0);
+    const diff = monthlyTotal - prevTotal;
+    const percent = prevTotal > 0 ? (diff / prevTotal) * 100 : null;
+    return { prevTotal, diff, percent };
+  }, [transactions, monthlyTotal]);
+
+
   // Load category budgets from localStorage
   useEffect(() => {
     const savedBudgets = localStorage.getItem("categoryBudgets");
