@@ -697,7 +697,11 @@ const Index = () => {
                       <span className="text-xs font-semibold">{monthlyTotal.toLocaleString(i18n.language)} {t("common.currency")}</span>
                     </div>
                   </div>
-                  <div className="h-12">
+                  <div
+                    className="h-12"
+                    role="img"
+                    aria-label={`Cheltuieli zilnice în ${currentMonthName}, total ${monthlyTotal.toLocaleString(i18n.language)} ${t("common.currency")}`}
+                  >
                     <ResponsiveContainer width="100%" height="100%">
                       <AreaChart data={monthlySparklineData}>
                         <defs>
