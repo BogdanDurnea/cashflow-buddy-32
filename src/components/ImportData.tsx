@@ -137,8 +137,9 @@ export function ImportData({ onImport }: ImportDataProps) {
                 Selectează fișier CSV
               </div>
               <div className="text-xs text-muted-foreground">
-                Formatele acceptate: tip, suma, categorie, data, descriere
+                Format propriu sau extras bancar (Banca Transilvania, Revolut, ING)
               </div>
+
             </Label>
             <Input
               id="csv-upload"
