@@ -148,7 +148,9 @@ export function BalanceEvolutionChart({ transactions }: BalanceEvolutionChartPro
               />
             </AreaChart>
           </ResponsiveContainer>
+          </div>
         )}
+
       </CardContent>
     </Card>
   );
