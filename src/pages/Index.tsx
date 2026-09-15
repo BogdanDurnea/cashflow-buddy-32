@@ -55,6 +55,8 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { useAuth } from "@/hooks/useAuth";
 import { useBudgetAlerts } from "@/hooks/useBudgetAlerts";
 import { useUpcomingBillAlerts } from "@/hooks/useUpcomingBillAlerts";
+import { OnboardingDemo } from "@/components/OnboardingDemo";
+
 
 import { useSEO } from "@/hooks/useSEO";
 import { supabase } from "@/integrations/supabase/client";
@@ -823,7 +825,11 @@ const Index = () => {
                 {t("nav.transactions")}
               </AccordionTrigger>
               <AccordionContent className="px-4 sm:px-6 pb-4 space-y-6">
+                {transactions.length === 0 && (
+                  <OnboardingDemo onAddTransaction={handleAddTransaction} />
+                )}
                 <div className="grid gap-4 sm:gap-6 lg:grid-cols-3">
+
                   {!isMobile && (
                     <div className="lg:col-span-1">
                       <TransactionForm onAddTransaction={handleAddTransaction} />
