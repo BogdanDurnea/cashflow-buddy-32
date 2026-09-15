@@ -56,6 +56,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { useBudgetAlerts } from "@/hooks/useBudgetAlerts";
 import { useUpcomingBillAlerts } from "@/hooks/useUpcomingBillAlerts";
 import { OnboardingDemo } from "@/components/OnboardingDemo";
+import { AutoBackupCard } from "@/components/AutoBackupCard";
+
 
 
 import { useSEO } from "@/hooks/useSEO";
@@ -920,7 +922,9 @@ const Index = () => {
                 </AccordionTrigger>
                 <AccordionContent className="px-4 sm:px-6 pb-4 space-y-6">
                   <ReportsSection transactions={transactions} />
+                  <AutoBackupCard transactions={transactions} />
                   <div className="grid gap-4 sm:gap-6 lg:grid-cols-2">
+
                     <ExportData
                       transactions={transactions}
                       currentViewTransactions={filteredTransactions}
