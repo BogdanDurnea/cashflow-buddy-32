@@ -8,6 +8,7 @@
 5. [x] Import bancar CSV (BT, Revolut, ING) cu mapare automată categorii
 6. [x] Rapoarte: comparație lună curentă vs anterioară în banner
 
-7. [ ] Accesibilitate: ARIA pe grafice, contrast dark mode
-8. [ ] Onboarding: tranzacții demo pentru utilizator nou
-9. [ ] Backup/export automat periodic
+7. [x] Accesibilitate: ARIA pe grafice, contrast dark mode
+8. [x] Onboarding: tranzacții demo pentru utilizator nou
+9. [x] Backup/export automat periodic
+
