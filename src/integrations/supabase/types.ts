@@ -317,6 +317,7 @@ export type Database = {
           description: string | null
           exchange_rate: number | null
           id: string
+          tags: string[]
           type: string
           updated_at: string | null
           user_id: string
@@ -331,6 +332,7 @@ export type Database = {
           description?: string | null
           exchange_rate?: number | null
           id?: string
+          tags?: string[]
           type: string
           updated_at?: string | null
           user_id: string
@@ -345,6 +347,7 @@ export type Database = {
           description?: string | null
           exchange_rate?: number | null
           id?: string
+          tags?: string[]
           type?: string
           updated_at?: string | null
           user_id?: string
