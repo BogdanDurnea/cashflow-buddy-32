@@ -191,6 +191,15 @@ export const TransactionList = React.memo(function TransactionList({ transaction
                             {transaction.description}
                           </p>
                         )}
+                        {transaction.tags && transaction.tags.length > 0 && (
+                          <div className="flex flex-wrap gap-1 mt-1">
+                            {transaction.tags.map((tag) => (
+                              <Badge key={tag} variant="outline" className="text-[10px]">
+                                {tag}
+                              </Badge>
+                            ))}
+                          </div>
+                        )}
                         <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1 flex-wrap">
                           <div className="flex items-center gap-1">
                             <Calendar className="h-3 w-3 shrink-0" />

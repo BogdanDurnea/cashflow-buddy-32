@@ -57,6 +57,11 @@ import { useBudgetAlerts } from "@/hooks/useBudgetAlerts";
 import { useUpcomingBillAlerts } from "@/hooks/useUpcomingBillAlerts";
 import { OnboardingDemo } from "@/components/OnboardingDemo";
 import { AutoBackupCard } from "@/components/AutoBackupCard";
+import { GlobalSearch } from "@/components/GlobalSearch";
+import { TransactionCalendar } from "@/components/TransactionCalendar";
+import { CurrentWeekWidget } from "@/components/CurrentWeekWidget";
+import { ForecastCard } from "@/components/ForecastCard";
+import { useRealtimeTransactions } from "@/hooks/useRealtimeTransactions";
 
 
 
@@ -316,7 +321,8 @@ const Index = () => {
           date: dateObj,
           currency: t.currency || 'RON',
           exchange_rate: Number(t.exchange_rate) || 1,
-          attachment_url: t.attachment_url || undefined
+          attachment_url: t.attachment_url || undefined,
+          tags: (t.tags as string[] | null) || []
         };
       });
       setTransactions(formattedTransactions);
@@ -331,6 +337,9 @@ const Index = () => {
   useEffect(() => {
     loadTransactions();
   }, [loadTransactions]);
+
+  // Actualizare în timp real când tranzacțiile se schimbă (alt dispozitiv / buget partajat)
+  useRealtimeTransactions(user?.id, loadTransactions);
 
   // Load recurring transactions from database
   useEffect(() => {
@@ -427,7 +436,8 @@ const Index = () => {
         date: newTransaction.date.toISOString(),
         currency: newTransaction.currency || 'RON',
         exchange_rate: newTransaction.exchange_rate || 1,
-        attachment_url: newTransaction.attachment_url || null
+        attachment_url: newTransaction.attachment_url || null,
+        tags: newTransaction.tags || []
       }]).select().single();
       if (error) throw error;
       const formattedTransaction: Transaction = {
@@ -439,7 +449,8 @@ const Index = () => {
         date: new Date(data.date),
         currency: data.currency || 'RON',
         exchange_rate: Number(data.exchange_rate) || 1,
-        attachment_url: data.attachment_url || undefined
+        attachment_url: data.attachment_url || undefined,
+        tags: (data.tags as string[] | null) || []
       };
       setTransactions(prev => {
         const updatedTransactions = [formattedTransaction, ...prev];
@@ -841,12 +852,18 @@ const Index = () => {
                     <TransactionList transactions={filteredTransactions} onEditTransaction={handleEditTransaction} onDeleteTransaction={handleDeleteTransaction} onRefresh={loadTransactions} />
                   </div>
                 </div>
+                <GlobalSearch transactions={transactions} onSelect={handleEditTransaction} />
                 <KPIWidgets transactions={transactions} />
                 <div className="grid gap-4 sm:grid-cols-2">
 
                   <QuickStatsDonut transactions={transactions} />
                   <WeeklyComparisonWidget transactions={transactions} />
                 </div>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <CurrentWeekWidget transactions={transactions} monthlyBudget={monthlyBudget} />
+                  <ForecastCard transactions={transactions} />
+                </div>
+                <TransactionCalendar transactions={transactions} recurringTransactions={recurringTransactions} />
                 <StatsCards transactions={transactions} />
                 <TransactionFilters selectedType={filterType} selectedCategory={filterCategory} selectedPeriod={filterPeriod} onTypeChange={setFilterType} onCategoryChange={setFilterCategory} onPeriodChange={setFilterPeriod} onReset={resetFilters} />
               </AccordionContent>

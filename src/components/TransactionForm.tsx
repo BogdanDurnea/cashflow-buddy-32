@@ -27,6 +27,7 @@ export interface Transaction {
   currency?: string;
   exchange_rate?: number;
   attachment_url?: string;
+  tags?: string[];
 }
 
 interface TransactionFormProps {
@@ -57,6 +58,7 @@ export function TransactionForm({ onAddTransaction }: TransactionFormProps) {
   const [isExtracting, setIsExtracting] = useState(false);
   const [ocrConfidence, setOcrConfidence] = useState<string | null>(null);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [tagsInput, setTagsInput] = useState("");
 
 
   const { data: customCategories = [] } = useQuery({
@@ -141,13 +143,18 @@ export function TransactionForm({ onAddTransaction }: TransactionFormProps) {
         date: new Date(),
         currency: currency,
         exchange_rate: selectedCurrency?.rate || 1,
-        attachment_url: attachmentUrl || undefined
+        attachment_url: attachmentUrl || undefined,
+        tags: tagsInput
+          .split(",")
+          .map(tag => tag.trim())
+          .filter(Boolean)
       });
 
       // Reset form
       setAmount("");
       setCategory("");
       setDescription("");
+      setTagsInput("");
       setCurrency("RON");
       setAttachmentFile(null);
       if (fileInputRef.current) fileInputRef.current.value = "";
@@ -403,6 +410,18 @@ export function TransactionForm({ onAddTransaction }: TransactionFormProps) {
               rows={2}
               className="text-base resize-none"
             />
+          </div>
+
+          <div>
+            <Label htmlFor="tags" className="text-sm sm:text-base">Etichete (opțional)</Label>
+            <Input
+              id="tags"
+              value={tagsInput}
+              onChange={(e) => setTagsInput(e.target.value)}
+              placeholder="vacanță, casă, mașină"
+              className="text-base"
+            />
+            <p className="mt-1 text-xs text-muted-foreground">Separă etichetele prin virgulă.</p>
           </div>
 
           <div>
