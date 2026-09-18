@@ -321,7 +321,8 @@ const Index = () => {
           date: dateObj,
           currency: t.currency || 'RON',
           exchange_rate: Number(t.exchange_rate) || 1,
-          attachment_url: t.attachment_url || undefined
+          attachment_url: t.attachment_url || undefined,
+          tags: (t.tags as string[] | null) || []
         };
       });
       setTransactions(formattedTransactions);
@@ -432,7 +433,8 @@ const Index = () => {
         date: newTransaction.date.toISOString(),
         currency: newTransaction.currency || 'RON',
         exchange_rate: newTransaction.exchange_rate || 1,
-        attachment_url: newTransaction.attachment_url || null
+        attachment_url: newTransaction.attachment_url || null,
+        tags: newTransaction.tags || []
       }]).select().single();
       if (error) throw error;
       const formattedTransaction: Transaction = {
@@ -444,7 +446,8 @@ const Index = () => {
         date: new Date(data.date),
         currency: data.currency || 'RON',
         exchange_rate: Number(data.exchange_rate) || 1,
-        attachment_url: data.attachment_url || undefined
+        attachment_url: data.attachment_url || undefined,
+        tags: (data.tags as string[] | null) || []
       };
       setTransactions(prev => {
         const updatedTransactions = [formattedTransaction, ...prev];
