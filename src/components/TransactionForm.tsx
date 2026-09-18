@@ -413,6 +413,18 @@ export function TransactionForm({ onAddTransaction }: TransactionFormProps) {
           </div>
 
           <div>
+            <Label htmlFor="tags" className="text-sm sm:text-base">Etichete (opțional)</Label>
+            <Input
+              id="tags"
+              value={tagsInput}
+              onChange={(e) => setTagsInput(e.target.value)}
+              placeholder="vacanță, casă, mașină"
+              className="text-base"
+            />
+            <p className="mt-1 text-xs text-muted-foreground">Separă etichetele prin virgulă.</p>
+          </div>
+
+          <div>
             <Label htmlFor="attachment" className="text-sm sm:text-base">{t("transactions.attachmentOptional")}</Label>
             <div className="flex flex-col gap-2">
               {/* Hidden inputs for file selection */}
