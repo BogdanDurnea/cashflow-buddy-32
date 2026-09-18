@@ -338,6 +338,9 @@ const Index = () => {
     loadTransactions();
   }, [loadTransactions]);
 
+  // Actualizare în timp real când tranzacțiile se schimbă (alt dispozitiv / buget partajat)
+  useRealtimeTransactions(user?.id, loadTransactions);
+
   // Load recurring transactions from database
   useEffect(() => {
     if (!user) return;
