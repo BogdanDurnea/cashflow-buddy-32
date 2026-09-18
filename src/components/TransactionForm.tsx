@@ -27,6 +27,7 @@ export interface Transaction {
   currency?: string;
   exchange_rate?: number;
   attachment_url?: string;
+  tags?: string[];
 }
 
 interface TransactionFormProps {
@@ -57,6 +58,7 @@ export function TransactionForm({ onAddTransaction }: TransactionFormProps) {
   const [isExtracting, setIsExtracting] = useState(false);
   const [ocrConfidence, setOcrConfidence] = useState<string | null>(null);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [tagsInput, setTagsInput] = useState("");
 
 
   const { data: customCategories = [] } = useQuery({
