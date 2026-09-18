@@ -57,6 +57,11 @@ import { useBudgetAlerts } from "@/hooks/useBudgetAlerts";
 import { useUpcomingBillAlerts } from "@/hooks/useUpcomingBillAlerts";
 import { OnboardingDemo } from "@/components/OnboardingDemo";
 import { AutoBackupCard } from "@/components/AutoBackupCard";
+import { GlobalSearch } from "@/components/GlobalSearch";
+import { TransactionCalendar } from "@/components/TransactionCalendar";
+import { CurrentWeekWidget } from "@/components/CurrentWeekWidget";
+import { ForecastCard } from "@/components/ForecastCard";
+import { useRealtimeTransactions } from "@/hooks/useRealtimeTransactions";
 
 
 
@@ -841,12 +846,18 @@ const Index = () => {
                     <TransactionList transactions={filteredTransactions} onEditTransaction={handleEditTransaction} onDeleteTransaction={handleDeleteTransaction} onRefresh={loadTransactions} />
                   </div>
                 </div>
+                <GlobalSearch transactions={transactions} onSelect={handleEditTransaction} />
                 <KPIWidgets transactions={transactions} />
                 <div className="grid gap-4 sm:grid-cols-2">
 
                   <QuickStatsDonut transactions={transactions} />
                   <WeeklyComparisonWidget transactions={transactions} />
                 </div>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <CurrentWeekWidget transactions={transactions} monthlyBudget={monthlyBudget} />
+                  <ForecastCard transactions={transactions} />
+                </div>
+                <TransactionCalendar transactions={transactions} recurringTransactions={recurringTransactions} />
                 <StatsCards transactions={transactions} />
                 <TransactionFilters selectedType={filterType} selectedCategory={filterCategory} selectedPeriod={filterPeriod} onTypeChange={setFilterType} onCategoryChange={setFilterCategory} onPeriodChange={setFilterPeriod} onReset={resetFilters} />
               </AccordionContent>
