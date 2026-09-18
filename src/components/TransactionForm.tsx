@@ -143,13 +143,18 @@ export function TransactionForm({ onAddTransaction }: TransactionFormProps) {
         date: new Date(),
         currency: currency,
         exchange_rate: selectedCurrency?.rate || 1,
-        attachment_url: attachmentUrl || undefined
+        attachment_url: attachmentUrl || undefined,
+        tags: tagsInput
+          .split(",")
+          .map(tag => tag.trim())
+          .filter(Boolean)
       });
 
       // Reset form
       setAmount("");
       setCategory("");
       setDescription("");
+      setTagsInput("");
       setCurrency("RON");
       setAttachmentFile(null);
       if (fileInputRef.current) fileInputRef.current.value = "";
