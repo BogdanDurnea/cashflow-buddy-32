@@ -12,3 +12,13 @@
 8. [x] Onboarding: tranzacții demo pentru utilizator nou
 9. [x] Backup/export automat periodic
 
+
+## Runda 2 (finalizată)
+- [x] Bugete partajate / tranzacții în timp real
+- [x] Prognoză cheltuieli pe categorii
+- [x] Calendar lunar cu plăți recurente marcate
+- [x] Căutare globală
+- [x] Widget „săptămâna curentă"
+- [x] Etichete pe tranzacții
+- [x] Teste (prognoză, căutare, fluxuri noi)
+- [x] Listă mare: acoperită de infinite scroll
