@@ -52,7 +52,8 @@ export function useAutoBackup(transactions: Transaction[]) {
   }, [transactions, snapshot, createBackup]);
 
   const downloadBackup = useCallback(() => {
-    const data = readSnapshot() ?? createBackup();
+    // Descarcă mereu datele curente (și reîmprospătează copia locală)
+    const data = createBackup();
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
