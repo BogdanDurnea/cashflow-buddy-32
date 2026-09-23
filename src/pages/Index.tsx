@@ -298,6 +298,7 @@ const Index = () => {
     loadDisplayName();
   }, [user]);
 
+  const pendingDeleteIdsRef = useRef<Set<string>>(new Set());
   // Load transactions from database
   const loadTransactions = useCallback(async () => {
     if (!user) return;
@@ -325,7 +326,9 @@ const Index = () => {
           tags: (t.tags as string[] | null) || []
         };
       });
-      setTransactions(formattedTransactions);
+      // Ascunde tranzacțiile aflate în așteptarea ștergerii (fereastra de anulare)
+      const pending = pendingDeleteIdsRef.current;
+      setTransactions(formattedTransactions.filter(tx => !pending.has(tx.id)));
     } catch (error: any) {
       toast.error("Eroare la încărcarea tranzacțiilor");
       console.error(error);
@@ -526,6 +529,7 @@ const Index = () => {
     if (!deletedTx) return;
 
     // Remove from UI immediately
+    pendingDeleteIdsRef.current.add(id);
     setTransactions(prev => prev.filter(t => t.id !== id));
 
     // Schedule actual DB deletion after 5 seconds
@@ -534,10 +538,11 @@ const Index = () => {
       try {
         const { error } = await supabase.from("transactions").delete().eq("id", id).eq("user_id", user.id);
         if (error) throw error;
+        pendingDeleteIdsRef.current.delete(id);
       } catch (error: any) {
         console.error("Eroare la ștergerea tranzacției:", error);
-        // Restore on failure
-        setTransactions(prev => [...prev, deletedTx]);
+        pendingDeleteIdsRef.current.delete(id);
+        setTransactions(prev => prev.some(t => t.id === id) ? prev : [...prev, deletedTx]);
         toast.error(t('transactions.deleteError'));
       }
     }, 5000);
@@ -550,7 +555,8 @@ const Index = () => {
         onClick: () => {
           clearTimeout(deleteTimeoutRef.current[id]);
           delete deleteTimeoutRef.current[id];
-          setTransactions(prev => [...prev, deletedTx]);
+          pendingDeleteIdsRef.current.delete(id);
+          setTransactions(prev => prev.some(t => t.id === id) ? prev : [...prev, deletedTx]);
         },
       },
       duration: 5000,
