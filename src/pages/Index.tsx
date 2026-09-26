@@ -328,10 +328,13 @@ const Index = () => {
       });
       // Ascunde tranzacțiile aflate în așteptarea ștergerii (fereastra de anulare)
       const pending = pendingDeleteIdsRef.current;
-      setTransactions(formattedTransactions.filter(tx => !pending.has(tx.id)));
+      const visible = formattedTransactions.filter(tx => !pending.has(tx.id));
+      setTransactions(visible);
+      return visible as Transaction[];
     } catch (error: any) {
       toast.error("Eroare la încărcarea tranzacțiilor");
       console.error(error);
+      return null;
     } finally {
       setLoading(false);
     }
@@ -945,7 +948,7 @@ const Index = () => {
                 </AccordionTrigger>
                 <AccordionContent className="px-4 sm:px-6 pb-4 space-y-6">
                   <ReportsSection transactions={transactions} />
-                  <AutoBackupCard transactions={transactions} />
+                  <AutoBackupCard transactions={transactions} fetchLatest={loadTransactions} onImport={list => list.forEach(t => handleAddTransaction(t))} />
                   <div className="grid gap-4 sm:gap-6 lg:grid-cols-2">
 
                     <ExportData
