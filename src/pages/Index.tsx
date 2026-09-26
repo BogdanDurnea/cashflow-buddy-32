@@ -858,7 +858,7 @@ const Index = () => {
                     </div>
                   )}
                   <div className="lg:col-span-2 md:col-span-1">
-                    <TransactionList transactions={filteredTransactions} onEditTransaction={handleEditTransaction} onDeleteTransaction={handleDeleteTransaction} onRefresh={loadTransactions} />
+                    <TransactionList transactions={filteredTransactions} onEditTransaction={handleEditTransaction} onDeleteTransaction={handleDeleteTransaction} onRefresh={async () => { await loadTransactions(); }} />
                   </div>
                 </div>
                 <GlobalSearch transactions={transactions} onSelect={handleEditTransaction} />
