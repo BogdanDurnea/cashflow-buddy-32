@@ -1082,9 +1082,7 @@ const Index = () => {
                   <AccountSettings />
                   <div className="grid gap-4 sm:gap-6 lg:grid-cols-2">
                     <UserSettings />
-                    <ImportData onImport={imported => {
-                    imported.forEach(t => handleAddTransaction(t));
-                  }} />
+                    <ImportData onImport={handleImportTransactions} />
                   </div>
                   <div className="grid gap-4 sm:gap-6 lg:grid-cols-2">
                     <RecurringTransactions recurringTransactions={recurringTransactions} onAddRecurring={handleAddRecurring} onDeleteRecurring={handleDeleteRecurring} onToggleRecurring={handleToggleRecurring} />
