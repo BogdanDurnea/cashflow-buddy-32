@@ -495,6 +495,75 @@ const Index = () => {
       console.error(error);
     }
   };
+  const handleImportTransactions = async (list: Omit<Transaction, "id">[]) => {
+    if (!user || list.length === 0) return;
+    const rows = list.map(t => ({
+      user_id: user.id,
+      type: t.type,
+      amount: t.amount,
+      category: t.category,
+      description: t.description,
+      date: t.date.toISOString(),
+      currency: t.currency || 'RON',
+      exchange_rate: t.exchange_rate || 1,
+      attachment_url: t.attachment_url || null,
+      tags: t.tags || []
+    }));
+    try {
+      const inserted: Transaction[] = [];
+      const CHUNK = 200;
+      for (let i = 0; i < rows.length; i += CHUNK) {
+        const { data, error } = await supabase
+          .from("transactions")
+          .insert(rows.slice(i, i + CHUNK))
+          .select();
+        if (error) throw error;
+        for (const d of data || []) {
+          inserted.push({
+            id: d.id,
+            type: d.type as "income" | "expense",
+            amount: Number(d.amount),
+            category: d.category,
+            description: d.description || "",
+            date: new Date(d.date),
+            currency: d.currency || 'RON',
+            exchange_rate: Number(d.exchange_rate) || 1,
+            attachment_url: d.attachment_url || undefined,
+            tags: (d.tags as string[] | null) || []
+          });
+        }
+      }
+      setTransactions(prev => {
+        const updatedTransactions = [...inserted.reverse(), ...prev];
+        const currentHour = new Date().getHours();
+        const hasIncome = updatedTransactions.some(t => t.type === 'income');
+        const hasExpense = updatedTransactions.some(t => t.type === 'expense');
+        const hasReceipt = updatedTransactions.some(t => t.attachment_url);
+        const uniqueDays = [...new Set(updatedTransactions.map(t =>
+          format(new Date(t.date), 'yyyy-MM-dd')
+        ))].sort().reverse();
+        let consecutiveDays = 1;
+        for (let i = 0; i < uniqueDays.length - 1; i++) {
+          const diff = differenceInDays(new Date(uniqueDays[i]), new Date(uniqueDays[i + 1]));
+          if (diff === 1) consecutiveDays++;
+          else break;
+        }
+        checkAchievements({
+          transactionCount: updatedTransactions.length,
+          hasIncome,
+          hasExpense,
+          hasReceipt,
+          currentHour,
+          consecutiveDays,
+        });
+        return updatedTransactions;
+      });
+      toast.success(`${inserted.length} tranzacții importate!`);
+    } catch (error: any) {
+      toast.error("Eroare la importul tranzacțiilor");
+      console.error(error);
+    }
+  };
   const handleEditTransaction = (transaction: Transaction) => {
     setEditingTransaction(transaction);
     setShowEditDialog(true);
