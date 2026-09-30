@@ -1017,7 +1017,7 @@ const Index = () => {
                 </AccordionTrigger>
                 <AccordionContent className="px-4 sm:px-6 pb-4 space-y-6">
                   <ReportsSection transactions={transactions} />
-                  <AutoBackupCard transactions={transactions} fetchLatest={loadTransactions} onImport={list => list.forEach(t => handleAddTransaction(t))} />
+                  <AutoBackupCard transactions={transactions} fetchLatest={loadTransactions} onImport={handleImportTransactions} />
                   <div className="grid gap-4 sm:gap-6 lg:grid-cols-2">
 
                     <ExportData
