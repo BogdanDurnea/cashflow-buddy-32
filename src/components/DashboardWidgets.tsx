@@ -383,87 +383,100 @@ function LongPressWidgetItem({
 }) {
   const dragControls = useDragControls();
   const [armed, setArmed] = useState(false);
+  const armedRef = useRef(false);
+  const draggingRef = useRef(false);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const startRef = useRef<{ x: number; y: number } | null>(null);
+  const elRef = useRef<HTMLLIElement | null>(null);
 
   const clearTimer = useCallback(() => {
     if (timerRef.current) {
       clearTimeout(timerRef.current);
       timerRef.current = null;
     }
+  }, []);
+
+  const reset = useCallback(() => {
+    clearTimer();
     startRef.current = null;
+    armedRef.current = false;
+    draggingRef.current = false;
+    setArmed(false);
+  }, [clearTimer]);
+
+  // Blocăm scroll-ul nativ doar după ce long-press-ul a armat drag-ul.
+  // Listener non-pasiv: React nu permite preventDefault pe touchmove.
+  useEffect(() => {
+    const el = elRef.current;
+    if (!el) return;
+    const onTouchMove = (e: TouchEvent) => {
+      if (armedRef.current && e.cancelable) e.preventDefault();
+    };
+    el.addEventListener("touchmove", onTouchMove, { passive: false });
+    return () => el.removeEventListener("touchmove", onTouchMove);
   }, []);
 
   const handlePointerDown = useCallback(
     (event: React.PointerEvent) => {
       if (event.button !== 0 && event.pointerType === "mouse") return;
       startRef.current = { x: event.clientX, y: event.clientY };
-      const nativeEvent = event.nativeEvent;
-      const target = event.currentTarget as HTMLElement;
-      const pointerId = event.pointerId;
+      clearTimer();
       timerRef.current = setTimeout(() => {
+        timerRef.current = null;
+        armedRef.current = true;
         setArmed(true);
-        try {
-          target.setPointerCapture?.(pointerId);
-        } catch {
-          /* ignorăm dacă pointerul nu mai există */
-        }
-        dragControls.start(nativeEvent);
-        if (typeof navigator !== "undefined" && navigator.vibrate) {
-          navigator.vibrate(15);
-        }
+        navigator.vibrate?.(15);
       }, LONG_PRESS_MS);
     },
-    [dragControls]
+    [clearTimer]
   );
 
   const handlePointerMove = useCallback(
     (event: React.PointerEvent) => {
       const start = startRef.current;
-      if (!start || !timerRef.current) return;
+      if (!start) return;
+      if (armedRef.current) {
+        // Pornim drag-ul cu un eveniment viu, la prima mișcare după armare.
+        if (!draggingRef.current) {
+          draggingRef.current = true;
+          dragControls.start(event);
+        }
+        return;
+      }
       if (
-        Math.abs(event.clientX - start.x) > MOVE_TOLERANCE_PX ||
-        Math.abs(event.clientY - start.y) > MOVE_TOLERANCE_PX
+        timerRef.current &&
+        (Math.abs(event.clientX - start.x) > MOVE_TOLERANCE_PX ||
+          Math.abs(event.clientY - start.y) > MOVE_TOLERANCE_PX)
       ) {
+        // Utilizatorul derulează — renunțăm la long-press.
         clearTimer();
+        startRef.current = null;
       }
     },
-    [clearTimer]
+    [clearTimer, dragControls]
   );
 
-  const handlePointerEnd = useCallback(() => {
-    clearTimer();
-    setArmed(false);
-  }, [clearTimer]);
+  const handlePointerUp = useCallback(() => {
+    if (!draggingRef.current) reset();
+  }, [reset]);
 
-  // Dacă browserul anulează pointerul după ce drag-ul e armat (scroll nativ),
-  // păstrăm drag-ul activ — framer-motion gestionează gestul mai departe.
-  const handlePointerCancel = useCallback(() => {
-    if (armed) {
-      clearTimer();
-      return;
-    }
-    handlePointerEnd();
-  }, [armed, clearTimer, handlePointerEnd]);
-
-  useEffect(() => () => {
-    if (timerRef.current) clearTimeout(timerRef.current);
-  }, []);
-
+  useEffect(() => () => clearTimer(), [clearTimer]);
 
   return (
     <Reorder.Item
+      ref={elRef}
       value={widget}
       dragListener={false}
       dragControls={dragControls}
-      onDragEnd={handlePointerEnd}
-      className={armed ? "cursor-grabbing" : undefined}
-      style={{ touchAction: armed ? "none" : "pan-y" }}
-      whileDrag={{ scale: 1.02, boxShadow: "0 8px 25px rgba(0,0,0,0.15)" }}
+      onDragEnd={reset}
+      className={armed ? "cursor-grabbing select-none" : undefined}
+      style={{ touchAction: armed ? "none" : "pan-y", WebkitUserSelect: armed ? "none" : undefined }}
+      animate={armed ? { scale: 1.02 } : { scale: 1 }}
+      whileDrag={{ scale: 1.03, boxShadow: "0 8px 25px hsl(var(--foreground) / 0.15)", zIndex: 20 }}
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
-      onPointerUp={handlePointerEnd}
-      onPointerCancel={handlePointerCancel}
+      onPointerUp={handlePointerUp}
+      onPointerCancel={handlePointerUp}
       onContextMenu={(e) => e.preventDefault()}
     >
 
