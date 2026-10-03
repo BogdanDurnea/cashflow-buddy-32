@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Upload, FileSpreadsheet, CheckCircle, AlertCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Transaction } from "@/components/TransactionForm";
-import { parseBankStatement, toTransactions, BANK_FORMAT_LABELS } from "@/lib/bankImport";
+import { parseBankStatement, toTransactions, BANK_FORMAT_LABELS, parseDate } from "@/lib/bankImport";
 
 
 interface ImportDataProps {
@@ -48,7 +48,7 @@ export function ImportData({ onImport }: ImportDataProps) {
         type: (type === 'income' || type === 'venit') ? 'income' : 'expense',
         amount: parseFloat(values[amountIdx]) || 0,
         category: values[categoryIdx] || 'Altele',
-        date: dateIdx !== -1 ? new Date(values[dateIdx]) : new Date(),
+        date: dateIdx !== -1 ? parseDate(values[dateIdx] ?? "") ?? new Date() : new Date(),
         description: descIdx !== -1 ? values[descIdx] : '',
         currency: 'RON',
         exchange_rate: 1
