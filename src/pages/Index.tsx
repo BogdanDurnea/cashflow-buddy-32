@@ -497,7 +497,15 @@ const Index = () => {
   };
   const handleImportTransactions = async (list: Omit<Transaction, "id">[]) => {
     if (!user || list.length === 0) return;
-    const rows = list.map(t => ({
+    // Sare peste rândurile cu dată invalidă (ex: "01.10.2026" neparsabil),
+    // ca un singur rând corupt să nu anuleze tot importul.
+    const valid = list.filter(t => t.date instanceof Date && !Number.isNaN(t.date.getTime()));
+    const skipped = list.length - valid.length;
+    if (valid.length === 0) {
+      toast.error("Eroare la importul tranzacțiilor");
+      return;
+    }
+    const rows = valid.map(t => ({
       user_id: user.id,
       type: t.type,
       amount: t.amount,
