@@ -566,7 +566,7 @@ const Index = () => {
         });
         return updatedTransactions;
       });
-      toast.success(`${inserted.length} tranzacții importate!`);
+      toast.success(`${inserted.length} tranzacții importate!${skipped > 0 ? ` ${skipped} rânduri sărite (dată invalidă).` : ""}`);
     } catch (error: any) {
       toast.error("Eroare la importul tranzacțiilor");
       console.error(error);
