@@ -48,7 +48,9 @@ export function ImportData({ onImport }: ImportDataProps) {
         type: (type === 'income' || type === 'venit') ? 'income' : 'expense',
         amount: parseFloat(values[amountIdx]) || 0,
         category: values[categoryIdx] || 'Altele',
-        date: dateIdx !== -1 ? parseDate(values[dateIdx] ?? "") ?? new Date() : new Date(),
+        // Dată ilizibilă → Invalid Date, ca handleImportTransactions să sară rândul
+        // (nu îl salvăm cu data de azi, ar strica totalurile lunii curente).
+        date: dateIdx !== -1 ? parseDate(values[dateIdx] ?? "") ?? new Date(NaN) : new Date(),
         description: descIdx !== -1 ? values[descIdx] : '',
         currency: 'RON',
         exchange_rate: 1
